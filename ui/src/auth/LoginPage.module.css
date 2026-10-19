@@ -98,8 +98,17 @@
 }
 
 .brandProduct {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--ink-2);
   font-weight: 500;
+}
+
+.brandGenie {
+  width: 22px;
+  height: 22px;
+  flex: none;
 }
 
 .eyebrow {
@@ -266,6 +275,18 @@
   color: var(--muted);
 }
 
+.cardLabelGenie {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cardLabelIcon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
 .cardMetric {
   display: flex;
   align-items: baseline;
@@ -368,6 +389,11 @@
   height: 16px;
 }
 
+.askAvatarGenie svg {
+  width: 22px;
+  height: 22px;
+}
+
 .askText {
   margin: 0;
   font-size: 13px;
@@ -465,9 +491,40 @@
     0 10px 24px -12px rgba(40, 44, 80, 0.35);
 }
 
+.logo {
+  position: relative;
+}
+
 .logo img {
   width: 30px;
   height: 30px;
+}
+
+/* Genie sparkle tucked onto the corner of the Databricks tile. */
+.logoBadge {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 6px 14px -6px rgba(40, 44, 80, 0.45);
+}
+
+.logoBadge svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Only the star twinkles; the lamp stays put. */
+.genieStar {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle 2.4s ease-in-out infinite;
 }
 
 .welcome {
@@ -728,6 +785,18 @@
   }
   40% {
     opacity: 1;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.88) rotate(12deg);
+    opacity: 0.8;
   }
 }
 

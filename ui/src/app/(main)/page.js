@@ -1,19 +1,76 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './page.module.css';
 import ChatBubble from '../../components/ChatBubble';
-import LogoutButton from '@/auth/LogoutButton';
+import Sidebar from '../../components/Sidebar';
+import UserMenu from '../../components/UserMenu';
+import { ArrowUpIcon, ChevronDownIcon, NewChatIcon, PlusIcon, SidebarIcon } from '../../components/icons';
+import { useCurrentUser } from '@/auth/useCurrentUser';
 
 const API_BASE = 'http://localhost:8000/api/v1/genie';
+const DEFAULT_SPACE_ID = '00000000-0000-0000-0000-000000000000';
+const TERMINAL_STATUSES = ['COMPLETED', 'FAILED', 'CANCELLED'];
+
+const makeId = () =>
+  typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const titleFrom = (text) => (text.length > 40 ? `${text.slice(0, 40).trim()}…` : text);
+
+// Chat history is kept in this browser's localStorage, one list per signed-in user.
+const storageKey = (email) => `genie-chats:${email || 'anonymous'}`;
+
+const loadChats = (email) => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey(email)) || '[]');
+    // Polling stops when the page unloads, so answers that were still running are lost.
+    return saved.map((chat) => ({
+      ...chat,
+      messages: chat.messages.map((m) =>
+        m.role === 'genie' && !TERMINAL_STATUSES.includes(m.status)
+          ? { ...m, status: 'FAILED', status_message: 'Interrupted' }
+          : m
+      ),
+    }));
+  } catch {
+    return [];
+  }
+};
 
 export default function Home() {
-  const [messages, setMessages] = useState([]);
+  const { name, email } = useCurrentUser();
+  const [chats, setChats] = useState([]);
+  const [chatsLoaded, setChatsLoaded] = useState(false);
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [processingChatIds, setProcessingChatIds] = useState(() => new Set());
   const [inputValue, setInputValue] = useState('');
-  const [spaceId, setSpaceId] = useState('00000000-0000-0000-0000-000000000000');
-  const [conversationId, setConversationId] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [spaceId, setSpaceId] = useState(DEFAULT_SPACE_ID);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const chatWindowRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const activeChat = chats.find((c) => c.id === activeChatId) || null;
+  const messages = activeChat ? activeChat.messages : [];
+  const conversationId = activeChat ? activeChat.conversationId : null;
+  const isProcessing = activeChatId ? processingChatIds.has(activeChatId) : false;
+  const firstName = (name || '').split(' ')[0];
+
+  useEffect(() => {
+    setChats(loadChats(email));
+    setChatsLoaded(true);
+    if (window.matchMedia('(max-width: 768px)').matches) setSidebarOpen(false);
+  }, [email]);
+
+  useEffect(() => {
+    if (!chatsLoaded) return;
+    try {
+      localStorage.setItem(storageKey(email), JSON.stringify(chats));
+    } catch (err) {
+      console.error('Failed to save chat history:', err);
+    }
+  }, [chats, chatsLoaded, email]);
 
   useEffect(() => {
     if (chatWindowRef.current) {
@@ -21,24 +78,50 @@ export default function Home() {
     }
   }, [messages]);
 
-  const pollStatus = async (msgId, currentConvId, space) => {
+  const updateChat = useCallback((chatId, update) => {
+    setChats(prev => prev.map(c => (c.id === chatId ? update(c) : c)));
+  }, []);
+
+  const setChatProcessing = (chatId, busy) => {
+    setProcessingChatIds(prev => {
+      const next = new Set(prev);
+      if (busy) next.add(chatId); else next.delete(chatId);
+      return next;
+    });
+  };
+
+  const updateMessage = (chatId, msgId, data) => {
+    updateChat(chatId, c => ({
+      ...c,
+      messages: c.messages.map(m => (m.message_id === msgId ? { ...m, ...data } : m)),
+    }));
+  };
+
+  const appendMessage = (chatId, message, extra = {}) => {
+    updateChat(chatId, c => ({
+      ...c,
+      ...extra,
+      messages: [...c.messages, message],
+      updatedAt: Date.now(),
+    }));
+  };
+
+  const pollStatus = async (msgId, currentConvId, space, chatId) => {
     let waitTime = 1000;
     const maxWait = 5000;
     const startTime = Date.now();
-    const timeout = 10 * 60 * 1000; 
+    const timeout = 10 * 60 * 1000;
 
     while (Date.now() - startTime < timeout) {
       try {
         const res = await fetch(`${API_BASE}/status/${msgId}?space_id=${space}&conversation_id=${currentConvId}`);
         const data = await res.json();
 
-        setMessages(prev => prev.map(m => 
-          m.message_id === msgId ? { ...m, ...data } : m
-        ));
+        updateMessage(chatId, msgId, data);
 
-        if (data.status === 'COMPLETED' || data.status === 'FAILED' || data.status === 'CANCELLED') {
-          setIsProcessing(false);
-          return; 
+        if (TERMINAL_STATUSES.includes(data.status)) {
+          setChatProcessing(chatId, false);
+          return;
         }
       } catch (err) {
         console.error("Polling error:", err);
@@ -47,11 +130,9 @@ export default function Home() {
       await new Promise(resolve => setTimeout(resolve, waitTime));
       waitTime = Math.min(waitTime * 2, maxWait);
     }
-    
-    setMessages(prev => prev.map(m => 
-      m.message_id === msgId ? { ...m, status: 'FAILED', status_message: 'Timed out' } : m
-    ));
-    setIsProcessing(false);
+
+    updateMessage(chatId, msgId, { status: 'FAILED', status_message: 'Timed out' });
+    setChatProcessing(chatId, false);
   };
 
   const handleSend = async (e) => {
@@ -60,19 +141,35 @@ export default function Home() {
 
     const content = inputValue;
     setInputValue('');
-    setIsProcessing(true);
 
-    const tempUserMsgId = Date.now().toString();
-    setMessages(prev => [...prev, { role: 'user', content, id: tempUserMsgId }]);
+    // The first question starts a new chat in the sidebar.
+    let chatId = activeChatId;
+    const space = activeChat ? activeChat.spaceId : spaceId;
+    if (!chatId) {
+      chatId = makeId();
+      setChats(prev => [{
+        id: chatId,
+        title: titleFrom(content),
+        spaceId: space,
+        conversationId: null,
+        messages: [],
+        pinned: false,
+        updatedAt: Date.now(),
+      }, ...prev]);
+      setActiveChatId(chatId);
+    }
+
+    setChatProcessing(chatId, true);
+    appendMessage(chatId, { role: 'user', content, id: Date.now().toString() });
 
     try {
       const res = await fetch(`${API_BASE}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          space_id: spaceId,
+          space_id: space,
           content: content,
-          conversation_id: conversationId 
+          conversation_id: conversationId
         })
       });
 
@@ -82,38 +179,31 @@ export default function Home() {
           const jsonError = await res.json();
           errorData = jsonError.detail || jsonError.message || errorData;
         } catch (_) {}
-        
-        setMessages(prev => [...prev, {
-          role: 'genie',
-          status: 'FAILED',
-          status_message: errorData
-        }]);
-        setIsProcessing(false);
+
+        appendMessage(chatId, { role: 'genie', status: 'FAILED', status_message: errorData });
+        setChatProcessing(chatId, false);
         return;
       }
-      
+
       const sessionData = await res.json();
       const newMsgId = sessionData.message_id;
       const newConvId = sessionData.conversation_id;
-      
-      if (!conversationId) setConversationId(newConvId);
 
-      setMessages(prev => [...prev, {
-        role: 'genie',
-        message_id: newMsgId,
-        status: 'STARTING',
-        status_message: 'Message Sent'
-      }]);
+      appendMessage(
+        chatId,
+        { role: 'genie', message_id: newMsgId, status: 'STARTING', status_message: 'Message Sent' },
+        { conversationId: conversationId || newConvId }
+      );
 
-      pollStatus(newMsgId, newConvId, spaceId);
+      pollStatus(newMsgId, newConvId, space, chatId);
 
     } catch (err) {
-      setMessages(prev => [...prev, {
+      appendMessage(chatId, {
         role: 'genie',
         status: 'FAILED',
         status_message: err.message || 'Failed to connect to backend'
-      }]);
-      setIsProcessing(false);
+      });
+      setChatProcessing(chatId, false);
     }
   };
 
@@ -123,7 +213,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          space_id: spaceId,
+          space_id: activeChat ? activeChat.spaceId : spaceId,
           conversation_id: conversationId,
           message_id: msgId,
           rating: rating
@@ -134,72 +224,130 @@ export default function Home() {
     }
   };
 
+  const closeSidebarOnMobile = () => {
+    if (window.matchMedia('(max-width: 768px)').matches) setSidebarOpen(false);
+  };
+
+  const handleNewChat = () => {
+    setActiveChatId(null);
+    setInputValue('');
+    closeSidebarOnMobile();
+    inputRef.current?.focus();
+  };
+
+  const handleSelectChat = (chatId) => {
+    const chat = chats.find(c => c.id === chatId);
+    if (chat) setSpaceId(chat.spaceId);
+    setActiveChatId(chatId);
+    closeSidebarOnMobile();
+  };
+
+  const handleTogglePin = (chatId) => updateChat(chatId, c => ({ ...c, pinned: !c.pinned }));
+
+  const handleRename = (chatId, title) => updateChat(chatId, c => ({ ...c, title }));
+
+  const handleDelete = (chatId) => {
+    setChats(prev => prev.filter(c => c.id !== chatId));
+    if (chatId === activeChatId) setActiveChatId(null);
+  };
+
+  const inputForm = (
+    <form className={styles.inputArea} onSubmit={handleSend}>
+      <button type="button" className={styles.iconButton} aria-label="Add Attachment">
+        <PlusIcon size={20} />
+      </button>
+      <input
+        ref={inputRef}
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder="Ask Genie anything"
+        className={styles.inputField}
+        disabled={isProcessing}
+      />
+      <button
+        type="submit"
+        className={styles.sendButton}
+        disabled={!inputValue.trim() || isProcessing || !spaceId}
+        aria-label="Send"
+      >
+        <ArrowUpIcon size={18} />
+      </button>
+    </form>
+  );
+
   return (
-    <div className={styles.container}>
-      <div className={styles.topNav}>
-        <div className={styles.modelSelector}>
-          <span className={styles.modelLabel}>Genie Space</span>
-          <span className={styles.modelChevron}>▼</span>
-          <input 
-            type="text" 
-            value={spaceId} 
-            onChange={(e) => setSpaceId(e.target.value)}
-            placeholder="workspace-id"
-            className={styles.spaceIdInput}
-            title="Genie Space ID"
-          />
-        </div>
-      </div>
+    <div className={styles.appShell}>
+      <Sidebar
+        open={sidebarOpen}
+        chats={chats}
+        activeChatId={activeChatId}
+        onSelect={handleSelectChat}
+        onNewChat={handleNewChat}
+        onTogglePin={handleTogglePin}
+        onRename={handleRename}
+        onDelete={handleDelete}
+        onToggle={() => setSidebarOpen(o => !o)}
+      />
 
-      <div className="absolute top-4 right-4 z-10">
-        <LogoutButton className="rounded-lg hover:bg-white/5" />
-      </div>
+      <main className={styles.container}>
+        <header className={styles.topNav}>
+          <div className={styles.topNavLeft}>
+            {!sidebarOpen && (
+              <>
+                <button className={styles.navIconBtn} onClick={() => setSidebarOpen(true)} title="Open sidebar">
+                  <SidebarIcon />
+                </button>
+                <button className={styles.navIconBtn} onClick={handleNewChat} title="New chat">
+                  <NewChatIcon />
+                </button>
+              </>
+            )}
+            <label className={styles.modelSelector} title="Genie Space ID">
+              <span className={styles.modelLabel}>Genie Space</span>
+              <ChevronDownIcon size={16} className={styles.modelChevron} />
+              <input
+                type="text"
+                value={activeChat ? activeChat.spaceId : spaceId}
+                onChange={(e) => setSpaceId(e.target.value)}
+                placeholder="workspace-id"
+                className={styles.spaceIdInput}
+                disabled={!!activeChat}
+              />
+            </label>
+          </div>
+          <UserMenu />
+        </header>
 
-      <div className={styles.chatWindow} ref={chatWindowRef}>
-        <div className={styles.chatWindowInner}>
-          {messages.length === 0 && (
-            <div style={{ textAlign: 'center', marginTop: '10vh' }}>
-              <h2 style={{ fontWeight: '500', fontSize: '1.5rem', marginBottom: '1rem' }}>Hey! What are we tackling today?</h2>
+        {messages.length === 0 ? (
+          <div className={styles.emptyState}>
+            <h1 className={styles.greeting}>
+              {firstName ? `Hey ${firstName}! What are we tackling today?` : 'What are we tackling today?'}
+            </h1>
+            <div className={styles.inputWrapper}>{inputForm}</div>
+          </div>
+        ) : (
+          <>
+            <div className={styles.chatWindow} ref={chatWindowRef}>
+              <div className={styles.chatWindowInner}>
+                {messages.map((msg, idx) => (
+                  <ChatBubble
+                    key={msg.message_id || msg.id || idx}
+                    message={msg}
+                    onFeedback={handleFeedback}
+                  />
+                ))}
+              </div>
             </div>
-          )}
-          
-          {messages.map((msg, idx) => (
-            <ChatBubble 
-              key={msg.message_id || msg.id || idx} 
-              message={msg} 
-              onFeedback={handleFeedback}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.inputWrapper}>
-        <form className={styles.inputArea} onSubmit={handleSend}>
-          <button type="button" className={styles.iconButton} aria-label="Add Attachment">
-            +
-          </button>
-          <input 
-            type="text" 
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask anything"
-            className={styles.inputField}
-            disabled={isProcessing}
-          />
-          <button 
-            type="submit" 
-            className={styles.sendButton}
-            disabled={!inputValue.trim() || isProcessing || !spaceId}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4L12 20M12 4L6 10M12 4L18 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </form>
-        <div className={styles.footerText}>
-          Databricks Genie can make mistakes. Check important info.
-        </div>
-      </div>
+            <div className={styles.inputWrapper}>
+              {inputForm}
+              <div className={styles.footerText}>
+                Databricks Genie can make mistakes. Check important info.
+              </div>
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 }

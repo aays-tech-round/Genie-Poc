@@ -1,13 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 :root {
-  --bg-main: #212121;
-  --bg-input: #2f2f2f;
-  --bg-user-bubble: #2f2f2f;
-  --text-primary: #ececec;
-  --text-secondary: #9b9b9b;
-  --icon-hover: #b4b4b4;
-  --border-light: rgba(255, 255, 255, 0.1);
+  --bg-main: #ffffff;
+  --bg-sidebar: #f9f9f9;
+  --bg-input: #ffffff;
+  --bg-user-bubble: #f4f4f4;
+  --bg-hover: #efefef;
+  --bg-active: #e8e8e8;
+  --text-primary: #0d0d0d;
+  --text-secondary: #5d5d5d;
+  --text-tertiary: #8f8f8f;
+  --icon-hover: #0d0d0d;
+  --border-light: #e5e5e5;
+  --border-strong: #cfcfcf;
   --success: #10b981;
 }
 

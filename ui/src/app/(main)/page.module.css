@@ -1,111 +1,207 @@
+.appShell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-main);
+}
+
 .container {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   height: 100vh;
   position: relative;
 }
 
+.topNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  min-height: 56px;
+}
+
+.topNavLeft {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.navIconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.navIconBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.modelSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 10px;
+  cursor: text;
+  min-width: 0;
+  transition: background-color 0.15s;
+}
+.modelSelector:hover {
+  background-color: var(--bg-hover);
+}
+
+.modelLabel {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.modelChevron {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.spaceIdInput {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  outline: none;
+  font-size: 0.9rem;
+  width: 280px;
+  min-width: 0;
+  font-family: inherit;
+  text-overflow: ellipsis;
+}
+.spaceIdInput:focus {
+  color: var(--text-primary);
+}
+.spaceIdInput:disabled {
+  cursor: default;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem 12vh;
+}
+
+.greeting {
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
 .chatWindow {
   flex: 1;
   overflow-y: auto;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
   display: flex;
   justify-content: center;
 }
 
 .chatWindowInner {
   width: 100%;
-  max-width: 800px;
+  max-width: 780px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   padding-bottom: 2rem;
 }
 
-/* Scrollbar */
 .chatWindow::-webkit-scrollbar {
   width: 8px;
 }
 .chatWindow::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 4px;
 }
 
 .inputWrapper {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 1rem 0.5rem 1rem;
-  position: relative;
-  background: var(--bg-main);
+  padding: 0 1rem 0.5rem;
 }
 
 .inputArea {
   width: 100%;
-  max-width: 800px;
+  max-width: 780px;
   background-color: var(--bg-input);
-  border-radius: 26px;
-  padding: 0.75rem 1rem 0.75rem 1.5rem;
+  border: 1px solid var(--border-light);
+  border-radius: 28px;
+  padding: 0.6rem 0.6rem 0.6rem 0.75rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
-  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 0.6rem;
+}
+.inputArea:focus-within {
+  border-color: var(--border-strong);
 }
 
 .iconButton {
-  color: #ececec;
+  color: var(--text-primary);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
-  font-size: 1.4rem;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
 }
 .iconButton:hover {
-  background-color: rgba(255,255,255,0.1);
+  background-color: var(--bg-hover);
 }
 
 .inputField {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   color: var(--text-primary);
   font-size: 1rem;
   outline: none;
 }
-
 .inputField::placeholder {
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 
 .sendButton {
-  background: #ececec;
-  color: #212121;
+  background: #ff3621;
+  color: #fff;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s;
-  font-weight: bold;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
 }
-
-.sendButton svg {
-  width: 16px;
-  height: 16px;
-}
-
 .sendButton:hover:not(:disabled) {
-  opacity: 0.8;
+  opacity: 0.88;
 }
-
 .sendButton:disabled {
-  background: rgba(255,255,255,0.2);
-  color: rgba(255,255,255,0.5);
+  background: var(--bg-active);
+  color: var(--text-tertiary);
   cursor: not-allowed;
 }
 
@@ -115,46 +211,11 @@
   color: var(--text-secondary);
 }
 
-.topNav {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 10;
-}
-
-.modelSelector {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-}
-.modelSelector:hover {
-  background-color: rgba(255,255,255,0.05);
-}
-
-.modelLabel {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.modelChevron {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  margin-right: 0.5rem;
-}
-
-.spaceIdInput {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  outline: none;
-  font-size: 0.95rem;
-  width: 250px;
-  font-family: inherit;
-}
-.spaceIdInput:focus {
-  color: var(--text-primary);
+@media (max-width: 768px) {
+  .spaceIdInput {
+    width: 140px;
+  }
+  .greeting {
+    font-size: 1.4rem;
+  }
 }
