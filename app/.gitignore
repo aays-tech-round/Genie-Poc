@@ -1,0 +1,30 @@
+# env files (secrets) - commit .env.example instead
+.env
+.env.*
+!.env.example
+
+# virtual environments
+.venv/
+venv/
+env/
+
+# python bytecode / caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# build / packaging
+build/
+dist/
+*.egg-info/
+
+# logs and editor / OS files
+*.log
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
