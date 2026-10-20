@@ -1,7 +1,21 @@
 import logging
 from databricks.sdk import WorkspaceClient
+from databricks.sdk.service.dashboards import GenieFeedbackRating
 
 logger = logging.getLogger(__name__)
+
+STATUS_MESSAGES = {
+    "SUBMITTED": "Message sent",
+    "FETCHING_METADATA": "Reading table metadata...",
+    "FILTERING_CONTEXT": "Finding relevant context...",
+    "ASKING_AI": "Genie is thinking...",
+    "PENDING_WAREHOUSE": "Waiting for the SQL warehouse to start...",
+    "EXECUTING_QUERY": "Running SQL on the warehouse...",
+    "COMPLETED": "Query complete",
+    "FAILED": "Query failed",
+    "CANCELLED": "Query cancelled",
+    "QUERY_RESULT_EXPIRED": "Query result expired. Please ask again.",
+}
 
 class DatabricksGenieClient:
     def __init__(self):
@@ -61,49 +75,33 @@ class DatabricksGenieClient:
 
         status_val = msg.status.value if hasattr(msg.status, "value") else str(msg.status)
         
-        status_message = ""
         summary = None
         data = None
         trusted_asset = False
         error = None
 
-        if status_val == "STARTING":
-            status_message = "Genie is thinking"
-        elif status_val == "EXECUTING_QUERY":
-            status_message = "Calculating results on SQL Warehouse..."
-        elif status_val == "COMPLETED":
-            status_message = "Query complete"
-        elif status_val in ["FAILED", "CANCELLED"]:
-            status_message = "Query failed"
-            # Optional: parse error details from msg
-        else:
-            status_message = "Processing..."
+        status_message = STATUS_MESSAGES.get(status_val, "Processing...")
+
+        if status_val == "FAILED" and getattr(msg, "error", None):
+            error = msg.error.error or (msg.error.type.value if msg.error.type else None)
             
         # Extract Results if completed
         if status_val == "COMPLETED":
-            # Extract natural language summary
             if getattr(msg, "attachments", None):
                 for att in msg.attachments:
-                    if hasattr(att, "text") and att.text:
-                        summary = att.text.content if hasattr(att.text, "content") else att.text
+                    if att.text and att.text.content:
+                        summary = att.text.content
                     
                     # Fetching tabular results for query attachments
-                    if hasattr(att, "query") and att.query:
+                    if att.query:
                         try:
-                            # Depending on the SDK, passing attachment_id is needed
-                            att_id = att.id
                             result = self.client.genie.get_message_attachment_query_result(
                                 space_id=space_id,
                                 conversation_id=conversation_id,
                                 message_id=message_id,
-                                attachment_id=att_id
+                                attachment_id=att.attachment_id
                             )
-                            # Depending on the object returned, we either serialize to dict or return URL.
-                            # Standard pattern: return statement object or results.
-                            if hasattr(result, "as_dict"):
-                                data = result.as_dict()
-                            else:
-                                data = result
+                            data = self._rows_from_result(result)
                         except Exception as e:
                             logger.error(f"Failed to fetch query result: {e}")
                             
@@ -120,19 +118,28 @@ class DatabricksGenieClient:
             "error": error
         }
 
+    @staticmethod
+    def _rows_from_result(result):
+        """
+        Converts a query result into a list of {column: value} dicts.
+        """
+        statement = getattr(result, "statement_response", None)
+        if not statement or not statement.manifest or not statement.manifest.schema:
+            return []
+        columns = [c.name for c in (statement.manifest.schema.columns or [])]
+        rows = (statement.result.data_array if statement.result else None) or []
+        return [dict(zip(columns, row)) for row in rows]
+
     def submit_feedback(self, space_id: str, conversation_id: str, message_id: str, rating: str):
         """
         Sends POSITIVE or NEGATIVE feedback to the model.
         """
-        # In current databricks SDK, it might be create_message_feedback
-        # We will wrap in try/except to give graceful error if not supported in the exact SDK version
         try:
-            # We assume rating is handled via the SDK enum or string pass-through
-            self.client.genie.create_message_feedback(
+            self.client.genie.send_message_feedback(
                 space_id=space_id,
                 conversation_id=conversation_id,
                 message_id=message_id,
-                rating=rating
+                rating=GenieFeedbackRating(rating.upper())
             )
             return True
         except Exception as e:

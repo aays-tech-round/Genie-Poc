@@ -5,11 +5,10 @@ import styles from './page.module.css';
 import ChatBubble from '../../components/ChatBubble';
 import Sidebar from '../../components/Sidebar';
 import UserMenu from '../../components/UserMenu';
-import { ArrowUpIcon, ChevronDownIcon, NewChatIcon, PlusIcon, SidebarIcon } from '../../components/icons';
+import { ArrowUpIcon, NewChatIcon, PlusIcon, SidebarIcon } from '../../components/icons';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 
 const API_BASE = 'http://localhost:8000/api/v1/genie';
-const DEFAULT_SPACE_ID = '00000000-0000-0000-0000-000000000000';
 const TERMINAL_STATUSES = ['COMPLETED', 'FAILED', 'CANCELLED'];
 
 const makeId = () =>
@@ -46,7 +45,6 @@ export default function Home() {
   const [activeChatId, setActiveChatId] = useState(null);
   const [processingChatIds, setProcessingChatIds] = useState(() => new Set());
   const [inputValue, setInputValue] = useState('');
-  const [spaceId, setSpaceId] = useState(DEFAULT_SPACE_ID);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const chatWindowRef = useRef(null);
   const inputRef = useRef(null);
@@ -106,7 +104,7 @@ export default function Home() {
     }));
   };
 
-  const pollStatus = async (msgId, currentConvId, space, chatId) => {
+  const pollStatus = async (msgId, currentConvId, chatId) => {
     let waitTime = 1000;
     const maxWait = 5000;
     const startTime = Date.now();
@@ -114,7 +112,7 @@ export default function Home() {
 
     while (Date.now() - startTime < timeout) {
       try {
-        const res = await fetch(`${API_BASE}/status/${msgId}?space_id=${space}&conversation_id=${currentConvId}`);
+        const res = await fetch(`${API_BASE}/status/${msgId}?conversation_id=${currentConvId}`);
         const data = await res.json();
 
         updateMessage(chatId, msgId, data);
@@ -137,20 +135,18 @@ export default function Home() {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!inputValue.trim() || !spaceId || isProcessing) return;
+    if (!inputValue.trim() || isProcessing) return;
 
     const content = inputValue;
     setInputValue('');
 
     // The first question starts a new chat in the sidebar.
     let chatId = activeChatId;
-    const space = activeChat ? activeChat.spaceId : spaceId;
     if (!chatId) {
       chatId = makeId();
       setChats(prev => [{
         id: chatId,
         title: titleFrom(content),
-        spaceId: space,
         conversationId: null,
         messages: [],
         pinned: false,
@@ -167,7 +163,6 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          space_id: space,
           content: content,
           conversation_id: conversationId
         })
@@ -195,7 +190,7 @@ export default function Home() {
         { conversationId: conversationId || newConvId }
       );
 
-      pollStatus(newMsgId, newConvId, space, chatId);
+      pollStatus(newMsgId, newConvId, chatId);
 
     } catch (err) {
       appendMessage(chatId, {
@@ -213,7 +208,6 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          space_id: activeChat ? activeChat.spaceId : spaceId,
           conversation_id: conversationId,
           message_id: msgId,
           rating: rating
@@ -236,8 +230,6 @@ export default function Home() {
   };
 
   const handleSelectChat = (chatId) => {
-    const chat = chats.find(c => c.id === chatId);
-    if (chat) setSpaceId(chat.spaceId);
     setActiveChatId(chatId);
     closeSidebarOnMobile();
   };
@@ -268,7 +260,7 @@ export default function Home() {
       <button
         type="submit"
         className={styles.sendButton}
-        disabled={!inputValue.trim() || isProcessing || !spaceId}
+        disabled={!inputValue.trim() || isProcessing}
         aria-label="Send"
       >
         <ArrowUpIcon size={18} />
@@ -303,18 +295,6 @@ export default function Home() {
                 </button>
               </>
             )}
-            <label className={styles.modelSelector} title="Genie Space ID">
-              <span className={styles.modelLabel}>Genie Space</span>
-              <ChevronDownIcon size={16} className={styles.modelChevron} />
-              <input
-                type="text"
-                value={activeChat ? activeChat.spaceId : spaceId}
-                onChange={(e) => setSpaceId(e.target.value)}
-                placeholder="workspace-id"
-                className={styles.spaceIdInput}
-                disabled={!!activeChat}
-              />
-            </label>
           </div>
           <UserMenu />
         </header>

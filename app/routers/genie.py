@@ -1,12 +1,20 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional
-from app.models import AskRequest, AskResponse, StatusResponse, FeedbackRequest
-from app.services.databricks_client import DatabricksGenieClient
+from models import AskRequest, AskResponse, StatusResponse, FeedbackRequest
+from services.databricks_client import DatabricksGenieClient
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+def get_space_id() -> str:
+    space_id = os.getenv("GENIE_SPACE_ID")
+    if not space_id:
+        logger.error("GENIE_SPACE_ID is not set")
+        raise HTTPException(status_code=500, detail="GENIE_SPACE_ID is not configured on the server.")
+    return space_id
 
 # Simple dependency injection for the client
 def get_genie_client():
@@ -23,11 +31,13 @@ async def ask_genie(request: AskRequest, client: DatabricksGenieClient = Depends
     """
     try:
         res = client.ask(
-            space_id=request.space_id,
+            space_id=get_space_id(),
             content=request.content,
             conversation_id=request.conversation_id
         )
         return AskResponse(**res)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in /ask: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -35,7 +45,6 @@ async def ask_genie(request: AskRequest, client: DatabricksGenieClient = Depends
 @router.get("/status/{message_id}", response_model=StatusResponse)
 async def get_status(
     message_id: str,
-    space_id: str = Query(..., description="The Genie Space ID"),
     conversation_id: str = Query(..., description="The Genie Conversation ID"),
     client: DatabricksGenieClient = Depends(get_genie_client)
 ):
@@ -44,11 +53,13 @@ async def get_status(
     """
     try:
         status_info = client.get_status(
-            space_id=space_id,
+            space_id=get_space_id(),
             conversation_id=conversation_id,
             message_id=message_id
         )
         return StatusResponse(**status_info)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in /status: {e}")
         # Depending on how client behaves on timeout/disconnect, we handle standard errors.
@@ -63,12 +74,14 @@ async def submit_feedback(request: FeedbackRequest, client: DatabricksGenieClien
     """
     try:
         client.submit_feedback(
-            space_id=request.space_id,
+            space_id=get_space_id(),
             conversation_id=request.conversation_id,
             message_id=request.message_id,
             rating=request.rating
         )
         return {"success": True}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in /feedback: {e}")
         raise HTTPException(status_code=500, detail=str(e))

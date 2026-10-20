@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import genie
+from routers import genie
 from dotenv import load_dotenv
 
 # Load environment variables from .env if present
@@ -29,5 +29,5 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    # Typically run with: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    # Run from this directory with: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

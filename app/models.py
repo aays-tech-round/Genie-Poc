@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any, Dict, List
 
 class AskRequest(BaseModel):
-    space_id: str = Field(..., description="The ID of the Genie Space")
     content: str = Field(..., description="The prompt or question to ask Genie")
     conversation_id: Optional[str] = Field(None, description="Provide this to continue an existing conversation")
 
@@ -19,7 +18,6 @@ class StatusResponse(BaseModel):
     error: Optional[str] = None
 
 class FeedbackRequest(BaseModel):
-    space_id: str
     conversation_id: str
     message_id: str
     rating: str = Field(..., description="Either 'POSITIVE' or 'NEGATIVE'")
