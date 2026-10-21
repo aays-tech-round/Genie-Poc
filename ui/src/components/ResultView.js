@@ -36,6 +36,14 @@ const fmtFull = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 const fmtCompact = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
 const formatValue = (n) => (n === null ? '—' : Math.abs(n) >= 1e6 ? fmtCompact.format(n) : fmtFull.format(n));
 
+// Genie returns numbers as strings, sometimes in scientific notation ("1.37482663E8").
+// Year columns stay as-is; other numbers get thousands separators.
+const formatCell = (v, numeric) => {
+  if (!numeric) return String(v);
+  const n = toNumber(v);
+  return n === null || Number.isNaN(n) ? String(v) : fmtFull.format(n);
+};
+
 const formatLabel = (v) => {
   if (v === null || v === undefined || v === '') return '—';
   const s = String(v);
@@ -221,7 +229,9 @@ export default function ResultView({ data }) {
   if (!Array.isArray(data) || data.length === 0) return null;
 
   const headers = Object.keys(data[0]);
-  const numericCols = new Set(headers.filter((h) => isNumericColumn(data, h)));
+  const numericCols = new Set(
+    headers.filter((h) => isNumericColumn(data, h) && !data.every((r) => r[h] == null || isYear(r[h])))
+  );
   const activeMetric = chart && chart.metrics.includes(metric) ? metric : chart?.metrics[0];
 
   return (
@@ -283,7 +293,9 @@ export default function ResultView({ data }) {
                 <tr key={i}>
                   {headers.map((h) => (
                     <td key={h} className={numericCols.has(h) ? styles.num : ''}>
-                      {row[h] === null || row[h] === undefined ? <span className={styles.nullCell}>—</span> : String(row[h])}
+                      {row[h] === null || row[h] === undefined
+                        ? <span className={styles.nullCell}>—</span>
+                        : formatCell(row[h], numericCols.has(h))}
                     </td>
                   ))}
                 </tr>

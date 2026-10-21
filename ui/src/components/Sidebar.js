@@ -5,6 +5,7 @@ import {
   ChatIcon, CloseIcon, EditIcon, GenieLogo, MoreIcon, NewChatIcon,
   PinIcon, SearchIcon, SidebarIcon, TrashIcon,
 } from './icons';
+import UserMenu from './UserMenu';
 import styles from './Sidebar.module.css';
 
 const useOutsideClose = (ref, active, onClose) => {
@@ -176,7 +177,7 @@ export default function Sidebar({
       <aside className={`${styles.sidebar} ${open ? '' : styles.sidebarClosed}`}>
         <div className={styles.header}>
           <div className={styles.brand}>
-            <GenieLogo size={28} />
+            <GenieLogo size={26} />
             <span className={styles.brandText}>Genie</span>
           </div>
           <div className={styles.headerActions}>
@@ -213,6 +214,10 @@ export default function Sidebar({
             ))}
           </section>
         </nav>
+
+        <div className={styles.footer}>
+          <UserMenu />
+        </div>
       </aside>
 
       {/* Dims the page behind the sidebar on small screens */}

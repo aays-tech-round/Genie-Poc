@@ -19,24 +19,14 @@
 .topNav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.6rem 1rem;
+  padding: 0 1rem;
   min-height: 60px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-main);
   position: relative;
   z-index: 5;
-}
-
-/* Soft fade where messages scroll under the header */
-.topNav::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -16px;
-  height: 16px;
-  background: linear-gradient(var(--bg-main), rgba(255, 255, 255, 0));
-  pointer-events: none;
 }
 
 .topNavLeft {
@@ -44,7 +34,16 @@
   align-items: center;
   gap: 2px;
   min-width: 0;
-  animation: fadeOnly 0.2s ease both;
+}
+
+.topNavTitle {
+  margin-left: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .navIconBtn {

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { useCurrentUser } from '@/auth/useCurrentUser';
-import { LogOutIcon } from './icons';
+import { ChevronDownIcon, LogOutIcon } from './icons';
 import styles from './UserMenu.module.css';
 
 export const getInitials = (name, email) => {
@@ -13,7 +13,7 @@ export const getInitials = (name, email) => {
   return initials.toUpperCase();
 };
 
-// Top-right avatar: opens a menu with the signed-in user's details and Logout.
+// Account row at the bottom of the sidebar: shows who is signed in and opens a menu with Log out.
 export default function UserMenu() {
   const { instance } = useMsal();
   const { name, email } = useCurrentUser();
@@ -37,26 +37,9 @@ export default function UserMenu() {
 
   return (
     <div className={styles.wrapper} ref={menuRef}>
-      <button
-        className={styles.avatarButton}
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        title={name || email}
-      >
-        <span className={styles.avatar}>{getInitials(name, email)}</span>
-      </button>
-
       {open && (
         <div className={styles.menu} role="menu">
-          <div className={styles.userInfo}>
-            <span className={`${styles.avatar} ${styles.avatarLarge}`}>{getInitials(name, email)}</span>
-            <div className={styles.userText}>
-              <div className={styles.userName}>{name || 'Signed in'}</div>
-              {email && <div className={styles.userEmail}>{email}</div>}
-            </div>
-          </div>
-          <div className={styles.divider} />
+          {email && <div className={styles.menuEmail}>{email}</div>}
           <button
             className={styles.menuItem}
             role="menuitem"
@@ -70,6 +53,20 @@ export default function UserMenu() {
           </button>
         </div>
       )}
+
+      <button
+        className={`${styles.accountButton} ${open ? styles.accountButtonOpen : ''}`}
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <span className={styles.avatar}>{getInitials(name, email)}</span>
+        <span className={styles.userText}>
+          <span className={styles.userName}>{name || 'Signed in'}</span>
+          {email && <span className={styles.userEmail}>{email}</span>}
+        </span>
+        <ChevronDownIcon size={16} className={styles.chevron} />
+      </button>
 
       {confirmLogout && (
         <div className={styles.backdrop} onClick={() => setConfirmLogout(false)}>

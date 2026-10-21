@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './page.module.css';
 import ChatBubble from '../../components/ChatBubble';
 import Sidebar from '../../components/Sidebar';
-import UserMenu from '../../components/UserMenu';
 import { ArrowUpIcon, GenieLogo, NewChatIcon, PlusIcon, SidebarIcon } from '../../components/icons';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 
@@ -305,8 +304,8 @@ export default function Home() {
                 </button>
               </>
             )}
+            <span className={styles.topNavTitle}>{activeChat ? activeChat.title : 'New chat'}</span>
           </div>
-          <UserMenu />
         </header>
 
         {messages.length === 0 ? (

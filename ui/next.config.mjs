@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  // Hide the floating "N" dev badge; it sits on top of the sidebar's account row.
+  devIndicators: false,
 };
 
 export default nextConfig;
