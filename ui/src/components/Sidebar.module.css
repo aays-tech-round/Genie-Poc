@@ -6,7 +6,7 @@
   border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
-  transition: margin-left 0.2s ease;
+  transition: margin-left 0.3s var(--ease-in-out);
   z-index: 30;
 }
 
@@ -30,6 +30,7 @@
 .brandText {
   font-size: 1.15rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 
@@ -41,12 +42,15 @@
 .iconBtn {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.iconBtn:active {
+  transform: scale(0.94);
 }
 .iconBtn:hover {
   background: var(--bg-hover);
@@ -61,11 +65,14 @@
   padding: 0.55rem 0.6rem;
   border-radius: 10px;
   font-size: 0.9rem;
+  font-weight: 500;
   color: var(--text-primary);
   text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 .newChatBtn:hover {
   background: var(--bg-hover);
+  color: var(--accent-strong);
 }
 
 .lists {
@@ -85,8 +92,10 @@
 }
 
 .sectionLabel {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
   padding: 0.5rem 0.6rem 0.35rem;
 }
 
@@ -101,6 +110,8 @@
   display: flex;
   align-items: center;
   border-radius: 10px;
+  margin-bottom: 1px;
+  transition: background-color 0.15s ease;
 }
 .chatItem:hover,
 .chatItemMenuOpen {
@@ -108,6 +119,9 @@
 }
 .chatItemActive {
   background: var(--bg-active);
+}
+.chatItemActive .chatTitle {
+  font-weight: 500;
 }
 .chatItemActive:hover {
   background: var(--bg-active);
@@ -135,6 +149,7 @@
   justify-content: center;
   color: var(--text-secondary);
   opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
 }
 .chatItem:hover .moreBtn,
 .chatItemActive .moreBtn,
@@ -160,10 +175,11 @@
   background: var(--bg-main);
   border: 1px solid var(--border-light);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
   padding: 5px;
   z-index: 40;
-  animation: fadeIn 0.12s ease;
+  transform-origin: top right;
+  animation: popIn 0.16s var(--ease-out);
 }
 
 .itemMenuBtn {
@@ -176,13 +192,14 @@
   font-size: 0.875rem;
   color: var(--text-primary);
   text-align: left;
+  transition: background-color 0.12s ease;
 }
 .itemMenuBtn:hover {
   background: var(--bg-hover);
 }
 
 .danger {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .renameInput {
@@ -190,7 +207,8 @@
   margin: 3px;
   padding: 0.4rem 0.5rem;
   font-size: 0.9rem;
-  border: 1px solid #ff3621;
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
   border-radius: 8px;
   outline: none;
   background: var(--bg-main);
@@ -201,12 +219,14 @@
 .searchBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(15, 15, 30, 0.3);
+  backdrop-filter: blur(2px);
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 12vh 16px 16px;
   z-index: 60;
+  animation: fadeOnly 0.15s ease;
 }
 
 .searchModal {
@@ -215,11 +235,11 @@
   max-height: 70vh;
   background: var(--bg-main);
   border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-xl);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: fadeIn 0.15s ease;
+  animation: popIn 0.22s var(--ease-out);
 }
 
 .searchHeader {
@@ -256,6 +276,7 @@
   font-size: 0.9rem;
   color: var(--text-primary);
   text-align: left;
+  transition: background-color 0.12s ease;
 }
 .searchResult:hover {
   background: var(--bg-hover);
@@ -284,14 +305,21 @@
     position: fixed;
     top: 0;
     left: 0;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    width: min(280px, 85vw);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .sidebarClosed {
+    margin-left: max(-280px, -85vw);
+    box-shadow: none;
   }
 
   .mobileScrim {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(15, 15, 30, 0.28);
     z-index: 25;
+    animation: fadeOnly 0.25s ease;
   }
 }

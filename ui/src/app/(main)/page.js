@@ -5,7 +5,7 @@ import styles from './page.module.css';
 import ChatBubble from '../../components/ChatBubble';
 import Sidebar from '../../components/Sidebar';
 import UserMenu from '../../components/UserMenu';
-import { ArrowUpIcon, NewChatIcon, PlusIcon, SidebarIcon } from '../../components/icons';
+import { ArrowUpIcon, GenieLogo, NewChatIcon, PlusIcon, SidebarIcon } from '../../components/icons';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 
 const API_BASE = 'http://localhost:8000/api/v1/genie';
@@ -48,12 +48,19 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const chatWindowRef = useRef(null);
   const inputRef = useRef(null);
+  const scrolledChatIdRef = useRef(null);
 
   const activeChat = chats.find((c) => c.id === activeChatId) || null;
   const messages = activeChat ? activeChat.messages : [];
   const conversationId = activeChat ? activeChat.conversationId : null;
   const isProcessing = activeChatId ? processingChatIds.has(activeChatId) : false;
   const firstName = (name || '').split(' ')[0];
+
+  // Show "Genie is thinking…" as soon as a question is sent, before /ask returns.
+  const awaitingReply = isProcessing && messages[messages.length - 1]?.role === 'user';
+  const displayedMessages = awaitingReply
+    ? [...messages, { role: 'genie', status: 'PENDING' }]
+    : messages;
 
   useEffect(() => {
     setChats(loadChats(email));
@@ -70,11 +77,14 @@ export default function Home() {
     }
   }, [chats, chatsLoaded, email]);
 
+  // Glide to new messages within a chat; jump straight to the bottom when switching chats.
   useEffect(() => {
-    if (chatWindowRef.current) {
-      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
-    }
-  }, [messages]);
+    const el = chatWindowRef.current;
+    if (!el) return;
+    const sameChat = scrolledChatIdRef.current === activeChatId;
+    scrolledChatIdRef.current = activeChatId;
+    el.scrollTo({ top: el.scrollHeight, behavior: sameChat ? 'smooth' : 'auto' });
+  }, [messages, activeChatId]);
 
   const updateChat = useCallback((chatId, update) => {
     setChats(prev => prev.map(c => (c.id === chatId ? update(c) : c)));
@@ -244,8 +254,8 @@ export default function Home() {
   };
 
   const inputForm = (
-    <form className={styles.inputArea} onSubmit={handleSend}>
-      <button type="button" className={styles.iconButton} aria-label="Add Attachment">
+    <form className={`${styles.inputArea} ${isProcessing ? styles.inputAreaBusy : ''}`} onSubmit={handleSend}>
+      <button type="button" className={styles.iconButton} aria-label="Add Attachment" title="Add attachment">
         <PlusIcon size={20} />
       </button>
       <input
@@ -253,7 +263,7 @@ export default function Home() {
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        placeholder="Ask Genie anything"
+        placeholder={isProcessing ? 'Genie is working on your answer…' : 'Ask Genie anything'}
         className={styles.inputField}
         disabled={isProcessing}
       />
@@ -301,6 +311,9 @@ export default function Home() {
 
         {messages.length === 0 ? (
           <div className={styles.emptyState}>
+            <div className={styles.emptyLogo}>
+              <GenieLogo size={48} />
+            </div>
             <h1 className={styles.greeting}>
               {firstName ? `Hey ${firstName}! What are we tackling today?` : 'What are we tackling today?'}
             </h1>
@@ -310,9 +323,11 @@ export default function Home() {
           <>
             <div className={styles.chatWindow} ref={chatWindowRef}>
               <div className={styles.chatWindowInner}>
-                {messages.map((msg, idx) => (
+                {displayedMessages.map((msg, idx) => (
                   <ChatBubble
-                    key={msg.message_id || msg.id || idx}
+                    // Genie replies are keyed by position so the "thinking" placeholder
+                    // turns into the real reply in place instead of remounting.
+                    key={msg.role === 'genie' ? `${activeChatId}-genie-${idx}` : msg.id || idx}
                     message={msg}
                     onFeedback={handleFeedback}
                   />

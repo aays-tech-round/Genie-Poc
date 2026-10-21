@@ -1,0 +1,116 @@
+.markdown {
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+.markdown > * + * {
+  margin-top: 0.75rem;
+}
+
+.paragraph {
+  margin: 0;
+}
+
+.heading {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.markdown > .heading {
+  margin-top: 1.25rem;
+}
+.markdown > .heading:first-child {
+  margin-top: 0;
+}
+h3.heading { font-size: 1.125rem; }
+h4.heading { font-size: 1.025rem; }
+h5.heading,
+h6.heading { font-size: 0.95rem; }
+
+.markdown strong {
+  font-weight: 600;
+}
+
+.markdown a {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  text-decoration-color: rgba(79, 70, 229, 0.35);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s ease;
+}
+.markdown a:hover {
+  text-decoration-color: currentColor;
+}
+
+.list {
+  padding-left: 1.4rem;
+}
+.list li + li {
+  margin-top: 0.3rem;
+}
+.list li::marker {
+  color: var(--text-tertiary);
+}
+
+.inlineCode {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  padding: 0.12em 0.4em;
+  border-radius: 6px;
+  background: var(--bg-user-bubble);
+  border: 1px solid var(--border-light);
+}
+
+.codeBlock {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-light);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.quote {
+  padding: 0.15rem 0 0.15rem 0.9rem;
+  border-left: 3px solid rgba(91, 91, 214, 0.35);
+  color: var(--text-secondary);
+}
+
+.hr {
+  border: none;
+  height: 1px;
+  background: var(--border-light);
+  margin: 1.25rem 0;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table td {
+  padding: 0.55rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+.table th {
+  background: var(--bg-sidebar);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.table tr:last-child td {
+  border-bottom: none;
+}

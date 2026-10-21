@@ -6,7 +6,7 @@ import { useCurrentUser } from '@/auth/useCurrentUser';
 import { LogOutIcon } from './icons';
 import styles from './UserMenu.module.css';
 
-const getInitials = (name, email) => {
+export const getInitials = (name, email) => {
   const source = name || email || '?';
   const parts = source.split(/[\s._@-]+/).filter(Boolean);
   const initials = parts.length > 1 ? parts[0][0] + parts[1][0] : source.slice(0, 2);

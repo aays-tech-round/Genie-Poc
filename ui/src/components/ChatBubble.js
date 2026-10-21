@@ -2,9 +2,15 @@
 
 import React, { useState } from 'react';
 import styles from './ChatBubble.module.css';
+import { AlertIcon, GenieLogo, ThumbsDownIcon, ThumbsUpIcon } from './icons';
+import { getInitials } from './UserMenu';
+import Markdown from './Markdown';
+import ResultView from './ResultView';
+import { useCurrentUser } from '@/auth/useCurrentUser';
 
 export default function ChatBubble({ message, onFeedback }) {
   const isUser = message.role === 'user';
+  const { name, email } = useCurrentUser();
   const [feedbackSent, setFeedbackSent] = useState(null);
 
   const handleFeedback = (rating) => {
@@ -14,85 +20,76 @@ export default function ChatBubble({ message, onFeedback }) {
     }
   };
 
-  const renderTable = (data) => {
-    if (!data || !Array.isArray(data) || data.length === 0) return null;
-    
-    // Attempt to extract headers from the first row of data
-    const headers = Object.keys(data[0]);
-
+  if (isUser) {
     return (
-      <div className={styles.tableContainer}>
-        <table className={styles.dataTable}>
-          <thead>
-            <tr>
-              {headers.map(h => <th key={h}>{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, i) => (
-              <tr key={i}>
-                {headers.map(h => <td key={h}>{String(row[h])}</td>)}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className={`${styles.messageRow} ${styles.userRow}`}>
+        <div className={`${styles.bubble} ${styles.userBubble}`}>{message.content}</div>
+        <span className={styles.userAvatar} aria-hidden="true">{getInitials(name, email)}</span>
       </div>
     );
-  };
+  }
 
   return (
-    <div className={`${styles.messageRow} ${isUser ? styles.userRow : styles.genieRow}`}>
-      <div className={`${styles.bubble} ${isUser ? styles.userBubble : styles.genieBubble}`}>
-        
-        {!isUser && message.trusted_asset && (
+    <div className={`${styles.messageRow} ${styles.genieRow}`}>
+      <div className={styles.avatar}>
+        <GenieLogo size={28} />
+      </div>
+
+      <div className={`${styles.bubble} ${styles.genieBubble}`}>
+        {message.trusted_asset && (
           <div className={styles.trustedBadge}>
             <span style={{ fontSize: '12px' }}>✓</span> Verified
           </div>
         )}
 
-        {isUser ? (
-          <div>{message.content}</div>
+        {/* Each state mounts its own element, so the answer fades in when polling completes */}
+        {message.status === 'COMPLETED' ? (
+          <div className={styles.answer}>
+            <Markdown text={message.summary} />
+            {message.data && <ResultView data={message.data} />}
+
+            <div className={`${styles.feedbackActions} ${feedbackSent ? styles.feedbackDone : ''}`}>
+              <button
+                className={`${styles.iconBtn} ${feedbackSent === 'POSITIVE' ? styles.selectedBtn : ''}`}
+                onClick={() => handleFeedback('POSITIVE')}
+                disabled={feedbackSent !== null}
+                title="Helpful"
+                aria-label="Helpful"
+              >
+                <ThumbsUpIcon size={16} />
+              </button>
+              <button
+                className={`${styles.iconBtn} ${feedbackSent === 'NEGATIVE' ? styles.selectedBtn : ''}`}
+                onClick={() => handleFeedback('NEGATIVE')}
+                disabled={feedbackSent !== null}
+                title="Not Helpful"
+                aria-label="Not helpful"
+              >
+                <ThumbsDownIcon size={16} />
+              </button>
+              {feedbackSent && <span className={styles.feedbackThanks}>Thanks for the feedback</span>}
+            </div>
+          </div>
+        ) : message.status === 'FAILED' || message.status === 'CANCELLED' ? (
+          <div className={styles.errorCard} role="alert">
+            <AlertIcon size={18} className={styles.errorIcon} />
+            <div>
+              <div className={styles.errorTitle}>Genie failed to process this request.</div>
+              {(message.error || message.status_message) && (
+                <div className={styles.errorDetail}>{message.error || message.status_message}</div>
+              )}
+            </div>
+          </div>
         ) : (
-          <div>
-            {message.status === 'COMPLETED' ? (
-              <>
-                <div>{message.summary}</div>
-                {message.data && renderTable(message.data)}
-                
-                <div className={styles.feedbackActions}>
-                   <button 
-                     className={`${styles.iconBtn} ${feedbackSent === 'POSITIVE' ? styles.successBtn : ''}`}
-                     onClick={() => handleFeedback('POSITIVE')}
-                     disabled={feedbackSent !== null}
-                     title="Helpful"
-                   >
-                     👍
-                   </button>
-                   <button 
-                     className={styles.iconBtn}
-                     onClick={() => handleFeedback('NEGATIVE')}
-                     disabled={feedbackSent !== null}
-                     title="Not Helpful"
-                   >
-                     👎
-                   </button>
-                </div>
-              </>
-            ) : message.status === 'FAILED' ? (
-               <div style={{ color: '#ef4444' }}>❌ Genie failed to process this request.</div>
-            ) : (
-              <div className={styles.statusIndicator}>
-                {message.status_message || "Analyzing request"}
-                <div className={styles.dots}>
-                  <span className={styles.dot}></span>
-                  <span className={styles.dot}></span>
-                  <span className={styles.dot}></span>
-                </div>
-              </div>
-            )}
+          <div className={styles.thinking} role="status" aria-live="polite">
+            <div className={styles.typing} aria-hidden="true">
+              <span className={styles.dot}></span>
+              <span className={styles.dot}></span>
+              <span className={styles.dot}></span>
+            </div>
+            <span className={styles.thinkingText}>Genie is thinking…</span>
           </div>
         )}
-
       </div>
     </div>
   );
