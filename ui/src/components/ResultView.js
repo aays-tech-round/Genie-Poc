@@ -51,6 +51,66 @@ const formatLabel = (v) => {
   return s.replace(/^(\d{4}-\d{2}-\d{2})[T ]00:00:00(\.0+)?Z?$/, '$1');
 };
 
+// "ytd_revenue_2025" -> "YTD revenue 2025"
+const ACRONYMS = new Set(['ytd', 'mtd', 'qtd', 'yoy', 'mom', 'usa', 'us', 'uk', 'id', 'kpi', 'pct']);
+const prettyName = (col) => {
+  const words = String(col).replace(/([a-z])([A-Z])/g, '$1 $2').split(/[\s_]+/).filter(Boolean);
+  return words
+    .map((w, i) => {
+      const lower = w.toLowerCase();
+      if (ACRONYMS.has(lower)) return lower.toUpperCase();
+      return i === 0 ? lower[0].toUpperCase() + lower.slice(1) : lower;
+    })
+    .join(' ');
+};
+
+// A one-row answer with a few numbers reads best as headline figures, not a table.
+function analyseStats(rows) {
+  if (!Array.isArray(rows) || rows.length !== 1) return null;
+  const row = rows[0];
+  const columns = Object.keys(row);
+  const metrics = columns.filter((c) => {
+    const n = toNumber(row[c]);
+    return n !== null && !Number.isNaN(n) && !isYear(row[c]);
+  });
+  if (metrics.length === 0 || metrics.length > 4) return null;
+  const context = columns
+    .filter((c) => !metrics.includes(c) && row[c] !== null && row[c] !== '')
+    .map((c) => ({ name: prettyName(c), value: formatLabel(row[c]) }));
+  return { metrics, context };
+}
+
+function StatTiles({ row, stats }) {
+  const single = stats.metrics.length === 1;
+  return (
+    <div className={`${styles.statGrid} ${single ? styles.statGridSingle : ''}`}>
+      {stats.metrics.map((m, i) => {
+        const n = toNumber(row[m]);
+        const compact = fmtCompact.format(n);
+        const full = fmtFull.format(n);
+        return (
+          <div key={m} className={styles.statTile} style={{ animationDelay: `${i * 60}ms` }}>
+            <div className={styles.statLabel}>{prettyName(m)}</div>
+            <div className={`${styles.statValue} ${single ? styles.statValueHero : ''}`} title={full}>
+              {Math.abs(n) >= 1e4 ? compact : full}
+            </div>
+            {Math.abs(n) >= 1e4 && <div className={styles.statFull}>{full}</div>}
+          </div>
+        );
+      })}
+      {stats.context.length > 0 && (
+        <div className={styles.statContext}>
+          {stats.context.map((c) => (
+            <span key={c.name} className={styles.contextChip}>
+              <span className={styles.contextName}>{c.name}</span> {c.value}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Decide whether (and how) the rows can be charted.
 function analyse(rows) {
   if (!Array.isArray(rows) || rows.length < 2) return null;
@@ -223,7 +283,10 @@ function LineChart({ rows, label, metric }) {
 
 export default function ResultView({ data }) {
   const chart = useMemo(() => analyse(data), [data]);
-  const [view, setView] = useState('table');
+  const stats = useMemo(() => analyseStats(data), [data]);
+  const visual = chart ? 'chart' : stats ? 'summary' : null;
+  // Open on the chart / headline figures; the table is one click away.
+  const [view, setView] = useState('visual');
   const [metric, setMetric] = useState(null);
 
   if (!Array.isArray(data) || data.length === 0) return null;
@@ -241,19 +304,19 @@ export default function ResultView({ data }) {
           {data.length} {data.length === 1 ? 'row' : 'rows'}
         </span>
         <div className={styles.toolbarRight}>
-          {chart && view === 'chart' && chart.metrics.length > 1 && (
+          {chart && view === 'visual' && chart.metrics.length > 1 && (
             <select
               className={styles.metricSelect}
               value={activeMetric}
               onChange={(e) => setMetric(e.target.value)}
               aria-label="Metric to chart"
             >
-              {chart.metrics.map((m) => <option key={m} value={m}>{m}</option>)}
+              {chart.metrics.map((m) => <option key={m} value={m}>{prettyName(m)}</option>)}
             </select>
           )}
-          {chart && (
+          {visual && (
             <div className={styles.segmented} role="tablist" aria-label="Result view">
-              {['table', 'chart'].map((v) => (
+              {['visual', 'table'].map((v) => (
                 <button
                   key={v}
                   role="tab"
@@ -261,7 +324,7 @@ export default function ResultView({ data }) {
                   className={`${styles.segment} ${view === v ? styles.segmentActive : ''}`}
                   onClick={() => setView(v)}
                 >
-                  {v === 'table' ? 'Table' : 'Chart'}
+                  {v === 'table' ? 'Table' : visual === 'chart' ? 'Chart' : 'Summary'}
                 </button>
               ))}
             </div>
@@ -269,10 +332,12 @@ export default function ResultView({ data }) {
         </div>
       </div>
 
-      {view === 'chart' && chart ? (
+      {view === 'visual' && stats ? (
+        <StatTiles row={data[0]} stats={stats} />
+      ) : view === 'visual' && chart ? (
         <div className={styles.chartCard} key={`${chart.kind}-${activeMetric}`}>
           <div className={styles.chartTitle}>
-            {activeMetric} <span className={styles.chartSubtitle}>by {chart.label}</span>
+            {prettyName(activeMetric)} <span className={styles.chartSubtitle}>by {prettyName(chart.label)}</span>
           </div>
           {chart.kind === 'line'
             ? <LineChart rows={data} label={chart.label} metric={activeMetric} />

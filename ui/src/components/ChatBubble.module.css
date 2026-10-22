@@ -46,12 +46,30 @@
   overflow-wrap: anywhere;
 }
 
+.userAvatar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  margin-top: 0.5rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 55%, #a855f7 100%);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  user-select: none;
+}
+
 .userBubble {
   background: linear-gradient(135deg, #f4f3ff 0%, #f1f1f6 100%);
   border: 1px solid #e8e6f7;
   box-shadow: var(--shadow-sm);
   padding: 0.65rem 1.1rem;
-  border-radius: 20px;
+  border-radius: 20px 6px 20px 20px;
   max-width: min(78%, 620px);
   white-space: pre-wrap;
 }
@@ -222,6 +240,11 @@
   .avatar svg {
     width: 24px;
     height: 24px;
+  }
+  .userAvatar {
+    width: 26px;
+    height: 26px;
+    font-size: 0.62rem;
   }
   .bubble {
     font-size: 0.95rem;

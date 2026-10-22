@@ -3,11 +3,14 @@
 import React, { useState } from 'react';
 import styles from './ChatBubble.module.css';
 import { AlertIcon, GenieLogo, ThumbsDownIcon, ThumbsUpIcon } from './icons';
+import { getInitials } from './UserMenu';
 import Markdown from './Markdown';
 import ResultView from './ResultView';
+import { useCurrentUser } from '@/auth/useCurrentUser';
 
 export default function ChatBubble({ message, onFeedback }) {
   const isUser = message.role === 'user';
+  const { name, email } = useCurrentUser();
   const [feedbackSent, setFeedbackSent] = useState(null);
 
   const handleFeedback = (rating) => {
@@ -21,6 +24,7 @@ export default function ChatBubble({ message, onFeedback }) {
     return (
       <div className={`${styles.messageRow} ${styles.userRow}`}>
         <div className={`${styles.bubble} ${styles.userBubble}`}>{message.content}</div>
+        <span className={styles.userAvatar} aria-hidden="true">{getInitials(name, email)}</span>
       </div>
     );
   }
