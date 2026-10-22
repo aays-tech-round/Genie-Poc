@@ -51,10 +51,10 @@ const formatLabel = (v) => {
   return s.replace(/^(\d{4}-\d{2}-\d{2})[T ]00:00:00(\.0+)?Z?$/, '$1');
 };
 
-// "ytd_revenue_2025" -> "YTD revenue 2025"
+// "ytd_revenue_2025" -> "YTD revenue 2025", "part.code" -> "Part code"
 const ACRONYMS = new Set(['ytd', 'mtd', 'qtd', 'yoy', 'mom', 'usa', 'us', 'uk', 'id', 'kpi', 'pct']);
 const prettyName = (col) => {
-  const words = String(col).replace(/([a-z])([A-Z])/g, '$1 $2').split(/[\s_]+/).filter(Boolean);
+  const words = String(col).replace(/([a-z])([A-Z])/g, '$1 $2').split(/[\s_.]+/).filter(Boolean);
   return words
     .map((w, i) => {
       const lower = w.toLowerCase();

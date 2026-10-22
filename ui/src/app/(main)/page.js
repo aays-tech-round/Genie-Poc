@@ -304,7 +304,6 @@ export default function Home() {
                 </button>
               </>
             )}
-            <span className={styles.topNavTitle}>{activeChat ? activeChat.title : 'New chat'}</span>
           </div>
         </header>
 

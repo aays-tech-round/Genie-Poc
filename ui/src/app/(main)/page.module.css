@@ -36,16 +36,6 @@
   min-width: 0;
 }
 
-.topNavTitle {
-  margin-left: 0.4rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .navIconBtn {
   width: 36px;
   height: 36px;
