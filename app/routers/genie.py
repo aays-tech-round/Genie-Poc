@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
+from functools import lru_cache
 from typing import Optional
 from models import AskRequest, AskResponse, StatusResponse, FeedbackRequest
 from services.databricks_client import DatabricksGenieClient
@@ -16,10 +17,16 @@ def get_space_id() -> str:
         raise HTTPException(status_code=500, detail="GENIE_SPACE_ID is not configured on the server.")
     return space_id
 
-# Simple dependency injection for the client
+# One shared client for the process. Building a WorkspaceClient and fetching its OAuth
+# token takes ~4s, which made every /status poll that slow; the SDK refreshes the token
+# itself. A failed init isn't cached, so the next request retries.
+@lru_cache(maxsize=1)
+def _shared_client() -> DatabricksGenieClient:
+    return DatabricksGenieClient()
+
 def get_genie_client():
     try:
-        return DatabricksGenieClient()
+        return _shared_client()
     except Exception as e:
         logger.error(f"Failed to initialize Databricks client: {e}")
         raise HTTPException(status_code=500, detail="Internal server error connecting to Databricks.")

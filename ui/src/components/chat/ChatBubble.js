@@ -8,15 +8,11 @@ import { getInitials } from '@/lib/utils';
 import { AlertIcon, GenieLogo, RetryIcon, ThumbsDownIcon, ThumbsUpIcon } from '@/components/ui/icons';
 import Markdown from '@/components/ui/Markdown';
 import ResultView from '@/components/results/ResultView';
+import ThoughtsPanel, { hasInsights } from './ThoughtsPanel';
+import FollowUps from './FollowUps';
 
-// Progress text from the backend's STATUS_MESSAGES; the client-side placeholders
-// ("Message Sent", or none while /ask is in flight) fall back to a generic line.
-const progressText = (message) =>
-  ['SUBMITTED', 'STARTING', 'PENDING', undefined].includes(message.status) || !message.status_message
-    ? 'Genie is thinking…'
-    : message.status_message.replace(/\.\.\.$/, '…');
-
-export default function ChatBubble({ message, onFeedback, onRetry }) {
+// onAsk is only passed for the latest answer, so follow-up suggestions show there alone.
+export default function ChatBubble({ message, onFeedback, onRetry, onAsk }) {
   const isUser = message.role === 'user';
   const { name, email } = useCurrentUser();
   const [feedbackSent, setFeedbackSent] = useState(null);
@@ -27,6 +23,9 @@ export default function ChatBubble({ message, onFeedback, onRetry }) {
       setFeedbackSent(rating);
     }
   };
+
+  const failed = FAILED_STATUSES.includes(message.status);
+  const working = !isUser && message.status !== 'COMPLETED' && !failed;
 
   if (isUser) {
     return (
@@ -50,11 +49,15 @@ export default function ChatBubble({ message, onFeedback, onRetry }) {
           </div>
         )}
 
+        {/* Stays mounted from "thinking" to the answer, so it can fold away smoothly */}
+        {(working || hasInsights(message)) && <ThoughtsPanel message={message} live={working} />}
+
         {/* Each state mounts its own element, so the answer fades in when polling completes */}
         {message.status === 'COMPLETED' ? (
           <div className={styles.answer}>
             <Markdown text={message.summary} />
             {message.data && <ResultView data={message.data} />}
+            {onAsk && <FollowUps questions={message.suggested_questions} onAsk={onAsk} />}
 
             <div className={`${styles.feedbackActions} ${feedbackSent ? styles.feedbackDone : ''}`}>
               <button
@@ -78,7 +81,7 @@ export default function ChatBubble({ message, onFeedback, onRetry }) {
               {feedbackSent && <span className={styles.feedbackThanks}>Thanks for the feedback</span>}
             </div>
           </div>
-        ) : FAILED_STATUSES.includes(message.status) ? (
+        ) : failed ? (
           <div className={styles.errorCard} role="alert">
             <AlertIcon size={18} className={styles.errorIcon} />
             <div className={styles.errorBody}>
@@ -93,17 +96,7 @@ export default function ChatBubble({ message, onFeedback, onRetry }) {
               </button>
             )}
           </div>
-        ) : (
-          <div className={styles.thinking} role="status" aria-live="polite">
-            <div className={styles.typing} aria-hidden="true">
-              <span className={styles.dot}></span>
-              <span className={styles.dot}></span>
-              <span className={styles.dot}></span>
-            </div>
-            {/* key restarts the fade each time the step changes */}
-            <span key={progressText(message)} className={styles.thinkingText}>{progressText(message)}</span>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import styles from './MessageList.module.css';
 
 // Scrollable conversation. Adds a "thinking" placeholder while the question is in flight
 // and offers "Try again" on a failed latest answer.
-export default function MessageList({ chatId, messages, isProcessing, onFeedback, onRetry }) {
+export default function MessageList({ chatId, messages, isProcessing, onFeedback, onRetry, onAsk }) {
   const scrollerRef = useRef(null);
   const scrolledChatIdRef = useRef(null);
 
@@ -43,6 +43,8 @@ export default function MessageList({ chatId, messages, isProcessing, onFeedback
             message={msg}
             onFeedback={onFeedback}
             onRetry={idx === lastIdx && retryQuestion ? () => onRetry(retryQuestion) : null}
+            // Follow-up suggestions only under the latest answer, and not while Genie is busy
+            onAsk={idx === lastIdx && !isProcessing ? onAsk : null}
           />
         ))}
       </div>

@@ -84,7 +84,11 @@ class DatabricksGenieClient:
 
         if status_val == "FAILED" and getattr(msg, "error", None):
             error = msg.error.error or (msg.error.type.value if msg.error.type else None)
-            
+
+        # Genie's reasoning, SQL and follow-ups arrive as attachments while it works,
+        # so read them on every poll rather than only once the message completes.
+        insights = self._insights_from_attachments(getattr(msg, "attachments", None) or [])
+
         # Extract Results if completed
         if status_val == "COMPLETED":
             if getattr(msg, "attachments", None):
@@ -115,8 +119,51 @@ class DatabricksGenieClient:
             "summary": summary,
             "data": data,
             "trusted_asset": trusted_asset,
-            "error": error
+            "error": error,
+            **insights,
         }
+
+    @staticmethod
+    def _insights_from_attachments(attachments):
+        """
+        Collects the generated SQL (with its parameters), Genie's thoughts about it and
+        any suggested follow-up questions from a message's attachments.
+        """
+        insights = {
+            "sql": None,
+            "sql_parameters": None,
+            "query_title": None,
+            "query_description": None,
+            "thoughts": None,
+            "suggested_questions": None,
+        }
+        for att in attachments:
+            query = getattr(att, "query", None)
+            if query:
+                insights["sql"] = query.query or None
+                insights["query_title"] = query.title or None
+                insights["query_description"] = query.description or None
+                if query.parameters:
+                    insights["sql_parameters"] = [
+                        {"keyword": p.keyword, "sql_type": p.sql_type, "value": p.value}
+                        for p in query.parameters
+                    ]
+                if query.thoughts:
+                    # THOUGHT_TYPE_DATA_SOURCING -> "data_sourcing"
+                    insights["thoughts"] = [
+                        {
+                            "type": (t.thought_type.value if t.thought_type else "")
+                            .replace("THOUGHT_TYPE_", "").lower(),
+                            "content": t.content or "",
+                        }
+                        for t in query.thoughts
+                        if t.content
+                    ]
+
+            suggested = getattr(att, "suggested_questions", None)
+            if suggested and suggested.questions:
+                insights["suggested_questions"] = list(suggested.questions)
+        return insights
 
     @staticmethod
     def _rows_from_result(result):

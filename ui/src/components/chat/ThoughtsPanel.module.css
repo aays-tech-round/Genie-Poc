@@ -1,0 +1,262 @@
+.panel {
+  margin-bottom: 0.75rem;
+  animation: fadeOnly 0.3s ease both;
+}
+
+.header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 28px;
+  padding: 0.2rem 0.55rem 0.2rem 0.4rem;
+  margin-left: -0.4rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.header:not(:disabled):hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.header:disabled {
+  cursor: default;
+}
+
+.headerIcon {
+  color: var(--accent-strong);
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  font-weight: 500;
+}
+
+.headerMeta {
+  color: var(--text-tertiary);
+}
+.headerMeta::before {
+  content: '·';
+  margin-right: 0.5rem;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform 0.25s var(--ease-out);
+}
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Live "Genie is thinking…" line */
+.typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 16px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: typingDot 1.3s infinite ease-in-out both;
+}
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typingDot {
+  0%, 70%, 100% { transform: translateY(0); opacity: 0.3; }
+  35% { transform: translateY(-3px); opacity: 0.9; }
+}
+
+.liveText {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  animation: fadeOnly 0.35s ease both;
+}
+
+/* Shimmer across the progress text while Genie works */
+@media (prefers-reduced-motion: no-preference) {
+  .liveText {
+    background: linear-gradient(90deg, var(--text-secondary) 30%, var(--text-primary) 50%, var(--text-secondary) 70%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: fadeOnly 0.35s ease both, shimmer 2.2s linear infinite;
+  }
+}
+
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+/* Expand / collapse */
+.collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s var(--ease-out);
+}
+.collapseOpen {
+  grid-template-rows: 1fr;
+}
+.collapseInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.body {
+  margin: 0.5rem 0 0.25rem 0.45rem;
+  padding: 0.1rem 0 0.1rem 1rem;
+  border-left: 2px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* Progress timeline */
+.steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  animation: riseIn 0.3s var(--ease-out) both;
+}
+
+.stepCurrent {
+  color: var(--text-primary);
+}
+
+.stepMarker {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+.stepCurrent .stepMarker {
+  background: transparent;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-ring);
+  border-top-color: var(--accent-strong);
+  animation: spin 0.8s linear infinite;
+}
+
+/* Thoughts */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: fadeOnly 0.3s ease both;
+}
+
+.sectionTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.queryTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.thought {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.thought :global(*) {
+  font-size: inherit;
+}
+
+/* SQL */
+.sql {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  animation: fadeOnly 0.3s ease both;
+}
+
+.sqlHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.copyBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.param {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.paramKey {
+  color: var(--accent-strong);
+}
+
+.code {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  overflow: auto;
+  max-height: 320px;
+  white-space: pre;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
+}

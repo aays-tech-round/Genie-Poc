@@ -2,13 +2,22 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  POLL_INITIAL_DELAY_MS, POLL_MAX_DELAY_MS, POLL_TIMEOUT_MS, TERMINAL_STATUSES,
+  GENIE_STEPS, POLL_INITIAL_DELAY_MS, POLL_MAX_DELAY_MS, POLL_TIMEOUT_MS, TERMINAL_STATUSES,
 } from '@/constants/genie';
 import { askGenie, getMessageStatus, sendFeedback } from '@/lib/genieApi';
 import { loadChats, saveChats } from '@/lib/chatStorage';
 import { makeId, titleFrom } from '@/lib/utils';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Appends a polled status to the message's progress steps (shown in the Thoughts panel).
+// Steps shorter than the poll interval (up to 2s) can be skipped; that's fine for a summary.
+const nextSteps = (steps = [], status) => {
+  // ASKING_AI after the query has run means Genie is writing the answer
+  const step = status === 'ASKING_AI' && steps.includes('EXECUTING_QUERY') ? 'SUMMARIZING' : status;
+  if (!GENIE_STEPS[step] || steps[steps.length - 1] === step) return steps;
+  return [...steps, step];
+};
 
 /**
  * Chat history for one user plus the Genie question/answer flow:
@@ -54,6 +63,15 @@ export default function useChats(email) {
     }));
   };
 
+  const applyStatus = (chatId, msgId, data) => {
+    updateChat(chatId, (c) => ({
+      ...c,
+      messages: c.messages.map((m) =>
+        m.message_id === msgId ? { ...m, ...data, steps: nextSteps(m.steps, data.status) } : m
+      ),
+    }));
+  };
+
   const appendMessage = (chatId, message, extra = {}) => {
     updateChat(chatId, (c) => ({
       ...c,
@@ -70,7 +88,7 @@ export default function useChats(email) {
     while (Date.now() - startTime < POLL_TIMEOUT_MS) {
       try {
         const data = await getMessageStatus(msgId, currentConvId);
-        updateMessage(chatId, msgId, data);
+        applyStatus(chatId, msgId, data);
 
         if (TERMINAL_STATUSES.includes(data.status)) {
           setChatProcessing(chatId, false);

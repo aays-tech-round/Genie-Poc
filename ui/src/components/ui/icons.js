@@ -155,6 +155,41 @@ export const DocumentIcon = (p) => (
   </Icon>
 );
 
+export const CheckIcon = (p) => (
+  <Icon {...p}><path d="M20 6 9 17l-5-5" /></Icon>
+);
+
+export const CopyIcon = (p) => (
+  <Icon {...p}>
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+  </Icon>
+);
+
+export const DatabaseIcon = (p) => (
+  <Icon {...p}>
+    <ellipse cx="12" cy="5" rx="8" ry="3" />
+    <path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
+    <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" />
+  </Icon>
+);
+
+export const CodeIcon = (p) => (
+  <Icon {...p}><path d="m16 18 6-6-6-6" /><path d="m8 6-6 6 6 6" /></Icon>
+);
+
+export const LightbulbIcon = (p) => (
+  <Icon {...p}>
+    <path d="M9 18h6" />
+    <path d="M10 22h4" />
+    <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z" />
+  </Icon>
+);
+
+export const CornerDownRightIcon = (p) => (
+  <Icon {...p}><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></Icon>
+);
+
 // Genie mark: magic lamp with a four-point star, on a white tile.
 export const GenieLogo = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">

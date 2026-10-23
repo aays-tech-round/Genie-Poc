@@ -102,6 +102,7 @@ export default function Home() {
               isProcessing={isProcessing}
               onFeedback={rateAnswer}
               onRetry={sendQuestion}
+              onAsk={sendQuestion}
             />
             <ChatFooter composer={composer} />
           </>

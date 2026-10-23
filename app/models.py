@@ -16,6 +16,14 @@ class StatusResponse(BaseModel):
     summary: Optional[str] = None
     data: Optional[Any] = None
     error: Optional[str] = None
+    # How Genie got to the answer. The SQL appears as soon as Genie has written it
+    # (before the query runs); the rest may be empty depending on the space.
+    sql: Optional[str] = None
+    sql_parameters: Optional[List[Dict[str, Any]]] = None  # [{keyword, sql_type, value}]
+    query_title: Optional[str] = None
+    query_description: Optional[str] = None
+    thoughts: Optional[List[Dict[str, str]]] = None  # [{type, content}], type e.g. "data_sourcing"
+    suggested_questions: Optional[List[str]] = None
 
 class FeedbackRequest(BaseModel):
     conversation_id: str
