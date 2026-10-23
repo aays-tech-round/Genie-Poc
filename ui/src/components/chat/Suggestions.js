@@ -31,7 +31,7 @@ export default function Suggestions({ onPick, disabled, questions = SUGGESTED_QU
             onClick={() => onPick(q.text)}
             disabled={disabled}
           >
-            <span className={styles.icon}><Icon size={16} /></span>
+            <span className={`${styles.icon} ${styles[q.tone] || styles.violet}`}><Icon size={16} /></span>
             <span className={styles.text}>{q.text}</span>
           </button>
         );

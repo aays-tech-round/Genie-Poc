@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
-import { isNumericColumn, isYear, formatCell, prettyName, analyseStats, analyse } from './resultUtils';
+import { isNumericColumn, isYear, formatCell, prettyName, analyseStats, analyse, canPie } from './resultUtils';
 import StatTiles from './StatTiles';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
+import PieChart from './PieChart';
 import styles from './ResultView.module.css';
 
 // Renders a Genie query result (array of {column: value} rows) as a table,
 // plus a bar or line chart, or headline figures, when the shape of the data suits one.
+// Part-to-whole results also get a Pie option (see canPie); bars stay the default.
 
 export default function ResultView({ data }) {
   const chart = useMemo(() => analyse(data), [data]);
@@ -25,6 +27,12 @@ export default function ResultView({ data }) {
     headers.filter((h) => isNumericColumn(data, h) && !data.every((r) => r[h] == null || isYear(r[h])))
   );
   const activeMetric = chart && chart.metrics.includes(metric) ? metric : chart?.metrics[0];
+  const pieOk = chart?.kind === 'bar' && canPie(data, activeMetric);
+  // Switching to a metric that can't be a pie (e.g. an average) falls back to bars
+  const shown = view === 'pie' && !pieOk ? 'visual' : view;
+  const tabs = pieOk ? ['visual', 'pie', 'table'] : ['visual', 'table'];
+  const tabLabel = (v) =>
+    v === 'table' ? 'Table' : v === 'pie' ? 'Pie' : visual === 'summary' ? 'Summary' : pieOk ? 'Bar' : 'Chart';
 
   return (
     <div className={styles.result}>
@@ -33,7 +41,7 @@ export default function ResultView({ data }) {
           {data.length} {data.length === 1 ? 'row' : 'rows'}
         </span>
         <div className={styles.toolbarRight}>
-          {chart && view === 'visual' && chart.metrics.length > 1 && (
+          {chart && shown !== 'table' && chart.metrics.length > 1 && (
             <select
               className={styles.metricSelect}
               value={activeMetric}
@@ -45,15 +53,15 @@ export default function ResultView({ data }) {
           )}
           {visual && (
             <div className={styles.segmented} role="tablist" aria-label="Result view">
-              {['visual', 'table'].map((v) => (
+              {tabs.map((v) => (
                 <button
                   key={v}
                   role="tab"
-                  aria-selected={view === v}
-                  className={`${styles.segment} ${view === v ? styles.segmentActive : ''}`}
+                  aria-selected={shown === v}
+                  className={`${styles.segment} ${shown === v ? styles.segmentActive : ''}`}
                   onClick={() => setView(v)}
                 >
-                  {v === 'table' ? 'Table' : visual === 'chart' ? 'Chart' : 'Summary'}
+                  {tabLabel(v)}
                 </button>
               ))}
             </div>
@@ -61,16 +69,18 @@ export default function ResultView({ data }) {
         </div>
       </div>
 
-      {view === 'visual' && stats ? (
+      {shown === 'visual' && stats ? (
         <StatTiles row={data[0]} stats={stats} />
-      ) : view === 'visual' && chart ? (
-        <div className={styles.chartCard} key={`${chart.kind}-${activeMetric}`}>
+      ) : shown !== 'table' && chart ? (
+        <div className={styles.chartCard} key={`${shown}-${chart.kind}-${activeMetric}`}>
           <div className={styles.chartTitle}>
             {prettyName(activeMetric)} <span className={styles.chartSubtitle}>by {prettyName(chart.label)}</span>
           </div>
-          {chart.kind === 'line'
-            ? <LineChart rows={data} label={chart.label} metric={activeMetric} />
-            : <BarChart rows={data} label={chart.label} metric={activeMetric} />}
+          {shown === 'pie'
+            ? <PieChart rows={data} label={chart.label} metric={activeMetric} />
+            : chart.kind === 'line'
+              ? <LineChart rows={data} label={chart.label} metric={activeMetric} />
+              : <BarChart rows={data} label={chart.label} metric={activeMetric} />}
         </div>
       ) : (
         <div className={styles.tableContainer}>

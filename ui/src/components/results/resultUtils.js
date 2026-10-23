@@ -98,6 +98,25 @@ export function analyse(rows) {
   return { label, metrics, kind: timeSeries ? 'line' : 'bar' };
 }
 
+// Pie / donut is offered for part-to-whole only: 3–6 slices (two read better as numbers,
+// more than six are hard to tell apart), every value positive, and a metric whose values
+// add up to a meaningful total. Averages, rates and percentages don't, so they stay bars.
+export const PIE_MAX_SLICES = 6;
+const NON_ADDITIVE = new Set([
+  'avg', 'average', 'mean', 'median', 'rate', 'ratio', 'pct', 'percent', 'percentage',
+  'share', 'per', 'min', 'max', 'minimum', 'maximum', 'score', 'index', 'rank',
+]);
+
+export function canPie(rows, metric) {
+  if (!Array.isArray(rows) || rows.length < 3 || rows.length > PIE_MAX_SLICES) return false;
+  const words = String(metric).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[\s_.\-]+/);
+  if (words.some((w) => NON_ADDITIVE.has(w))) return false;
+  return rows.every((r) => {
+    const n = toNumber(r[metric]);
+    return n !== null && !Number.isNaN(n) && n > 0;
+  });
+}
+
 export const niceTicks = (min, max, count = 4) => {
   if (min === max) {
     const pad = Math.abs(min) || 1;
