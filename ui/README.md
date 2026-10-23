@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Genie UI
 
-## Getting Started
+Next.js (App Router, JavaScript) front end for the Databricks Genie chatbot. It talks to the
+FastAPI backend in `../app` and signs users in with Microsoft Entra ID (MSAL).
 
-First, run the development server:
+## Getting started
 
 ```bash
+cp .env.example .env.local   # fill in the SSO values; the API URL defaults to localhost:8000
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. The backend must be running for questions to get answers.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── (auth)/login/          Sign-in route (own root layout, Bootstrap + Tailwind)
+│   └── (main)/                Signed-in app: layout, global theme tokens, and the chat page
+├── auth/                      MSAL config, AuthProvider, ProtectedRoute, login page
+├── components/
+│   ├── chat/                  Chat area: header, welcome screen, message list, bubble, composer
+│   ├── results/               Query result views: table, bar/line charts, stat tiles + data helpers
+│   ├── sidebar/               Sidebar, chat list item, search dialog, account menu
+│   └── ui/                    Shared building blocks: icons, Markdown renderer, theme toggle
+├── constants/                 Backend URL and polling settings, theme key, starter questions
+├── hooks/                     useChats (history + ask/poll flow), useDismiss (close on outside click)
+└── lib/                       genieApi (backend calls), chatStorage (localStorage), small utils
+```
 
-## Learn More
+Conventions:
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Components are plain `.js` files with JSX, each styled by a CSS Module next to it.
+  Colours, shadows and radii come from the tokens in `app/(main)/globals.css`, which also
+  define the dark theme (`[data-theme='dark']`).
+- Pages compose components; state and side effects live in hooks; network and storage
+  code lives in `lib/`. Import across folders with the `@/` alias.
+- Chat history is stored per user in the browser's localStorage.
+- To change the starter questions on the welcome screen, edit `constants/suggestions.js`.

@@ -2,13 +2,21 @@
 
 import React, { useState } from 'react';
 import styles from './ChatBubble.module.css';
-import { AlertIcon, GenieLogo, ThumbsDownIcon, ThumbsUpIcon } from './icons';
-import { getInitials } from './UserMenu';
-import Markdown from './Markdown';
-import ResultView from './ResultView';
 import { useCurrentUser } from '@/auth/useCurrentUser';
+import { FAILED_STATUSES } from '@/constants/genie';
+import { getInitials } from '@/lib/utils';
+import { AlertIcon, GenieLogo, RetryIcon, ThumbsDownIcon, ThumbsUpIcon } from '@/components/ui/icons';
+import Markdown from '@/components/ui/Markdown';
+import ResultView from '@/components/results/ResultView';
 
-export default function ChatBubble({ message, onFeedback }) {
+// Progress text from the backend's STATUS_MESSAGES; the client-side placeholders
+// ("Message Sent", or none while /ask is in flight) fall back to a generic line.
+const progressText = (message) =>
+  ['SUBMITTED', 'STARTING', 'PENDING', undefined].includes(message.status) || !message.status_message
+    ? 'Genie is thinking…'
+    : message.status_message.replace(/\.\.\.$/, '…');
+
+export default function ChatBubble({ message, onFeedback, onRetry }) {
   const isUser = message.role === 'user';
   const { name, email } = useCurrentUser();
   const [feedbackSent, setFeedbackSent] = useState(null);
@@ -38,7 +46,7 @@ export default function ChatBubble({ message, onFeedback }) {
       <div className={`${styles.bubble} ${styles.genieBubble}`}>
         {message.trusted_asset && (
           <div className={styles.trustedBadge}>
-            <span style={{ fontSize: '12px' }}>✓</span> Verified
+            <span aria-hidden="true">✓</span> Verified
           </div>
         )}
 
@@ -70,15 +78,20 @@ export default function ChatBubble({ message, onFeedback }) {
               {feedbackSent && <span className={styles.feedbackThanks}>Thanks for the feedback</span>}
             </div>
           </div>
-        ) : message.status === 'FAILED' || message.status === 'CANCELLED' ? (
+        ) : FAILED_STATUSES.includes(message.status) ? (
           <div className={styles.errorCard} role="alert">
             <AlertIcon size={18} className={styles.errorIcon} />
-            <div>
+            <div className={styles.errorBody}>
               <div className={styles.errorTitle}>Genie failed to process this request.</div>
               {(message.error || message.status_message) && (
                 <div className={styles.errorDetail}>{message.error || message.status_message}</div>
               )}
             </div>
+            {onRetry && (
+              <button type="button" className={styles.retryBtn} onClick={onRetry}>
+                <RetryIcon size={14} /> Try again
+              </button>
+            )}
           </div>
         ) : (
           <div className={styles.thinking} role="status" aria-live="polite">
@@ -87,7 +100,8 @@ export default function ChatBubble({ message, onFeedback }) {
               <span className={styles.dot}></span>
               <span className={styles.dot}></span>
             </div>
-            <span className={styles.thinkingText}>Genie is thinking…</span>
+            {/* key restarts the fade each time the step changes */}
+            <span key={progressText(message)} className={styles.thinkingText}>{progressText(message)}</span>
           </div>
         )}
       </div>

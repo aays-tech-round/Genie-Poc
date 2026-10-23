@@ -1,17 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { useCurrentUser } from '@/auth/useCurrentUser';
-import { ChevronDownIcon, LogOutIcon } from './icons';
+import useDismiss from '@/hooks/useDismiss';
+import { getInitials } from '@/lib/utils';
+import { ChevronDownIcon, LogOutIcon } from '@/components/ui/icons';
 import styles from './UserMenu.module.css';
-
-export const getInitials = (name, email) => {
-  const source = name || email || '?';
-  const parts = source.split(/[\s._@-]+/).filter(Boolean);
-  const initials = parts.length > 1 ? parts[0][0] + parts[1][0] : source.slice(0, 2);
-  return initials.toUpperCase();
-};
 
 // Account row at the bottom of the sidebar: shows who is signed in and opens a menu with Log out.
 export default function UserMenu() {
@@ -21,19 +16,7 @@ export default function UserMenu() {
   const [confirmLogout, setConfirmLogout] = useState(false);
   const menuRef = useRef(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setOpen(false);
-    };
-    const onKey = (e) => e.key === 'Escape' && setOpen(false);
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
+  useDismiss(menuRef, open, useCallback(() => setOpen(false), []));
 
   return (
     <div className={styles.wrapper} ref={menuRef}>

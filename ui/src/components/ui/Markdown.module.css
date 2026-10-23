@@ -35,7 +35,7 @@ h6.heading { font-size: 0.95rem; }
 .markdown a {
   color: var(--accent-strong);
   text-decoration: underline;
-  text-decoration-color: rgba(79, 70, 229, 0.35);
+  text-decoration-color: var(--accent-ring);
   text-underline-offset: 2px;
   transition: text-decoration-color 0.15s ease;
 }
@@ -68,7 +68,7 @@ h6.heading { font-size: 0.95rem; }
   line-height: 1.6;
   padding: 0.85rem 1rem;
   border-radius: 12px;
-  background: var(--bg-sidebar);
+  background: var(--bg-subtle);
   border: 1px solid var(--border-light);
   overflow-x: auto;
   white-space: pre;
@@ -76,7 +76,7 @@ h6.heading { font-size: 0.95rem; }
 
 .quote {
   padding: 0.15rem 0 0.15rem 0.9rem;
-  border-left: 3px solid rgba(91, 91, 214, 0.35);
+  border-left: 3px solid var(--accent-ring);
   color: var(--text-secondary);
 }
 
@@ -106,7 +106,7 @@ h6.heading { font-size: 0.95rem; }
   border-bottom: 1px solid var(--border-light);
 }
 .table th {
-  background: var(--bg-sidebar);
+  background: var(--bg-subtle);
   font-weight: 600;
   font-size: 0.8rem;
   color: var(--text-secondary);

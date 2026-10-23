@@ -1,0 +1,145 @@
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  margin-bottom: 1px;
+  transition: background-color 0.15s ease;
+}
+.item:hover,
+.menuOpen {
+  background: var(--bg-hover);
+}
+.active {
+  background: var(--bg-active);
+}
+/* Accent marker on the open chat */
+.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent-gradient);
+  animation: fadeOnly 0.2s ease both;
+}
+
+.busyDot {
+  width: 7px;
+  height: 7px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent-ring);
+  animation: busyPulse 1.6s ease-out infinite;
+}
+.item:hover .busyDot,
+.menuOpen .busyDot {
+  display: none;
+}
+
+@keyframes busyPulse {
+  0% { box-shadow: 0 0 0 0 var(--accent-ring); }
+  70%, 100% { box-shadow: 0 0 0 6px transparent; }
+}
+.item:hover .title,
+.active .title {
+  color: var(--text-primary);
+}
+.active .title {
+  font-weight: 500;
+}
+.active:hover {
+  background: var(--bg-active);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moreBtn {
+  width: 30px;
+  height: 30px;
+  margin-right: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+.item:hover .moreBtn,
+.active .moreBtn,
+.menuOpen .moreBtn {
+  opacity: 1;
+}
+.moreBtn:hover {
+  color: var(--text-primary);
+}
+
+/* The "..." button is hidden until hover, so keep it visible on touch screens */
+@media (hover: none) {
+  .moreBtn {
+    opacity: 1;
+  }
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 170px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  padding: 5px;
+  z-index: 40;
+  transform-origin: top right;
+  animation: popIn 0.16s var(--ease-out);
+}
+
+.menuBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background-color 0.12s ease;
+}
+.menuBtn:hover {
+  background: var(--bg-hover);
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.renameInput {
+  flex: 1;
+  margin: 3px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+  border-radius: 8px;
+  outline: none;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}

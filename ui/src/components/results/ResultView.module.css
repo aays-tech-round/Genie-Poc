@@ -44,7 +44,7 @@
   color: var(--text-primary);
 }
 .segmentActive {
-  background: var(--bg-main);
+  background: var(--bg-elevated);
   color: var(--text-primary);
   box-shadow: var(--shadow-sm), 0 0 0 1px var(--border-light);
 }
@@ -58,7 +58,7 @@
   padding: 0.3rem 0.5rem;
   border-radius: 8px;
   border: 1px solid var(--border-light);
-  background: var(--bg-main);
+  background: var(--bg-elevated);
   text-overflow: ellipsis;
   cursor: pointer;
   transition: border-color 0.15s ease;
@@ -76,7 +76,7 @@
   border-radius: 12px;
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
-  background: var(--bg-main);
+  background: var(--bg-elevated);
   animation: fadeOnly 0.25s ease both;
 }
 
@@ -85,7 +85,7 @@
   height: 8px;
 }
 .tableContainer::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--scrollbar);
   border-radius: 4px;
 }
 
@@ -109,7 +109,7 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--bg-sidebar);
+  background: var(--bg-subtle);
   font-weight: 600;
   font-size: 0.8rem;
   color: var(--text-secondary);
@@ -139,7 +139,7 @@
   border-radius: 12px;
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
-  background: var(--bg-main);
+  background: var(--bg-elevated);
   padding: 1rem 1.1rem 0.9rem;
   animation: fadeIn 0.3s var(--ease-out) both;
 }
@@ -180,7 +180,7 @@
   transition: background-color 0.15s ease;
 }
 .barRow:hover {
-  background: var(--bg-sidebar);
+  background: var(--bg-subtle);
 }
 
 .barLabel {
@@ -270,7 +270,7 @@
 
 .dot {
   fill: var(--accent);
-  stroke: var(--bg-main);
+  stroke: var(--bg-elevated);
   stroke-width: 2;
 }
 
@@ -290,7 +290,7 @@
   position: absolute;
   transform: translate(-50%, -100%);
   pointer-events: none;
-  background: var(--bg-main);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-lg);
   border-radius: 10px;
@@ -322,7 +322,7 @@
   padding: 1rem 1.15rem;
   border-radius: 12px;
   border: 1px solid var(--border-light);
-  background: var(--bg-main);
+  background: var(--bg-elevated);
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
@@ -340,7 +340,7 @@
 
 .statGridSingle .statTile {
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, #f7f6ff 0%, var(--bg-main) 70%);
+  background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 70%), var(--bg-elevated);
 }
 
 .statLabel {

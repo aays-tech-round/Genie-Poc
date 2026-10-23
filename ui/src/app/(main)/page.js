@@ -1,280 +1,64 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import styles from './page.module.css';
-import ChatBubble from '../../components/ChatBubble';
-import Sidebar from '../../components/Sidebar';
-import { ArrowUpIcon, GenieLogo, NewChatIcon, PlusIcon, SidebarIcon } from '../../components/icons';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCurrentUser } from '@/auth/useCurrentUser';
-
-const API_BASE = 'http://localhost:8000/api/v1/genie';
-const TERMINAL_STATUSES = ['COMPLETED', 'FAILED', 'CANCELLED'];
-
-const makeId = () =>
-  typeof crypto !== 'undefined' && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-const titleFrom = (text) => (text.length > 40 ? `${text.slice(0, 40).trim()}…` : text);
-
-// Chat history is kept in this browser's localStorage, one list per signed-in user.
-const storageKey = (email) => `genie-chats:${email || 'anonymous'}`;
-
-const loadChats = (email) => {
-  try {
-    const saved = JSON.parse(localStorage.getItem(storageKey(email)) || '[]');
-    // Polling stops when the page unloads, so answers that were still running are lost.
-    return saved.map((chat) => ({
-      ...chat,
-      messages: chat.messages.map((m) =>
-        m.role === 'genie' && !TERMINAL_STATUSES.includes(m.status)
-          ? { ...m, status: 'FAILED', status_message: 'Interrupted' }
-          : m
-      ),
-    }));
-  } catch {
-    return [];
-  }
-};
+import useChats from '@/hooks/useChats';
+import { isMobileViewport } from '@/lib/utils';
+import Sidebar from '@/components/sidebar/Sidebar';
+import ChatHeader from '@/components/chat/ChatHeader';
+import WelcomeScreen from '@/components/chat/WelcomeScreen';
+import MessageList from '@/components/chat/MessageList';
+import ChatFooter from '@/components/chat/ChatFooter';
+import Composer from '@/components/chat/Composer';
+import styles from './page.module.css';
 
 export default function Home() {
   const { name, email } = useCurrentUser();
-  const [chats, setChats] = useState([]);
-  const [chatsLoaded, setChatsLoaded] = useState(false);
-  const [activeChatId, setActiveChatId] = useState(null);
-  const [processingChatIds, setProcessingChatIds] = useState(() => new Set());
+  const {
+    chats, activeChat, activeChatId, messages, isProcessing, processingChatIds,
+    selectChat, startNewChat, sendQuestion, rateAnswer, togglePin, renameChat, deleteChat,
+  } = useChats(email);
   const [inputValue, setInputValue] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const chatWindowRef = useRef(null);
   const inputRef = useRef(null);
-  const scrolledChatIdRef = useRef(null);
 
-  const activeChat = chats.find((c) => c.id === activeChatId) || null;
-  const messages = activeChat ? activeChat.messages : [];
-  const conversationId = activeChat ? activeChat.conversationId : null;
-  const isProcessing = activeChatId ? processingChatIds.has(activeChatId) : false;
   const firstName = (name || '').split(' ')[0];
-
-  // Show "Genie is thinking…" as soon as a question is sent, before /ask returns.
-  const awaitingReply = isProcessing && messages[messages.length - 1]?.role === 'user';
-  const displayedMessages = awaitingReply
-    ? [...messages, { role: 'genie', status: 'PENDING' }]
-    : messages;
+  const isEmpty = messages.length === 0;
 
   useEffect(() => {
-    setChats(loadChats(email));
-    setChatsLoaded(true);
-    if (window.matchMedia('(max-width: 768px)').matches) setSidebarOpen(false);
-  }, [email]);
-
-  useEffect(() => {
-    if (!chatsLoaded) return;
-    try {
-      localStorage.setItem(storageKey(email), JSON.stringify(chats));
-    } catch (err) {
-      console.error('Failed to save chat history:', err);
-    }
-  }, [chats, chatsLoaded, email]);
-
-  // Glide to new messages within a chat; jump straight to the bottom when switching chats.
-  useEffect(() => {
-    const el = chatWindowRef.current;
-    if (!el) return;
-    const sameChat = scrolledChatIdRef.current === activeChatId;
-    scrolledChatIdRef.current = activeChatId;
-    el.scrollTo({ top: el.scrollHeight, behavior: sameChat ? 'smooth' : 'auto' });
-  }, [messages, activeChatId]);
-
-  const updateChat = useCallback((chatId, update) => {
-    setChats(prev => prev.map(c => (c.id === chatId ? update(c) : c)));
+    if (isMobileViewport()) setSidebarOpen(false);
   }, []);
 
-  const setChatProcessing = (chatId, busy) => {
-    setProcessingChatIds(prev => {
-      const next = new Set(prev);
-      if (busy) next.add(chatId); else next.delete(chatId);
-      return next;
-    });
+  const closeSidebarOnMobile = () => {
+    if (isMobileViewport()) setSidebarOpen(false);
   };
 
-  const updateMessage = (chatId, msgId, data) => {
-    updateChat(chatId, c => ({
-      ...c,
-      messages: c.messages.map(m => (m.message_id === msgId ? { ...m, ...data } : m)),
-    }));
-  };
-
-  const appendMessage = (chatId, message, extra = {}) => {
-    updateChat(chatId, c => ({
-      ...c,
-      ...extra,
-      messages: [...c.messages, message],
-      updatedAt: Date.now(),
-    }));
-  };
-
-  const pollStatus = async (msgId, currentConvId, chatId) => {
-    let waitTime = 1000;
-    const maxWait = 5000;
-    const startTime = Date.now();
-    const timeout = 10 * 60 * 1000;
-
-    while (Date.now() - startTime < timeout) {
-      try {
-        const res = await fetch(`${API_BASE}/status/${msgId}?conversation_id=${currentConvId}`);
-        const data = await res.json();
-
-        updateMessage(chatId, msgId, data);
-
-        if (TERMINAL_STATUSES.includes(data.status)) {
-          setChatProcessing(chatId, false);
-          return;
-        }
-      } catch (err) {
-        console.error("Polling error:", err);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, waitTime));
-      waitTime = Math.min(waitTime * 2, maxWait);
-    }
-
-    updateMessage(chatId, msgId, { status: 'FAILED', status_message: 'Timed out' });
-    setChatProcessing(chatId, false);
-  };
-
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!inputValue.trim() || isProcessing) return;
-
+  const handleSend = () => {
     const content = inputValue;
     setInputValue('');
-
-    // The first question starts a new chat in the sidebar.
-    let chatId = activeChatId;
-    if (!chatId) {
-      chatId = makeId();
-      setChats(prev => [{
-        id: chatId,
-        title: titleFrom(content),
-        conversationId: null,
-        messages: [],
-        pinned: false,
-        updatedAt: Date.now(),
-      }, ...prev]);
-      setActiveChatId(chatId);
-    }
-
-    setChatProcessing(chatId, true);
-    appendMessage(chatId, { role: 'user', content, id: Date.now().toString() });
-
-    try {
-      const res = await fetch(`${API_BASE}/ask`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: content,
-          conversation_id: conversationId
-        })
-      });
-
-      if (!res.ok) {
-        let errorData = res.statusText;
-        try {
-          const jsonError = await res.json();
-          errorData = jsonError.detail || jsonError.message || errorData;
-        } catch (_) {}
-
-        appendMessage(chatId, { role: 'genie', status: 'FAILED', status_message: errorData });
-        setChatProcessing(chatId, false);
-        return;
-      }
-
-      const sessionData = await res.json();
-      const newMsgId = sessionData.message_id;
-      const newConvId = sessionData.conversation_id;
-
-      appendMessage(
-        chatId,
-        { role: 'genie', message_id: newMsgId, status: 'STARTING', status_message: 'Message Sent' },
-        { conversationId: conversationId || newConvId }
-      );
-
-      pollStatus(newMsgId, newConvId, chatId);
-
-    } catch (err) {
-      appendMessage(chatId, {
-        role: 'genie',
-        status: 'FAILED',
-        status_message: err.message || 'Failed to connect to backend'
-      });
-      setChatProcessing(chatId, false);
-    }
-  };
-
-  const handleFeedback = async (msgId, rating) => {
-    try {
-      await fetch(`${API_BASE}/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversation_id: conversationId,
-          message_id: msgId,
-          rating: rating
-        })
-      });
-    } catch (err) {
-      console.error("Failed to submit feedback:", err);
-    }
-  };
-
-  const closeSidebarOnMobile = () => {
-    if (window.matchMedia('(max-width: 768px)').matches) setSidebarOpen(false);
+    sendQuestion(content);
   };
 
   const handleNewChat = () => {
-    setActiveChatId(null);
+    startNewChat();
     setInputValue('');
     closeSidebarOnMobile();
     inputRef.current?.focus();
   };
 
   const handleSelectChat = (chatId) => {
-    setActiveChatId(chatId);
+    selectChat(chatId);
     closeSidebarOnMobile();
   };
 
-  const handleTogglePin = (chatId) => updateChat(chatId, c => ({ ...c, pinned: !c.pinned }));
-
-  const handleRename = (chatId, title) => updateChat(chatId, c => ({ ...c, title }));
-
-  const handleDelete = (chatId) => {
-    setChats(prev => prev.filter(c => c.id !== chatId));
-    if (chatId === activeChatId) setActiveChatId(null);
-  };
-
-  const inputForm = (
-    <form className={`${styles.inputArea} ${isProcessing ? styles.inputAreaBusy : ''}`} onSubmit={handleSend}>
-      <button type="button" className={styles.iconButton} aria-label="Add Attachment" title="Add attachment">
-        <PlusIcon size={20} />
-      </button>
-      <input
-        ref={inputRef}
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        placeholder={isProcessing ? 'Genie is working on your answer…' : 'Ask Genie anything'}
-        className={styles.inputField}
-        disabled={isProcessing}
-      />
-      <button
-        type="submit"
-        className={styles.sendButton}
-        disabled={!inputValue.trim() || isProcessing}
-        aria-label="Send"
-      >
-        <ArrowUpIcon size={18} />
-      </button>
-    </form>
+  const composer = (
+    <Composer
+      value={inputValue}
+      onChange={setInputValue}
+      onSubmit={handleSend}
+      busy={isProcessing}
+      inputRef={inputRef}
+    />
   );
 
   return (
@@ -283,61 +67,43 @@ export default function Home() {
         open={sidebarOpen}
         chats={chats}
         activeChatId={activeChatId}
+        processingChatIds={processingChatIds}
         onSelect={handleSelectChat}
         onNewChat={handleNewChat}
-        onTogglePin={handleTogglePin}
-        onRename={handleRename}
-        onDelete={handleDelete}
-        onToggle={() => setSidebarOpen(o => !o)}
+        onTogglePin={togglePin}
+        onRename={renameChat}
+        onDelete={deleteChat}
+        onToggle={() => setSidebarOpen((o) => !o)}
       />
 
       <main className={styles.container}>
-        <header className={styles.topNav}>
-          <div className={styles.topNavLeft}>
-            {!sidebarOpen && (
-              <>
-                <button className={styles.navIconBtn} onClick={() => setSidebarOpen(true)} title="Open sidebar">
-                  <SidebarIcon />
-                </button>
-                <button className={styles.navIconBtn} onClick={handleNewChat} title="New chat">
-                  <NewChatIcon />
-                </button>
-              </>
-            )}
-          </div>
-        </header>
+        {isEmpty && <div className={styles.ambient} aria-hidden="true" />}
 
-        {messages.length === 0 ? (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyLogo}>
-              <GenieLogo size={48} />
-            </div>
-            <h1 className={styles.greeting}>
-              {firstName ? `Hey ${firstName}! What are we tackling today?` : 'What are we tackling today?'}
-            </h1>
-            <div className={styles.inputWrapper}>{inputForm}</div>
-          </div>
+        <ChatHeader
+          title={isEmpty ? null : activeChat?.title}
+          bordered={!isEmpty}
+          sidebarOpen={sidebarOpen}
+          onOpenSidebar={() => setSidebarOpen(true)}
+          onNewChat={handleNewChat}
+        />
+
+        {isEmpty ? (
+          <WelcomeScreen
+            firstName={firstName}
+            composer={composer}
+            onPickSuggestion={sendQuestion}
+            busy={isProcessing}
+          />
         ) : (
           <>
-            <div className={styles.chatWindow} ref={chatWindowRef}>
-              <div className={styles.chatWindowInner}>
-                {displayedMessages.map((msg, idx) => (
-                  <ChatBubble
-                    // Genie replies are keyed by position so the "thinking" placeholder
-                    // turns into the real reply in place instead of remounting.
-                    key={msg.role === 'genie' ? `${activeChatId}-genie-${idx}` : msg.id || idx}
-                    message={msg}
-                    onFeedback={handleFeedback}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className={styles.inputWrapper}>
-              {inputForm}
-              <div className={styles.footerText}>
-                Databricks Genie can make mistakes. Check important info.
-              </div>
-            </div>
+            <MessageList
+              chatId={activeChatId}
+              messages={messages}
+              isProcessing={isProcessing}
+              onFeedback={rateAnswer}
+              onRetry={sendQuestion}
+            />
+            <ChatFooter composer={composer} />
           </>
         )}
       </main>
