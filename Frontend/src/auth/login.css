@@ -1,0 +1,5 @@
+/* Global CSS for the /login root layout only: full Tailwind v4 (layered),
+   the same as the original Vite app's index.css. Bootstrap is imported by
+   LoginPage.jsx and, being unlayered, overrides these layered rules exactly
+   as it does in the original. */
+@import "tailwindcss";

@@ -1,0 +1,919 @@
+/* Styles for the /login screen only (CSS Module, so nothing here is global). */
+
+.page {
+  --ink: #0f1117;
+  --ink-2: #3b3f4c;
+  --muted: #6b7080;
+  --line: #e7e8ee;
+  --surface: #ffffff;
+  --canvas: #f7f7fb;
+  --violet: #7c5cff;
+  --indigo: #5b6cff;
+  --blue: #3b82f6;
+  --danger: #c2353d;
+  --danger-bg: #fdf2f3;
+  --danger-line: #f6d4d7;
+  --ring: 0 0 0 3px rgba(124, 92, 255, 0.35);
+
+  /* Desktop: exactly one screen tall, no page scroll. */
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ───────────────────────── Showcase (left) ───────────────────────── */
+
+.showcase {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vh, 28px);
+  min-height: 0;
+  padding: clamp(24px, 4vh, 40px) clamp(32px, 4.5vw, 64px);
+  background:
+    radial-gradient(60% 50% at 18% 12%, rgba(124, 92, 255, 0.14), transparent 70%),
+    radial-gradient(55% 45% at 85% 85%, rgba(59, 130, 246, 0.13), transparent 70%),
+    var(--canvas);
+  border-right: 1px solid var(--line);
+  isolation: isolate;
+}
+
+.showcase::before {
+  /* Faint dot grid, fading out toward the edges. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(rgba(15, 17, 23, 0.09) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(70% 70% at 50% 50%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(70% 70% at 50% 50%, #000 30%, transparent 100%);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.dbLockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.brandMark {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: block;
+}
+
+.dbWordmark {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: #1b1f24;
+}
+
+.brandDivider {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: #d5d7df;
+}
+
+.brandProduct {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.brandGenie {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 5px 12px 5px 8px;
+  border: 1px solid rgba(124, 92, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6px);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.eyebrowDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--violet), var(--blue));
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.16);
+}
+
+.headline {
+  margin: 0;
+  max-width: 14ch;
+  font-size: clamp(30px, min(3.4vw, 5.4vh), 50px);
+  line-height: 1.05;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+
+.headlineAccent {
+  background: linear-gradient(100deg, var(--violet) 10%, var(--indigo) 50%, var(--blue) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lede {
+  margin: clamp(10px, 2vh, 18px) 0 0;
+  max-width: 46ch;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* Visualization stage */
+
+/* Takes whatever height is left in the column; the visual inside scales to
+   fit it, so the left side never grows past the screen. */
+.stage {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  container-type: size;
+}
+
+.stageInner {
+  position: relative;
+  width: min(100cqw, 140cqh, 620px);
+  aspect-ratio: 560 / 400;
+}
+
+.graph {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.edge {
+  fill: none;
+  stroke: rgba(91, 108, 255, 0.22);
+  stroke-width: 1.25;
+}
+
+.flow {
+  fill: none;
+  stroke: url(#loginFlowGradient);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-dasharray: 3 14;
+  animation: flow 2.8s linear infinite;
+}
+
+.flowSlow {
+  animation-duration: 4.2s;
+}
+
+.flowReverse {
+  animation-direction: reverse;
+}
+
+.node {
+  fill: #fff;
+  stroke: rgba(91, 108, 255, 0.55);
+  stroke-width: 1.5;
+}
+
+.nodeCore {
+  fill: url(#loginNodeGradient);
+}
+
+.nodePulse {
+  fill: rgba(124, 92, 255, 0.18);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse 3.2s ease-out infinite;
+}
+
+.hubHalo {
+  fill: url(#loginHubGlow);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: breathe 5s ease-in-out infinite;
+}
+
+.hubRing {
+  fill: none;
+  stroke: rgba(124, 92, 255, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 2 6;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spin 24s linear infinite;
+}
+
+.hub {
+  fill: #fff;
+  stroke: rgba(124, 92, 255, 0.35);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 8px 18px rgba(91, 108, 255, 0.4));
+}
+
+/* Floating analytics cards */
+
+.card {
+  position: absolute;
+  padding: 12px 14px;
+  border: 1px solid rgba(231, 232, 238, 0.95);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  box-shadow:
+    0 1px 2px rgba(15, 17, 23, 0.04),
+    0 12px 32px -12px rgba(40, 44, 80, 0.22);
+  animation: float 7s ease-in-out infinite;
+  will-change: transform;
+}
+
+.cardLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cardLabelGenie {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cardLabelIcon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.cardMetric {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.delta {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f9d6b;
+}
+
+.spark {
+  display: block;
+  width: 120px;
+  height: 30px;
+  margin-top: 6px;
+}
+
+.cardKpi {
+  top: 4%;
+  left: 0;
+}
+
+.cardBars {
+  top: 30%;
+  right: -2%;
+  animation-delay: -2.5s;
+  animation-duration: 8s;
+}
+
+.sql {
+  display: block;
+  margin-top: 8px;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.sqlKey {
+  color: var(--violet);
+  font-weight: 600;
+}
+
+.sqlFn {
+  color: var(--blue);
+}
+
+.sqlStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 157, 107, 0.1);
+  font-size: 11px;
+  font-weight: 500;
+  color: #0b7a53;
+}
+
+.sqlDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0f9d6b;
+}
+
+.cardAsk {
+  bottom: 2%;
+  left: 8%;
+  max-width: 290px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation-delay: -4.5s;
+  animation-duration: 9s;
+}
+
+.askAvatar {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.askAvatar img {
+  width: 16px;
+  height: 16px;
+}
+
+.askAvatarGenie svg {
+  width: 22px;
+  height: 22px;
+}
+
+.askText {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.typing {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.typing span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--indigo);
+  animation: blink 1.2s ease-in-out infinite;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepNum {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--violet), var(--blue));
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ───────────────────────── Sign-in panel (right) ───────────────────────── */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 32px clamp(24px, 5vw, 72px);
+  background: var(--surface);
+}
+
+.panelInner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.logo {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 28px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: linear-gradient(180deg, #fff, #f7f7fa);
+  box-shadow:
+    0 0 0 6px rgba(124, 92, 255, 0.06),
+    0 10px 24px -12px rgba(40, 44, 80, 0.35);
+}
+
+.logo {
+  position: relative;
+}
+
+.logo img {
+  width: 30px;
+  height: 30px;
+}
+
+/* Genie sparkle tucked onto the corner of the Databricks tile. */
+.logoBadge {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 6px 14px -6px rgba(40, 44, 80, 0.45);
+}
+
+.logoBadge svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Only the star twinkles; the lamp stays put. */
+.genieStar {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+
+.welcome {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: linear-gradient(90deg, var(--violet), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(26px, 2.4vw, 30px);
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+.subtitle {
+  margin: 10px 0 32px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.alert {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--danger-line);
+  border-radius: 10px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 13.5px;
+  line-height: 1.5;
+  animation: rise 0.3s ease-out both;
+}
+
+.alert svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+}
+
+.alertTitle {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.alertBody {
+  margin: 0;
+  color: #8f2a31;
+  word-break: break-word;
+}
+
+.ssoButton {
+  position: relative;
+  width: 100%;
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 1px 2px rgba(15, 17, 23, 0.2),
+    0 10px 24px -10px rgba(15, 17, 23, 0.55);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.25s ease,
+    background-color 0.2s ease;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.ssoButton::before {
+  /* Gradient sheen that fades in on hover. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, #1b1d2a 0%, #2a2350 45%, #1c2a52 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.ssoButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 2px 4px rgba(15, 17, 23, 0.2),
+    0 16px 32px -12px rgba(91, 108, 255, 0.55);
+}
+
+.ssoButton:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.ssoButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ssoButton:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--ring),
+    0 10px 24px -10px rgba(15, 17, 23, 0.55);
+}
+
+.ssoButton:disabled {
+  cursor: not-allowed;
+}
+
+.ssoButtonBusy {
+  cursor: progress !important;
+  background: #23252f;
+}
+
+.ssoButtonBlocked {
+  background: #d9dbe3;
+  color: #7b7f8e;
+  box-shadow: none;
+}
+
+.msLogo {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.ssoButtonBlocked .msLogo {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.hint {
+  min-height: 20px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.divider {
+  height: 1px;
+  margin: 28px 0 20px;
+  background: linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent);
+}
+
+.secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.secure svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: #0f9d6b;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  max-width: 400px;
+  margin: 24px auto 0;
+  font-size: 12px;
+  color: #9a9eac;
+}
+
+/* ───────────────────────── Animations ───────────────────────── */
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -68;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.88) rotate(12deg);
+    opacity: 0.8;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ───────────────────────── Responsive ───────────────────────── */
+
+/* Tablet landscape / small laptops */
+@media (max-width: 1180px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .cardBars {
+    right: -4%;
+  }
+}
+
+/* Tablet portrait: stack, keep a shorter showcase on top */
+@media (max-width: 900px) {
+  .page {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .stage {
+    flex: none;
+    height: clamp(220px, 48vw, 360px);
+  }
+
+  .panel {
+    overflow: visible;
+  }
+
+  .showcase {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 32px 32px 28px;
+    gap: 24px;
+  }
+
+  .headline {
+    max-width: none;
+  }
+
+  .stage {
+    max-width: 520px;
+  }
+
+  .steps {
+    display: none;
+  }
+
+  .panel {
+    padding: 40px 32px 28px;
+  }
+
+  .panelInner {
+    flex: none;
+  }
+}
+
+/* Phones: drop the visualization, lead with the sign-in panel */
+@media (max-width: 640px) {
+  .showcase {
+    display: none;
+  }
+
+  .panel {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 24px 16px 20px;
+    background:
+      radial-gradient(90% 40% at 0% 0%, rgba(124, 92, 255, 0.1), transparent 70%),
+      radial-gradient(80% 35% at 100% 100%, rgba(59, 130, 246, 0.08), transparent 70%),
+      var(--surface);
+  }
+
+  .panelInner {
+    flex: 1;
+  }
+
+  .logo {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 22px;
+  }
+
+  .footer {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* Respect users who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .spinner {
+    animation: spin 1.6s linear infinite !important;
+  }
+}

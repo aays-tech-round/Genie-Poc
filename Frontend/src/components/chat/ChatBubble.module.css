@@ -1,0 +1,246 @@
+.messageRow {
+  display: flex;
+  width: 100%;
+  gap: 0.875rem;
+}
+
+.userRow {
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 0.6rem;
+  animation: userIn 0.35s var(--ease-out) both;
+}
+
+.genieRow {
+  justify-content: flex-start;
+  align-items: flex-start;
+  animation: fadeIn 0.35s var(--ease-out) both;
+}
+
+/* Sent question rises from the composer */
+@keyframes userIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Answer settles in once polling completes */
+@keyframes answerIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-top: 0.15rem;
+  border-radius: 9px;
+  box-shadow: var(--shadow-sm);
+}
+
+.bubble {
+  max-width: 85%;
+  line-height: 1.65;
+  font-size: 0.975rem;
+  position: relative;
+  overflow-wrap: anywhere;
+}
+
+.userAvatar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  margin-top: 0.5rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  background: var(--accent-gradient);
+  box-shadow: var(--shadow-accent);
+  user-select: none;
+}
+
+.userBubble {
+  background: var(--bg-user-bubble);
+  border: 1px solid var(--accent-soft);
+  box-shadow: var(--shadow-sm);
+  padding: 0.65rem 1.1rem;
+  border-radius: 20px 6px 20px 20px;
+  max-width: min(78%, 620px);
+  white-space: pre-wrap;
+}
+
+.genieBubble {
+  background: transparent;
+  padding: 0.15rem 0 0;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.answer {
+  animation: answerIn 0.45s var(--ease-out) both;
+}
+
+.trustedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--success-soft);
+  color: var(--success-text);
+  font-size: 0.68rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Error state */
+.errorCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  animation: answerIn 0.35s var(--ease-out) both;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--danger);
+}
+
+.errorBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.retryBtn {
+  flex-shrink: 0;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--danger-border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+.retryBtn:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+.retryBtn:active {
+  transform: scale(0.96);
+}
+
+.errorTitle {
+  font-weight: 500;
+}
+
+.errorDetail {
+  margin-top: 0.15rem;
+  color: var(--danger-text);
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+
+/* Feedback */
+.feedbackActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.6rem;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.genieRow:hover .feedbackActions,
+.feedbackActions:focus-within,
+.feedbackDone {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* No hover on touch screens, so keep the buttons visible */
+@media (hover: none) {
+  .feedbackActions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.iconBtn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  border-radius: 8px;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.iconBtn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.iconBtn:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.iconBtn:disabled {
+  cursor: default;
+}
+
+.selectedBtn {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.feedbackThanks {
+  margin-left: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  animation: fadeOnly 0.3s ease both;
+}
+
+@media (max-width: 640px) {
+  .messageRow {
+    gap: 0.6rem;
+  }
+  .avatar,
+  .avatar svg {
+    width: 24px;
+    height: 24px;
+  }
+  .userAvatar {
+    width: 26px;
+    height: 26px;
+    font-size: 0.62rem;
+  }
+  .bubble {
+    font-size: 0.95rem;
+  }
+  .userBubble {
+    max-width: 82%;
+  }
+}
