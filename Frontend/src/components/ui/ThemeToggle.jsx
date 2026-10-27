@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { THEME_STORAGE_KEY } from '@/constants/theme';
-import { MoonIcon, SunIcon } from './icons';
+import { Moon, Sun } from 'lucide-react';
 import styles from './ThemeToggle.module.css';
 
 const systemTheme = () =>
@@ -26,12 +26,11 @@ const applyTheme = (theme, animate) => {
 };
 
 export default function ThemeToggle({ className = '' }) {
-  // null until mounted: the server can't know the theme, so render a neutral button first
-  const [theme, setTheme] = useState(null);
+  const [theme, setTheme] = useState(
+    () => document.documentElement.getAttribute('data-theme') || systemTheme()
+  );
 
   useEffect(() => {
-    setTheme(document.documentElement.getAttribute('data-theme') || systemTheme());
-
     // Until the user picks a theme, follow the OS setting live
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => {
@@ -65,10 +64,9 @@ export default function ThemeToggle({ className = '' }) {
       onClick={toggle}
       aria-label={label}
       title={label}
-      disabled={theme === null}
     >
-      <span className={`${styles.icon} ${isDark ? styles.hidden : ''}`}><MoonIcon size={18} /></span>
-      <span className={`${styles.icon} ${isDark ? '' : styles.hidden}`}><SunIcon size={18} /></span>
+      <span className={`${styles.icon} ${isDark ? styles.hidden : ''}`}><Moon size={18} /></span>
+      <span className={`${styles.icon} ${isDark ? '' : styles.hidden}`}><Sun size={18} /></span>
     </button>
   );
 }

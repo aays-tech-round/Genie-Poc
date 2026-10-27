@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { GENIE_STEPS, THOUGHT_LABELS } from '@/constants/genie';
-import {
-  CheckIcon, ChevronDownIcon, CodeIcon, CopyIcon, DatabaseIcon, LightbulbIcon,
-} from '@/components/ui/icons';
+import { Check, ChevronDown, Code, Copy, Database, Lightbulb } from 'lucide-react';
 import Markdown from '@/components/ui/Markdown';
 import styles from './ThoughtsPanel.module.css';
 
@@ -11,9 +9,6 @@ const progressText = (message) =>
   ['SUBMITTED', 'STARTING', 'PENDING', undefined].includes(message.status) || !message.status_message
     ? 'Genie is thinking…'
     : message.status_message.replace(/\.\.\.$/, '…');
-
-export const hasInsights = (m) =>
-  Boolean(m.steps?.length || m.thoughts?.length || m.sql);
 
 function SqlBlock({ sql, parameters }) {
   const [copied, setCopied] = useState(false);
@@ -32,9 +27,9 @@ function SqlBlock({ sql, parameters }) {
   return (
     <div className={styles.sql}>
       <div className={styles.sqlHeader}>
-        <span className={styles.sectionTitle}><CodeIcon size={14} /> Generated SQL</span>
+        <span className={styles.sectionTitle}><Code size={14} /> Generated SQL</span>
         <button type="button" className={styles.copyBtn} onClick={copy} aria-label="Copy SQL">
-          {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+          {copied ? <Check size={14} /> : <Copy size={14} />}
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
@@ -59,13 +54,15 @@ function SqlBlock({ sql, parameters }) {
  */
 export default function ThoughtsPanel({ message, live }) {
   const [open, setOpen] = useState(live);
+  const [wasLive, setWasLive] = useState(live);
   const steps = message.steps || [];
   const thoughts = message.thoughts || [];
 
   // Fold away when the answer lands (the bubble stays mounted across that change)
-  useEffect(() => {
+  if (live !== wasLive) {
+    setWasLive(live);
     if (!live) setOpen(false);
-  }, [live]);
+  }
 
   const hasBody = steps.length > 0 || thoughts.length > 0 || Boolean(message.sql);
   const summary = [
@@ -94,13 +91,13 @@ export default function ThoughtsPanel({ message, live }) {
           </>
         ) : (
           <>
-            <LightbulbIcon size={15} className={styles.headerIcon} />
+            <Lightbulb size={15} className={styles.headerIcon} />
             <span className={styles.headerTitle}>Thoughts</span>
             {summary && <span className={styles.headerMeta}>{summary}</span>}
           </>
         )}
         {hasBody && (
-          <ChevronDownIcon size={15} className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} />
+          <ChevronDown size={15} className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} />
         )}
       </button>
 
@@ -115,7 +112,7 @@ export default function ThoughtsPanel({ message, live }) {
                   return (
                     <li key={`${s}-${i}`} className={`${styles.step} ${current ? styles.stepCurrent : ''}`}>
                       <span className={styles.stepMarker} aria-hidden="true">
-                        {current ? <span className={styles.spinner} /> : <CheckIcon size={11} />}
+                        {current ? <span className={styles.spinner} /> : <Check size={11} />}
                       </span>
                       {current ? GENIE_STEPS[s].active : GENIE_STEPS[s].done}
                     </li>
@@ -134,7 +131,7 @@ export default function ThoughtsPanel({ message, live }) {
             {thoughts.map((t, i) => (
               <div key={i} className={styles.section}>
                 <div className={styles.sectionTitle}>
-                  {t.type === 'data_sourcing' ? <DatabaseIcon size={14} /> : <LightbulbIcon size={14} />}
+                  {t.type === 'data_sourcing' ? <Database size={14} /> : <Lightbulb size={14} />}
                   {THOUGHT_LABELS[t.type] || 'Thought'}
                 </div>
                 <div className={styles.thought}><Markdown text={t.content} /></div>

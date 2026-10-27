@@ -109,7 +109,7 @@ const NON_ADDITIVE = new Set([
 
 export function canPie(rows, metric) {
   if (!Array.isArray(rows) || rows.length < 3 || rows.length > PIE_MAX_SLICES) return false;
-  const words = String(metric).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[\s_.\-]+/);
+  const words = String(metric).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[\s_.-]+/);
   if (words.some((w) => NON_ADDITIVE.has(w))) return false;
   return rows.every((r) => {
     const n = toNumber(r[metric]);

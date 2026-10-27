@@ -338,6 +338,10 @@
   background: var(--accent);
 }
 
+.statGridSingle {
+  grid-template-columns: minmax(220px, max-content);
+}
+
 .statGridSingle .statTile {
   padding: 1.25rem 1.5rem;
   background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 70%), var(--bg-elevated);
@@ -356,6 +360,7 @@
   letter-spacing: -0.02em;
   line-height: 1.15;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .statValueHero {

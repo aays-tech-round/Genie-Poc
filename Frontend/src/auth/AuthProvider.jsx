@@ -1,7 +1,7 @@
 import { MsalProvider } from "@azure/msal-react";
 import { msalInstance, isMsalPopup } from "./authConfig";
 
-// Wraps the app in MsalProvider (as App-Frontend/src/App.jsx does).
+// Wraps the app in MsalProvider.
 //
 // The sign-in popup lands on redirectUri (the app origin) and the opener
 // window reads the auth response from the popup's URL hash. Rendering the

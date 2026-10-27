@@ -2,10 +2,12 @@ import styles from './ChatBubble.module.css';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 import { FAILED_STATUSES } from '@/constants/genie';
 import { getInitials } from '@/lib/utils';
-import { AlertIcon, GenieLogo, RetryIcon } from '@/components/ui/icons';
+import { CircleAlert, RefreshCw } from 'lucide-react';
+import GenieLogo from '@/components/ui/GenieLogo';
 import Markdown from '@/components/ui/Markdown';
 import ResultView from '@/components/results/ResultView';
-import ThoughtsPanel, { hasInsights } from './ThoughtsPanel';
+import ThoughtsPanel from './ThoughtsPanel';
+import { hasInsights } from './thoughtsUtils';
 import FollowUps from './FollowUps';
 
 // onAsk is only passed for the latest answer, so follow-up suggestions show there alone.
@@ -50,7 +52,7 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
           </div>
         ) : failed ? (
           <div className={styles.errorCard} role="alert">
-            <AlertIcon size={18} className={styles.errorIcon} />
+            <CircleAlert size={18} className={styles.errorIcon} />
             <div className={styles.errorBody}>
               <div className={styles.errorTitle}>Genie failed to process this request.</div>
               {(message.error || message.status_message) && (
@@ -59,7 +61,7 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
             </div>
             {onRetry && (
               <button type="button" className={styles.retryBtn} onClick={onRetry}>
-                <RetryIcon size={14} /> Try again
+                <RefreshCw size={14} /> Try again
               </button>
             )}
           </div>

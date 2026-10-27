@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import useDismiss from '@/hooks/useDismiss';
-import { EditIcon, MoreIcon, PinIcon, TrashIcon } from '@/components/ui/icons';
+import { Ellipsis, Pencil, Pin, Trash } from 'lucide-react';
 import styles from './ChatListItem.module.css';
 
 // One chat in the sidebar history, with its pin / rename / delete menu.
@@ -55,7 +55,7 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
         onClick={() => setMenuOpen((o) => !o)}
         aria-label="Chat options"
       >
-        <MoreIcon size={18} />
+        <Ellipsis size={18} />
       </button>
 
       {menuOpen && (
@@ -64,19 +64,19 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
             className={styles.menuBtn}
             onClick={() => { setMenuOpen(false); onTogglePin(chat.id); }}
           >
-            <PinIcon size={16} /> {chat.pinned ? 'Unpin' : 'Pin chat'}
+            <Pin size={16} /> {chat.pinned ? 'Unpin' : 'Pin chat'}
           </button>
           <button
             className={styles.menuBtn}
             onClick={() => { setMenuOpen(false); setDraft(chat.title); setRenaming(true); }}
           >
-            <EditIcon size={16} /> Rename
+            <Pencil size={16} /> Rename
           </button>
           <button
             className={`${styles.menuBtn} ${styles.danger}`}
             onClick={() => { setMenuOpen(false); onDelete(chat.id); }}
           >
-            <TrashIcon size={16} /> Delete
+            <Trash size={16} /> Delete
           </button>
         </div>
       )}

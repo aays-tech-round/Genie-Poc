@@ -1,8 +1,7 @@
 import { PublicClientApplication, InteractionRequiredAuthError } from "@azure/msal-browser";
 
-// Ported from App-Frontend/src/auth/authConfig.jsx (via teams-sso-module).
-// Same MSAL settings; env vars use Vite's VITE_ prefix so they are inlined
-// into the browser bundle.
+// MSAL (Microsoft Entra ID) settings. Env vars use Vite's VITE_ prefix so they
+// are inlined into the browser bundle.
 
 const clientId = import.meta.env.VITE_SSO_CLIENT_ID;
 const authority = import.meta.env.VITE_SSO_AUTHORITIES;
@@ -43,7 +42,7 @@ export const msalInstance =
   missingConfig.length === 0 ? new PublicClientApplication(msalConfig) : null;
 
 // Ensure initialized BEFORE any call.
-export const msalReady = msalInstance ? msalInstance.initialize() : Promise.resolve();
+const msalReady = msalInstance ? msalInstance.initialize() : Promise.resolve();
 
 // Window names MSAL gives its popups ("msal.<id>"); see isInPopup() in msal-browser.
 export const isMsalPopup = () =>

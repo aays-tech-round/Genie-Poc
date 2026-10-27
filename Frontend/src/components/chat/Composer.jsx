@@ -1,5 +1,5 @@
-import { useLayoutEffect } from 'react';
-import { ArrowUpIcon } from '@/components/ui/icons';
+import { useImperativeHandle, useLayoutEffect, useRef } from 'react';
+import { ArrowUp } from 'lucide-react';
 import styles from './Composer.module.css';
 
 const MAX_HEIGHT = 200;
@@ -9,9 +9,13 @@ const SINGLE_LINE = 38; // matches .field min-height and the send button
 // Typing stays possible while Genie is busy; only sending is blocked.
 export default function Composer({ value, onChange, onSubmit, busy, inputRef, autoFocus }) {
   const canSend = value.trim().length > 0 && !busy;
+  const fieldRef = useRef(null);
+
+  // The parent gets the textarea through inputRef (to focus it)
+  useImperativeHandle(inputRef, () => fieldRef.current, []);
 
   useLayoutEffect(() => {
-    const el = inputRef?.current;
+    const el = fieldRef.current;
     if (!el) return;
     // An empty field stays one line: Chrome counts a wrapped placeholder in scrollHeight
     el.style.height = 'auto';
@@ -20,7 +24,7 @@ export default function Composer({ value, onChange, onSubmit, busy, inputRef, au
     el.style.overflowY = el.scrollHeight > MAX_HEIGHT ? 'auto' : 'hidden';
     // Keep the send button centred on one line, and pinned to the bottom once the text wraps
     el.form?.toggleAttribute('data-multiline', height > SINGLE_LINE + 4);
-  }, [value, inputRef]);
+  }, [value]);
 
   const handleKeyDown = (e) => {
     // isComposing: don't send mid-word while an IME (e.g. Japanese input) is open
@@ -39,7 +43,7 @@ export default function Composer({ value, onChange, onSubmit, busy, inputRef, au
       }}
     >
       <textarea
-        ref={inputRef}
+        ref={fieldRef}
         rows={1}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -56,7 +60,7 @@ export default function Composer({ value, onChange, onSubmit, busy, inputRef, au
         aria-label={busy ? 'Genie is answering' : 'Send'}
         title={busy ? 'Genie is answering' : 'Send'}
       >
-        {busy ? <span className={styles.spinner} aria-hidden="true" /> : <ArrowUpIcon size={18} />}
+        {busy ? <span className={styles.spinner} aria-hidden="true" /> : <ArrowUp size={18} />}
       </button>
     </form>
   );

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { CircleAlert, ShieldCheck } from "lucide-react";
+import { GenieMark } from "@/components/ui/GenieLogo";
 import { loginRequest, missingConfig } from "./authConfig";
 import { getAuthErrorMessage } from "./authErrors";
 import styles from "./LoginPage.module.css";
@@ -44,6 +46,7 @@ const curve = (a, b, bend = 0.18) => {
   return `M${a.x} ${a.y} Q${cx} ${cy} ${b.x} ${b.y}`;
 };
 
+// Brand logo (Microsoft's own artwork), so it stays an inline SVG rather than lucide-react.
 const MicrosoftLogo = () => (
   <svg className={styles.msLogo} viewBox="0 0 21 21" aria-hidden="true">
     <rect x="1" y="1" width="9" height="9" fill="#F25022" />
@@ -53,39 +56,9 @@ const MicrosoftLogo = () => (
   </svg>
 );
 
-// Genie mark: magic lamp with a four-point star rising out of it.
+// Genie lamp whose star twinkles on this page.
 const GenieIcon = ({ className }) => (
-  <svg className={className} viewBox="0 0 48 48" aria-hidden="true">
-    <path
-      className={styles.genieStar}
-      fill="#F25C3F"
-      d="M28 3.5Q29.4 11.6 36 12.5 29.4 13.4 28 21.5 26.6 13.4 20 12.5 26.6 11.6 28 3.5Z"
-    />
-    <path
-      fill="#FBB8AD"
-      d="M42.5 24C42.5 30.5 36 35 28.5 35 23 35 19 32.5 15.5 29.5 12.5 27 10 24.6 6.3 25 4.6 25.2 3.8 23.6 5.1 22.6 8.8 20 13.5 21.8 17 24Z"
-    />
-    <path fill="#F25C3F" d="M25 34.5h7v1.5h-7z" />
-    <path
-      fill="#F25C3F"
-      d="M20.5 39c0-1.4 1.1-2.5 2.5-2.5h11c1.4 0 2.5 1.1 2.5 2.5v.5h-16Z"
-    />
-  </svg>
-);
-
-const ShieldIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
-
-const AlertIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7.5v5" />
-    <path d="M12 16.2v.3" />
-  </svg>
+  <GenieMark className={className} starClassName={styles.genieStar} />
 );
 
 const DataVisual = () => (
@@ -325,7 +298,7 @@ const LoginPage = () => {
 
           {error && (
             <div role="alert" className={styles.alert}>
-              <AlertIcon />
+              <CircleAlert />
               <div>
                 <span className={styles.alertTitle}>
                   {notConfigured ? "Sign-in unavailable" : "Couldn’t sign you in"}
@@ -354,7 +327,7 @@ const LoginPage = () => {
           <div className={styles.divider} />
 
           <p id="login-secure-note" className={styles.secure}>
-            <ShieldIcon />
+            <ShieldCheck />
             Secure authentication through your organization
           </p>
         </div>

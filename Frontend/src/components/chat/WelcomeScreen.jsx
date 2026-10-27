@@ -1,4 +1,4 @@
-import { GenieLogo } from '@/components/ui/icons';
+import GenieLogo from '@/components/ui/GenieLogo';
 import Suggestions from './Suggestions';
 import styles from './WelcomeScreen.module.css';
 

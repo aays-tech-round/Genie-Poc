@@ -3,7 +3,7 @@ import { useMsal } from '@azure/msal-react';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 import useDismiss from '@/hooks/useDismiss';
 import { getInitials } from '@/lib/utils';
-import { ChevronDownIcon, LogOutIcon } from '@/components/ui/icons';
+import { ChevronDown, LogOut } from 'lucide-react';
 import styles from './UserMenu.module.css';
 
 // Account row at the bottom of the sidebar: shows who is signed in and opens a menu with Log out.
@@ -29,7 +29,7 @@ export default function UserMenu() {
               setConfirmLogout(true);
             }}
           >
-            <LogOutIcon size={18} />
+            <LogOut size={18} />
             Log out
           </button>
         </div>
@@ -46,7 +46,7 @@ export default function UserMenu() {
           <span className={styles.userName}>{name || 'Signed in'}</span>
           {email && <span className={styles.userEmail}>{email}</span>}
         </span>
-        <ChevronDownIcon size={16} className={styles.chevron} />
+        <ChevronDown size={16} className={styles.chevron} />
       </button>
 
       {confirmLogout && (

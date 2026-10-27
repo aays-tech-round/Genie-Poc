@@ -23,8 +23,8 @@ const nextSteps = (steps = [], status) => {
  * History persists to localStorage; several chats can be answering at once.
  */
 export default function useChats(email) {
-  const [chats, setChats] = useState([]);
-  const [chatsLoaded, setChatsLoaded] = useState(false);
+  const [chats, setChats] = useState(() => loadChats(email));
+  const [chatsEmail, setChatsEmail] = useState(email);
   const [activeChatId, setActiveChatId] = useState(null);
   const [processingChatIds, setProcessingChatIds] = useState(() => new Set());
 
@@ -33,14 +33,15 @@ export default function useChats(email) {
   const conversationId = activeChat ? activeChat.conversationId : null;
   const isProcessing = activeChatId ? processingChatIds.has(activeChatId) : false;
 
-  useEffect(() => {
+  // A different signed-in user gets their own history
+  if (email !== chatsEmail) {
+    setChatsEmail(email);
     setChats(loadChats(email));
-    setChatsLoaded(true);
-  }, [email]);
+  }
 
   useEffect(() => {
-    if (chatsLoaded) saveChats(email, chats);
-  }, [chats, chatsLoaded, email]);
+    saveChats(email, chats);
+  }, [chats, email]);
 
   const updateChat = useCallback((chatId, update) => {
     setChats((prev) => prev.map((c) => (c.id === chatId ? update(c) : c)));

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChatIcon, CloseIcon, NewChatIcon, PinIcon, SearchIcon } from '@/components/ui/icons';
+import { MessageCircle, PenLine, Pin, Search, X } from 'lucide-react';
 import styles from './SearchDialog.module.css';
 
 // Modal search over chat titles and the text of every question / answer.
@@ -25,7 +25,7 @@ export default function SearchDialog({ chats, onSelect, onNewChat, onClose }) {
     <div className={styles.backdrop} onClick={onClose}>
       <div className={styles.dialog} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className={styles.header}>
-          <SearchIcon size={18} />
+          <Search size={18} />
           <input
             className={styles.input}
             placeholder="Search chats..."
@@ -34,13 +34,13 @@ export default function SearchDialog({ chats, onSelect, onNewChat, onClose }) {
             onChange={(e) => setQuery(e.target.value)}
           />
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close search">
-            <CloseIcon size={18} />
+            <X size={18} />
           </button>
         </div>
         <div className={styles.results}>
           {!query && (
             <button className={styles.result} onClick={() => { onNewChat(); onClose(); }}>
-              <NewChatIcon size={18} /> New chat
+              <PenLine size={18} /> New chat
             </button>
           )}
           {results.map((c) => (
@@ -49,7 +49,7 @@ export default function SearchDialog({ chats, onSelect, onNewChat, onClose }) {
               className={styles.result}
               onClick={() => { onSelect(c.id); onClose(); }}
             >
-              {c.pinned ? <PinIcon size={18} /> : <ChatIcon size={18} />}
+              {c.pinned ? <Pin size={18} /> : <MessageCircle size={18} />}
               <span className={styles.resultTitle}>{c.title}</span>
             </button>
           ))}

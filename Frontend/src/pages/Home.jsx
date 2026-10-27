@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 import useChats from '@/hooks/useChats';
 import { isMobileViewport } from '@/lib/utils';
@@ -17,15 +17,12 @@ export default function Home() {
     selectChat, startNewChat, sendQuestion, togglePin, renameChat, deleteChat,
   } = useChats(email);
   const [inputValue, setInputValue] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Starts closed on mobile, where it would cover the chat
+  const [sidebarOpen, setSidebarOpen] = useState(() => !isMobileViewport());
   const inputRef = useRef(null);
 
   const firstName = (name || '').split(' ')[0];
   const isEmpty = messages.length === 0;
-
-  useEffect(() => {
-    if (isMobileViewport()) setSidebarOpen(false);
-  }, []);
 
   const closeSidebarOnMobile = () => {
     if (isMobileViewport()) setSidebarOpen(false);

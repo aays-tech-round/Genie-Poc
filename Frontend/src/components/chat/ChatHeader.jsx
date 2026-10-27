@@ -1,5 +1,5 @@
 import ThemeToggle from '@/components/ui/ThemeToggle';
-import { NewChatIcon, SidebarIcon } from '@/components/ui/icons';
+import { PanelLeft, PenLine } from 'lucide-react';
 import styles from './ChatHeader.module.css';
 
 // Top bar of the chat area: sidebar shortcuts (while it is closed), chat title, theme toggle.
@@ -17,7 +17,7 @@ export default function ChatHeader({ title, bordered, sidebarOpen, onOpenSidebar
             aria-label="Open sidebar"
             tabIndex={shortcutTab}
           >
-            <SidebarIcon />
+            <PanelLeft size={20} />
           </button>
           <button
             className={styles.iconBtn}
@@ -26,7 +26,7 @@ export default function ChatHeader({ title, bordered, sidebarOpen, onOpenSidebar
             aria-label="New chat"
             tabIndex={shortcutTab}
           >
-            <NewChatIcon />
+            <PenLine size={20} />
           </button>
         </div>
         {title && <h2 className={styles.title} title={title}>{title}</h2>}

@@ -1,16 +1,14 @@
 import { SUGGESTED_QUESTIONS } from '@/constants/suggestions';
-import {
-  BarChartIcon, DocumentIcon, SparklesIcon, TargetIcon, TrendIcon, WarningIcon,
-} from '@/components/ui/icons';
+import { ChartColumn, FileText, Sparkles, Target, TrendingUp, TriangleAlert } from 'lucide-react';
 import styles from './Suggestions.module.css';
 
 const SUGGESTION_ICONS = {
-  warning: WarningIcon,
-  trend: TrendIcon,
-  sparkles: SparklesIcon,
-  target: TargetIcon,
-  chart: BarChartIcon,
-  document: DocumentIcon,
+  warning: TriangleAlert,
+  trend: TrendingUp,
+  sparkles: Sparkles,
+  target: Target,
+  chart: ChartColumn,
+  document: FileText,
 };
 
 // Grid of starter questions for an empty chat; picking one asks Genie straight away.
@@ -18,7 +16,7 @@ export default function Suggestions({ onPick, disabled, questions = SUGGESTED_QU
   return (
     <div className={styles.grid} aria-label="Suggested questions">
       {questions.map((q, i) => {
-        const Icon = SUGGESTION_ICONS[q.icon] || SparklesIcon;
+        const Icon = SUGGESTION_ICONS[q.icon] || Sparkles;
         return (
           <button
             key={q.text}

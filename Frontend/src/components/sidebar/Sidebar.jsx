@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChatIcon, GenieLogo, NewChatIcon, SearchIcon, SidebarIcon } from '@/components/ui/icons';
+import { MessageCircle, PanelLeft, PenLine, Search } from 'lucide-react';
+import GenieLogo from '@/components/ui/GenieLogo';
 import ChatListItem from './ChatListItem';
 import SearchDialog from './SearchDialog';
 import UserMenu from './UserMenu';
@@ -19,19 +20,18 @@ const groupByDate = (chats) => {
   return groups.filter((g) => g.items.length > 0);
 };
 
-const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+const isMac = () => /Mac|iPhone|iPad/.test(navigator.platform);
 
 // Left rail: branding, new chat, search, chat history (pinned + by date) and the account menu.
 export default function Sidebar({
   open, chats, activeChatId, processingChatIds, onSelect, onNewChat, onTogglePin, onRename, onDelete, onToggle,
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const [shortcut, setShortcut] = useState('Ctrl K');
+  const shortcut = isMac() ? '⌘K' : 'Ctrl K';
   const closeSearch = useCallback(() => setSearchOpen(false), []);
 
   // Ctrl+K / ⌘K opens chat search from anywhere
   useEffect(() => {
-    if (isMac()) setShortcut('⌘K');
     const onKey = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -69,17 +69,17 @@ export default function Sidebar({
             <span className={styles.brandText}>Genie</span>
           </div>
           <button className={styles.iconBtn} onClick={onToggle} title="Close sidebar" aria-label="Close sidebar">
-            <SidebarIcon />
+            <PanelLeft size={20} />
           </button>
         </div>
 
         <div className={styles.actions}>
           <button className={styles.newChatBtn} onClick={onNewChat}>
-            <span className={styles.newChatIcon}><NewChatIcon size={16} /></span>
+            <span className={styles.newChatIcon}><PenLine size={16} /></span>
             New chat
           </button>
           <button className={styles.searchBtn} onClick={() => setSearchOpen(true)}>
-            <SearchIcon size={16} />
+            <Search size={16} />
             <span className={styles.searchBtnText}>Search chats</span>
             <kbd className={styles.kbd}>{shortcut}</kbd>
           </button>
@@ -102,7 +102,7 @@ export default function Sidebar({
 
           {chats.length === 0 && (
             <div className={styles.emptyHistory}>
-              <ChatIcon size={20} />
+              <MessageCircle size={20} />
               <span>Your chats will show up here</span>
             </div>
           )}

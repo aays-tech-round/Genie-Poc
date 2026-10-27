@@ -1,4 +1,4 @@
-import { CornerDownRightIcon } from '@/components/ui/icons';
+import { CornerDownRight } from 'lucide-react';
 import styles from './FollowUps.module.css';
 
 // Genie's suggested next questions under the latest answer; clicking one asks it.
@@ -17,7 +17,7 @@ export default function FollowUps({ questions, onAsk, disabled }) {
           onClick={() => onAsk(q)}
           disabled={disabled}
         >
-          <CornerDownRightIcon size={14} className={styles.icon} />
+          <CornerDownRight size={14} className={styles.icon} />
           <span>{q}</span>
         </button>
       ))}
