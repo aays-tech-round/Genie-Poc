@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import useDismiss from '@/hooks/useDismiss';
 import { Ellipsis, Pencil, Pin, Trash } from 'lucide-react';
-import { menuItem } from '@/components/ui/classes';
+import { Menu, MenuItem } from '@/components/ui/Menu';
 import { cn } from '@/lib/utils';
 
 const row = 'group relative mb-px flex items-center rounded-[10px] transition-colors';
@@ -79,29 +79,17 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
       </button>
 
       {menuOpen && (
-        <div
-          className="absolute top-[calc(100%+4px)] right-0 z-40 w-[170px] origin-top-right animate-menu rounded-xl border border-line bg-main p-[5px] shadow-lg"
-          role="menu"
-        >
-          <button
-            className={cn(menuItem, 'text-primary')}
-            onClick={() => { setMenuOpen(false); onTogglePin(chat.id); }}
-          >
+        <Menu className="top-[calc(100%+4px)] right-0 w-[170px] origin-top-right">
+          <MenuItem onClick={() => { setMenuOpen(false); onTogglePin(chat.id); }}>
             <Pin size={16} /> {chat.pinned ? 'Unpin' : 'Pin chat'}
-          </button>
-          <button
-            className={cn(menuItem, 'text-primary')}
-            onClick={() => { setMenuOpen(false); setDraft(chat.title); setRenaming(true); }}
-          >
+          </MenuItem>
+          <MenuItem onClick={() => { setMenuOpen(false); setDraft(chat.title); setRenaming(true); }}>
             <Pencil size={16} /> Rename
-          </button>
-          <button
-            className={cn(menuItem, 'text-danger')}
-            onClick={() => { setMenuOpen(false); onDelete(chat.id); }}
-          >
+          </MenuItem>
+          <MenuItem tone="danger" onClick={() => { setMenuOpen(false); onDelete(chat.id); }}>
             <Trash size={16} /> Delete
-          </button>
-        </div>
+          </MenuItem>
+        </Menu>
       )}
     </div>
   );

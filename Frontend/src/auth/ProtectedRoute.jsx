@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { InteractionStatus } from "@azure/msal-browser";
+import FullScreenMessage from "@/components/ui/FullScreenMessage";
 
 // Renders children only for a signed-in user; otherwise sends them to /login.
 const ProtectedRoute = ({ children }) => {
@@ -19,13 +20,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (isAuthenticated) return children;
 
-  if (starting) {
-    return (
-      <div className="min-h-screen bg-soft flex items-center justify-center text-secondary text-sm">
-        Loading…
-      </div>
-    );
-  }
+  if (starting) return <FullScreenMessage>Loading…</FullScreenMessage>;
 
   return null;
 };

@@ -1,5 +1,6 @@
 import { useImperativeHandle, useLayoutEffect, useRef } from 'react';
 import { ArrowUp } from 'lucide-react';
+import Spinner from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
 
 const MAX_HEIGHT = 200;
@@ -67,7 +68,7 @@ export default function Composer({ value, onChange, onSubmit, busy, inputRef, au
         aria-label={busy ? 'Genie is answering' : 'Send'}
         title={busy ? 'Genie is answering' : 'Send'}
       >
-        {busy ? <span className="size-4 animate-spinner rounded-full border-2 border-accent-soft border-t-accent" aria-hidden="true" /> : <ArrowUp size={18} />}
+        {busy ? <Spinner className="size-4" aria-hidden="true" /> : <ArrowUp size={18} />}
       </button>
     </form>
   );

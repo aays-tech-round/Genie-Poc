@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
-import { THEME_STORAGE_KEY } from '@/constants/theme';
+import { THEME_STORAGE_KEY, systemTheme } from '@/constants/theme';
 import { Moon, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { iconButton } from './classes';
-
-const systemTheme = () =>
-  window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
 const readSaved = () => {
   try {
@@ -16,12 +13,15 @@ const readSaved = () => {
   }
 };
 
+// Pending removal of the .theme-switching class (one at a time across toggles)
+let switchingTimer;
+
 const applyTheme = (theme, animate) => {
   const root = document.documentElement;
   if (animate) {
     root.classList.add('theme-switching');
-    window.clearTimeout(applyTheme.timer);
-    applyTheme.timer = window.setTimeout(() => root.classList.remove('theme-switching'), 400);
+    window.clearTimeout(switchingTimer);
+    switchingTimer = window.setTimeout(() => root.classList.remove('theme-switching'), 400);
   }
   root.setAttribute('data-theme', theme);
 };

@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { TERMINAL_STATUSES } from '@/constants/genie';
 import { Check, ChevronDown, Code, Copy, Database, Lightbulb } from 'lucide-react';
 import Markdown from '@/components/ui/Markdown';
+import Spinner from '@/components/ui/Spinner';
+import TypingDots from '@/components/ui/TypingDots';
 import { cn, formatCode } from '@/lib/utils';
 
 const sectionTitle =
   'inline-flex items-center gap-[0.4rem] text-xs font-semibold tracking-[0.04em] text-secondary uppercase';
-const spinner = 'size-3.5 animate-spinner rounded-full border-2 border-accent-soft border-t-accent';
 
 // What Genie is doing now: its current status code, or null before it has reported one.
 const currentStatus = (message) =>
@@ -96,15 +97,11 @@ export default function ThoughtsPanel({ message, live }) {
       >
         {live ? (
           <>
-            <span className="inline-flex h-4 items-center gap-1" aria-hidden="true">
-              {[0, 0.15, 0.3].map((delay) => (
-                <span
-                  key={delay}
-                  className="size-1.5 animate-[typingDot_1.3s_ease-in-out_infinite_both] rounded-full bg-accent"
-                  style={{ animationDelay: `${delay}s` }}
-                />
-              ))}
-            </span>
+            <TypingDots
+              className="inline-flex h-4 items-center gap-1"
+              dotClassName="size-1.5 animate-[typingDot_1.3s_ease-in-out_infinite_both]"
+              aria-hidden="true"
+            />
             {/* Genie's current status code; until it reports one, only the dots show.
                 key restarts the fade when the status changes. */}
             <span
@@ -162,7 +159,7 @@ export default function ThoughtsPanel({ message, live }) {
                         )}
                         aria-hidden="true"
                       >
-                        {current ? <span className={spinner} /> : <Check size={11} />}
+                        {current ? <Spinner className="size-3.5" /> : <Check size={11} />}
                       </span>
                       {formatCode(s)}
                     </li>

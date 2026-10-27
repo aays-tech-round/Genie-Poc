@@ -16,6 +16,9 @@ export const missingConfig = [
   !apiScope && "VITE_SSO_API_SCOPE",
 ].filter(Boolean);
 
+// Shown on the login screen and thrown by getToken() when missingConfig isn't empty.
+export const missingConfigMessage = `Sign-in is not configured. Missing environment variables: ${missingConfig.join(", ")}`;
+
 export const msalConfig = {
   auth: {
     clientId,
@@ -56,9 +59,7 @@ export const isMsalPopup = () =>
 export const getToken = async () => {
   if (!msalInstance) {
     throw new Error(
-      missingConfig.length
-        ? `Sign-in is not configured. Missing environment variables: ${missingConfig.join(", ")}`
-        : "getToken() can only be called in the browser."
+      missingConfig.length ? missingConfigMessage : "getToken() can only be called in the browser."
     );
   }
   await msalReady;
