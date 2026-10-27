@@ -23,11 +23,11 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
     return (
       // The sent question rises from the composer
       <div className="flex w-full animate-[userIn_0.35s_var(--ease-smooth)_both] items-start justify-end gap-[0.6rem]">
-        <div className={`${bubble} max-w-[min(78%,620px)] rounded-[20px_6px_20px_20px] border border-accent-soft bg-user-bubble px-[1.1rem] py-[0.65rem] whitespace-pre-wrap shadow-sm max-sm:max-w-[82%]`}>
+        <div className={`${bubble} max-w-[min(78%,620px)] rounded-[20px_6px_20px_20px] border border-accent-soft bg-accent-soft px-[1.1rem] py-[0.65rem] whitespace-pre-wrap shadow-sm max-sm:max-w-[82%]`}>
           {message.content}
         </div>
         <span
-          className="mt-2 inline-flex size-[30px] shrink-0 items-center justify-center rounded-full bg-(image:--accent-gradient) text-[0.7rem] font-semibold tracking-[0.3px] text-white shadow-accent select-none max-sm:size-[26px] max-sm:text-[0.62rem]"
+          className="mt-2 inline-flex size-[30px] shrink-0 items-center justify-center rounded-full bg-brand text-[0.7rem] font-semibold tracking-[0.3px] text-main dark:text-primary shadow-md select-none max-sm:size-[26px] max-sm:text-[0.62rem]"
           aria-hidden="true"
         >
           {getInitials(name, email)}
@@ -44,7 +44,7 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
 
       <div className={`${bubble} max-w-full min-w-0 flex-1 pt-[0.15rem]`}>
         {message.trusted_asset && (
-          <div className="mb-[0.6rem] inline-flex items-center gap-1 rounded-full bg-success-soft px-[0.55rem] py-[0.2rem] text-[0.68rem] font-semibold tracking-[0.5px] text-success-text uppercase">
+          <div className="mb-[0.6rem] inline-flex items-center gap-1 rounded-full bg-soft px-[0.55rem] py-[0.2rem] text-[0.68rem] font-semibold tracking-[0.5px] text-success uppercase">
             <span aria-hidden="true">✓</span> Verified
           </div>
         )}
@@ -61,7 +61,7 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
           </div>
         ) : failed ? (
           <div
-            className="flex animate-[answerIn_0.35s_var(--ease-smooth)_both] items-start gap-[0.6rem] rounded-xl border border-danger-border bg-danger-bg px-[0.9rem] py-3 text-[0.9rem] leading-normal text-danger-text"
+            className="flex animate-[answerIn_0.35s_var(--ease-smooth)_both] items-start gap-[0.6rem] rounded-xl border border-danger bg-main px-[0.9rem] py-3 text-[0.9rem] leading-normal text-danger"
             role="alert"
           >
             <CircleAlert size={18} className="mt-px shrink-0 text-danger" />
@@ -74,7 +74,7 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
             {onRetry && (
               <button
                 type="button"
-                className="inline-flex shrink-0 items-center gap-[0.35rem] self-center rounded-full border border-danger-border bg-elevated px-3 py-[0.35rem] text-[0.8rem] font-medium text-primary transition hover:border-strong hover:bg-hover active:scale-96"
+                className="inline-flex shrink-0 items-center gap-[0.35rem] self-center rounded-full border border-danger bg-main px-3 py-[0.35rem] text-[0.8rem] font-medium text-primary transition hover:border-secondary hover:bg-line active:scale-96"
                 onClick={onRetry}
               >
                 <RefreshCw size={14} /> Try again

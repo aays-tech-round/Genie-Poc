@@ -7,6 +7,9 @@ const OUTER = 96;
 const INNER = 62;
 const C = SIZE / 2;
 
+// Slice colours, in order: the theme's own colours, with red and green kept apart.
+const SLICE_COLORS = ['accent', 'success', 'secondary', 'danger', 'accent-soft', 'line'];
+
 const fmtPct = new Intl.NumberFormat(undefined, { style: 'percent', maximumFractionDigits: 1 });
 
 // Donut segment from angle a0 to a1 (radians, 0 = 12 o'clock, clockwise).
@@ -26,7 +29,7 @@ const arcPath = (a0, a1) => {
 export default function PieChart({ rows, label, metric }) {
   const [active, setActive] = useState(null);
 
-  const slices = rows.map((r, i) => ({ name: formatLabel(r[label]), value: toNumber(r[metric]), color: `var(--series-${i + 1})` }));
+  const slices = rows.map((r, i) => ({ name: formatLabel(r[label]), value: toNumber(r[metric]), color: `var(--${SLICE_COLORS[i % SLICE_COLORS.length]})` }));
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   let angle = 0;
   slices.forEach((s) => {
@@ -56,7 +59,7 @@ export default function PieChart({ rows, label, metric }) {
               // The card-coloured stroke leaves a gap between neighbouring slices. The entrance
               // animation fills backwards, not both: a held end state would override the dimming.
               className={cn(
-                'origin-[100px_100px] animate-[sliceIn_0.5s_var(--ease-smooth)_backwards] cursor-default stroke-elevated stroke-2 [stroke-linejoin:round] transition-opacity duration-200',
+                'origin-[100px_100px] animate-[sliceIn_0.5s_var(--ease-smooth)_backwards] cursor-default stroke-main stroke-2 [stroke-linejoin:round] transition-opacity duration-200',
                 active !== null && active !== i && 'opacity-35'
               )}
               style={{ animationDelay: `${i * 50}ms` }}
@@ -82,8 +85,8 @@ export default function PieChart({ rows, label, metric }) {
           <li
             key={i}
             className={cn(
-              'grid grid-cols-[10px_minmax(0,1fr)_auto_3.5rem] items-center gap-[0.65rem] rounded-lg px-2 py-[0.4rem] text-[0.85rem] outline-none transition-colors hover:bg-subtle focus-visible:bg-subtle focus-visible:shadow-[0_0_0_2px_var(--accent-ring)]',
-              active === i && 'bg-subtle'
+              'grid grid-cols-[10px_minmax(0,1fr)_auto_3.5rem] items-center gap-[0.65rem] rounded-lg px-2 py-[0.4rem] text-[0.85rem] outline-none transition-colors hover:bg-soft focus-visible:bg-soft focus-visible:ring-2 focus-visible:ring-accent-soft',
+              active === i && 'bg-soft'
             )}
             tabIndex={0}
             onPointerEnter={() => setActive(i)}
@@ -94,7 +97,7 @@ export default function PieChart({ rows, label, metric }) {
             <span className="size-2.5 rounded-[3px]" style={{ background: s.color }} aria-hidden="true" />
             <span className={cn('truncate', active === i ? 'text-primary' : 'text-secondary')} title={s.name}>{s.name}</span>
             <span className="text-right font-medium text-primary tabular-nums">{formatValue(s.value)}</span>
-            <span className="text-right text-tertiary tabular-nums">{fmtPct.format(s.share)}</span>
+            <span className="text-right text-secondary tabular-nums">{fmtPct.format(s.share)}</span>
           </li>
         ))}
       </ul>

@@ -19,7 +19,7 @@ export default function BarChart({ rows, label, metric }) {
         return (
           <div
             key={i}
-            className="group grid grid-cols-[minmax(70px,32%)_1fr_minmax(52px,auto)] items-center gap-3 rounded-lg px-[0.4rem] py-[0.3rem] transition-colors hover:bg-subtle max-sm:grid-cols-[minmax(60px,34%)_1fr_auto] max-sm:gap-2 max-sm:px-[0.2rem]"
+            className="group grid grid-cols-[minmax(70px,32%)_1fr_minmax(52px,auto)] items-center gap-3 rounded-lg px-[0.4rem] py-[0.3rem] transition-colors hover:bg-soft max-sm:grid-cols-[minmax(60px,34%)_1fr_auto] max-sm:gap-2 max-sm:px-[0.2rem]"
             title={`${formatLabel(r[label])}: ${fmtFull.format(v)}`}
           >
             <span className="truncate text-[0.82rem] text-secondary group-hover:text-primary">{formatLabel(r[label])}</span>
@@ -38,7 +38,7 @@ export default function BarChart({ rows, label, metric }) {
         );
       })}
       {rows.length > MAX_BARS && (
-        <div className="mt-[0.6rem] text-[0.78rem] text-tertiary">Showing the first {MAX_BARS} of {rows.length} rows. See the table for all rows.</div>
+        <div className="mt-[0.6rem] text-[0.78rem] text-secondary">Showing the first {MAX_BARS} of {rows.length} rows. See the table for all rows.</div>
       )}
     </div>
   );

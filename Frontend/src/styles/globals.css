@@ -8,162 +8,63 @@
 /* `dark:` follows the theme toggle (data-theme on <html>), not the OS setting */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
-/* Design tokens. Light is the default; [data-theme="dark"] on <html> swaps the palette.
-   The theme attribute is set before first render by applySavedTheme() in MainLayout. */
+/* ───────────── Colours: the only 11 in the app ─────────────
+   Change the look here and nowhere else. Each is a Tailwind class too:
+   bg-main, bg-soft, border-line, text-primary, text-secondary, bg-accent, text-danger…
+   Light is the default; [data-theme="dark"] on <html> (set by applySavedTheme() in
+   MainLayout) swaps in the dark values. The login screen is always light. */
 :root {
   color-scheme: light;
 
-  --bg-app: #f6f6f9;
-  --bg-main: #ffffff;
-  --bg-sidebar: #f6f6f9;
-  --bg-elevated: #ffffff;
-  --bg-input: #ffffff;
-  --bg-subtle: #f5f5f8;
-  --bg-user-bubble: #f2f0fc;
-  --bg-hover: #ededf3;
-  --bg-active: #e9e6f8;
-  --text-primary: #111118;
-  --text-secondary: #565667;
-  --text-tertiary: #8a8a9a;
-  --border-faint: #ececf2;
-  --border-light: #e5e5ec;
-  --border-strong: #d2d2dc;
-  --success-soft: rgba(16, 185, 129, 0.12);
-  --success-text: #047857;
+  --main: #ffffff;                   /* chat area, cards, menus, inputs */
+  --soft: #f6f6f9;                   /* sidebar, table headers, code blocks */
+  --line: #e5e5ec;                   /* borders, dividers, hover */
+  --primary: #111118;                /* main text */
+  --secondary: #6b6b7b;              /* supporting text, labels, placeholders */
+  --brand: #0000a0;                  /* client brand blue: send button, avatars, new chat */
+  --accent: #0000a0;                 /* links, icons, charts (lighter in dark mode to stay readable) */
+  --accent-soft: #e6e6f6;            /* light brand blue: selected chat, your messages */
+  --success: #059669;
   --danger: #dc2626;
-  --danger-bg: #fef2f2;
-  --danger-border: #fecaca;
-  --danger-text: #991b1b;
-  --overlay: rgba(17, 17, 32, 0.32);
-  --scrollbar: rgba(0, 0, 0, 0.13);
-  --scrollbar-hover: rgba(0, 0, 0, 0.22);
-  --logo-tile: #ffffff;
-  --logo-tile-stroke: #e7e8ee;
-
-  /* Purple / blue accent */
-  --accent: #8f7edd;
-  --accent-strong: #6b5bc9;
-  --accent-soft: rgba(143, 126, 221, 0.12);
-  --accent-softer: rgba(143, 126, 221, 0.06);
-  --accent-ring: rgba(143, 126, 221, 0.28);
-  --accent-gradient: linear-gradient(135deg, #8f7edd 0%, #7d9de2 60%, #6cc0e6 100%);
-  --accent-text-gradient: linear-gradient(90deg, #6b5bc9 0%, #3d9cc9 100%);
-  --glow-1: rgba(143, 126, 221, 0.22);
-  --glow-2: rgba(108, 192, 230, 0.18);
-
-  /* Categorical chart colours (pie slices), in fixed order. Validated for colour-blind
-     separation on the light and dark card surfaces; never reuse them for status. */
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #eda100;
-  --series-5: #e87ba4;
-  --series-6: #008300;
-
-  --elevation-sm: 0 1px 2px rgba(16, 16, 40, 0.05);
-  --elevation-md: 0 4px 20px rgba(16, 16, 40, 0.06);
-  --elevation-lg: 0 12px 32px rgba(16, 16, 40, 0.12);
-  --elevation-xl: 0 24px 56px rgba(16, 16, 40, 0.18);
-  --elevation-accent: 0 6px 18px rgba(143, 126, 221, 0.35);
+  --overlay: rgba(17, 17, 32, 0.35); /* dims the page behind dialogs */
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --bg-app: #0f1014;
-  --bg-main: #16171c;
-  --bg-sidebar: #111216;
-  --bg-elevated: #1e1f26;
-  --bg-input: #1c1d24;
-  --bg-subtle: #1b1c22;
-  --bg-user-bubble: #252336;
-  --bg-hover: #23242c;
-  --bg-active: #2a2740;
-  --text-primary: #ececf2;
-  --text-secondary: #a8a8b8;
-  --text-tertiary: #737386;
-  --border-faint: #1f2027;
-  --border-light: #2a2b34;
-  --border-strong: #3a3c48;
-  --success-soft: rgba(52, 211, 153, 0.14);
-  --success-text: #6ee7b7;
+  --main: #16171c;
+  --soft: #1e1f26;
+  --line: #2a2b34;
+  --primary: #ececf2;
+  --secondary: #a0a0b0;
+  --brand: #0000a0;
+  --accent: #8c8cff;
+  --accent-soft: #1d1d46;
+  --success: #34d399;
   --danger: #f87171;
-  --danger-bg: rgba(248, 113, 113, 0.08);
-  --danger-border: rgba(248, 113, 113, 0.25);
-  --danger-text: #fca5a5;
   --overlay: rgba(0, 0, 0, 0.55);
-  --scrollbar: rgba(255, 255, 255, 0.12);
-  --scrollbar-hover: rgba(255, 255, 255, 0.2);
-  --logo-tile: #1e1f26;
-  --logo-tile-stroke: #30313c;
-
-  --accent: #9d8ef0;
-  --accent-strong: #b6abf7;
-  --accent-soft: rgba(157, 142, 240, 0.16);
-  --accent-softer: rgba(157, 142, 240, 0.07);
-  --accent-ring: rgba(157, 142, 240, 0.35);
-  --accent-text-gradient: linear-gradient(90deg, #b6abf7 0%, #8fd3f0 100%);
-  --glow-1: rgba(143, 126, 221, 0.2);
-  --glow-2: rgba(108, 192, 230, 0.12);
-
-  --series-1: #3987e5;
-  --series-2: #d95926;
-  --series-3: #199e70;
-  --series-4: #c98500;
-  --series-5: #d55181;
-  --series-6: #008300;
-
-  --elevation-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --elevation-md: 0 6px 24px rgba(0, 0, 0, 0.3);
-  --elevation-lg: 0 14px 36px rgba(0, 0, 0, 0.45);
-  --elevation-xl: 0 24px 60px rgba(0, 0, 0, 0.55);
-  --elevation-accent: 0 6px 20px rgba(143, 126, 221, 0.28);
 }
 
-/* Tokens as Tailwind classes, e.g. bg-main, bg-hover, text-secondary, border-line,
-   shadow-md. `inline` keeps them pointing at the variables above, so they follow
-   the theme. Radii use Tailwind's scale: rounded-lg 8px, xl 12px, 2xl 16px, 3xl 24px. */
+/* `inline` keeps the classes pointing at the variables above, so they follow the theme.
+   Shadows are Tailwind's own (shadow-sm … shadow-xl). Radii use Tailwind's scale:
+   rounded-lg 8px, xl 12px, 2xl 16px, 3xl 24px. */
 @theme inline {
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  --color-app: var(--bg-app);
-  --color-main: var(--bg-main);
-  --color-sidebar: var(--bg-sidebar);
-  --color-elevated: var(--bg-elevated);
-  --color-input: var(--bg-input);
-  --color-subtle: var(--bg-subtle);
-  --color-user-bubble: var(--bg-user-bubble);
-  --color-hover: var(--bg-hover);
-  --color-active: var(--bg-active);
-
-  --color-primary: var(--text-primary);
-  --color-secondary: var(--text-secondary);
-  --color-tertiary: var(--text-tertiary);
-
-  --color-faint: var(--border-faint);
-  --color-line: var(--border-light);
-  --color-strong: var(--border-strong);
-
-  --color-success-soft: var(--success-soft);
-  --color-success-text: var(--success-text);
-  --color-danger: var(--danger);
-  --color-danger-bg: var(--danger-bg);
-  --color-danger-border: var(--danger-border);
-  --color-danger-text: var(--danger-text);
-  --color-overlay: var(--overlay);
-
+  /* Turn off Tailwind's built-in palette (red-500, gray-300, white…), so only these exist */
+  --color-*: initial;
+  --color-brand: var(--brand);
+  --color-main: var(--main);
+  --color-soft: var(--soft);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --color-accent: var(--accent);
-  --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
-  --color-accent-softer: var(--accent-softer);
-  --color-accent-ring: var(--accent-ring);
-
-  --shadow-sm: var(--elevation-sm);
-  --shadow-md: var(--elevation-md);
-  --shadow-lg: var(--elevation-lg);
-  --shadow-xl: var(--elevation-xl);
-  --shadow-accent: var(--elevation-accent);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-overlay: var(--overlay);
 
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-swing: cubic-bezier(0.65, 0, 0.35, 1);
@@ -179,18 +80,6 @@
   --animate-spinner: spin 0.8s linear infinite;
 }
 
-/* Login page palette. Fixed colours: the login screen has no dark theme. */
-@theme {
-  --color-ink: #0f1117;
-  --color-ink-2: #3b3f4c;
-  --color-muted: #6b7080;
-  --color-hairline: #e7e8ee;
-  --color-canvas: #f7f7fb;
-  --color-brand-violet: #7c5cff;
-  --color-brand-indigo: #5b6cff;
-  --color-brand-blue: #3b82f6;
-}
-
 @layer base {
   /* The app shell owns scrolling, so the page itself never shows a scrollbar */
   html,
@@ -204,8 +93,8 @@
   }
 
   body {
-    background-color: var(--bg-app);
-    color: var(--text-primary);
+    background-color: var(--soft);
+    color: var(--primary);
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
@@ -215,7 +104,7 @@
   }
 
   ::selection {
-    background: var(--accent-ring);
+    background: var(--accent-soft);
   }
 
   button {
@@ -233,26 +122,26 @@
   }
 
   select option {
-    background: var(--bg-elevated);
-    color: var(--text-primary);
+    background: var(--main);
+    color: var(--primary);
   }
 }
 
 /* Thin, theme-coloured scrollbar for scrolling panels */
 @utility scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar) transparent;
+  scrollbar-color: var(--line) transparent;
 
   &::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--scrollbar);
+    background: var(--line);
     border-radius: 4px;
   }
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-hover);
+    background: var(--secondary);
   }
 }
 
@@ -322,7 +211,7 @@
 
 /* Chat that is still waiting on Genie, in the sidebar */
 @keyframes busyPulse {
-  0% { box-shadow: 0 0 0 0 var(--accent-ring); }
+  0% { box-shadow: 0 0 0 0 var(--accent-soft); }
   70%, 100% { box-shadow: 0 0 0 6px transparent; }
 }
 

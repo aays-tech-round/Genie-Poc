@@ -25,13 +25,13 @@ export function GenieMark({ className, starClassName }) {
   );
 }
 
-// The lamp on a white tile (chat app avatar and branding).
+// The lamp on a tile (chat app avatar and branding).
 export default function GenieLogo({ size = 28 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
       <rect
         x=".75" y=".75" width="46.5" height="46.5" rx="12" strokeWidth="1.5"
-        style={{ fill: 'var(--logo-tile, #fff)', stroke: 'var(--logo-tile-stroke, #E7E8EE)' }}
+        className="fill-main stroke-line"
       />
       <g transform="translate(6.6 7.9) scale(.75)">
         <LampPaths />

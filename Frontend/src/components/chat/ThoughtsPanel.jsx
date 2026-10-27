@@ -5,8 +5,8 @@ import Markdown from '@/components/ui/Markdown';
 import { cn } from '@/lib/utils';
 
 const sectionTitle =
-  'inline-flex items-center gap-[0.4rem] text-xs font-semibold tracking-[0.04em] text-tertiary uppercase';
-const spinner = 'size-3.5 animate-spinner rounded-full border-2 border-accent-ring border-t-accent-strong';
+  'inline-flex items-center gap-[0.4rem] text-xs font-semibold tracking-[0.04em] text-secondary uppercase';
+const spinner = 'size-3.5 animate-spinner rounded-full border-2 border-accent-soft border-t-accent';
 
 // Live progress text: the backend's status message, or a generic line before Genie reports one.
 const progressText = (message) =>
@@ -34,7 +34,7 @@ function SqlBlock({ sql, parameters }) {
         <span className={sectionTitle}><Code size={14} /> Generated SQL</span>
         <button
           type="button"
-          className="inline-flex items-center gap-[0.3rem] rounded-md px-2 py-[0.2rem] text-xs text-secondary transition hover:bg-hover hover:text-primary"
+          className="inline-flex items-center gap-[0.3rem] rounded-md px-2 py-[0.2rem] text-xs text-secondary transition hover:bg-line hover:text-primary"
           onClick={copy}
           aria-label="Copy SQL"
         >
@@ -50,12 +50,12 @@ function SqlBlock({ sql, parameters }) {
               className="rounded-full bg-accent-soft px-2 py-[0.15rem] font-mono text-xs text-primary"
               title={p.sql_type || undefined}
             >
-              <span className="text-accent-strong">:{p.keyword}</span> = {String(p.value)}
+              <span className="text-accent">:{p.keyword}</span> = {String(p.value)}
             </span>
           ))}
         </div>
       )}
-      <pre className="max-h-80 overflow-auto rounded-[10px] border border-line bg-subtle px-[0.9rem] py-3 font-mono text-[0.8rem] leading-[1.6] whitespace-pre text-primary scrollbar-thin">
+      <pre className="max-h-80 overflow-auto rounded-[10px] border border-line bg-soft px-[0.9rem] py-3 font-mono text-[0.8rem] leading-[1.6] whitespace-pre text-primary scrollbar-thin">
         <code>{text}</code>
       </pre>
     </div>
@@ -89,7 +89,7 @@ export default function ThoughtsPanel({ message, live }) {
     <div className="mb-3 animate-fade">
       <button
         type="button"
-        className="-ml-[0.4rem] inline-flex min-h-7 items-center gap-2 rounded-lg py-[0.2rem] pr-[0.55rem] pl-[0.4rem] text-left text-sm text-secondary transition enabled:hover:bg-hover enabled:hover:text-primary"
+        className="-ml-[0.4rem] inline-flex min-h-7 items-center gap-2 rounded-lg py-[0.2rem] pr-[0.55rem] pl-[0.4rem] text-left text-sm text-secondary transition enabled:hover:bg-line enabled:hover:text-primary"
         onClick={() => hasBody && setOpen((o) => !o)}
         aria-expanded={hasBody ? open : undefined}
         disabled={!hasBody}
@@ -108,7 +108,7 @@ export default function ThoughtsPanel({ message, live }) {
             {/* key restarts the fade each time the step changes; the shimmer sweeps across it while Genie works */}
             <span
               key={progressText(message)}
-              className="animate-[fadeOnly_0.35s_ease_both] text-[0.9rem] text-secondary motion-safe:animate-[fadeOnly_0.35s_ease_both,shimmer_2.2s_linear_infinite] motion-safe:bg-[linear-gradient(90deg,var(--text-secondary)_30%,var(--text-primary)_50%,var(--text-secondary)_70%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:text-transparent"
+              className="animate-[fadeOnly_0.35s_ease_both] text-[0.9rem] text-secondary motion-safe:animate-[fadeOnly_0.35s_ease_both,shimmer_2.2s_linear_infinite] motion-safe:bg-[linear-gradient(90deg,var(--secondary)_30%,var(--primary)_50%,var(--secondary)_70%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:text-transparent"
               role="status"
               aria-live="polite"
             >
@@ -117,15 +117,15 @@ export default function ThoughtsPanel({ message, live }) {
           </>
         ) : (
           <>
-            <Lightbulb size={15} className="shrink-0 text-accent-strong" />
+            <Lightbulb size={15} className="shrink-0 text-accent" />
             <span className="font-medium">Thoughts</span>
-            {summary && <span className="text-tertiary before:mr-2 before:content-['·']">{summary}</span>}
+            {summary && <span className="text-secondary before:mr-2 before:content-['·']">{summary}</span>}
           </>
         )}
         {hasBody && (
           <ChevronDown
             size={15}
-            className={cn('shrink-0 text-tertiary transition-transform duration-250 ease-smooth', open && 'rotate-180')}
+            className={cn('shrink-0 text-secondary transition-transform duration-250 ease-smooth', open && 'rotate-180')}
           />
         )}
       </button>
@@ -153,7 +153,7 @@ export default function ThoughtsPanel({ message, live }) {
                     >
                       <span
                         className={cn(
-                          'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full text-accent-strong',
+                          'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full text-accent',
                           !current && 'bg-accent-soft'
                         )}
                         aria-hidden="true"

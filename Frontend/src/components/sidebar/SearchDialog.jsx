@@ -3,7 +3,7 @@ import { MessageCircle, PenLine, Pin, Search, X } from 'lucide-react';
 import { iconButton } from '@/components/ui/classes';
 
 const resultRow =
-  'flex w-full items-center gap-3 rounded-[10px] px-3 py-[0.65rem] text-left text-[0.9rem] text-primary transition-colors duration-[120ms] hover:bg-hover';
+  'flex w-full items-center gap-3 rounded-[10px] px-3 py-[0.65rem] text-left text-[0.9rem] text-primary transition-colors duration-[120ms] hover:bg-line';
 
 // Modal search over chat titles and the text of every question / answer.
 export default function SearchDialog({ chats, onSelect, onNewChat, onClose }) {
@@ -30,7 +30,7 @@ export default function SearchDialog({ chats, onSelect, onNewChat, onClose }) {
       onClick={onClose}
     >
       <div
-        className="flex max-h-[70vh] w-[640px] max-w-full animate-dialog flex-col overflow-hidden rounded-2xl bg-elevated shadow-xl"
+        className="flex max-h-[70vh] w-[640px] max-w-full animate-dialog flex-col overflow-hidden rounded-2xl bg-main shadow-xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

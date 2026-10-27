@@ -37,13 +37,13 @@ export default function ResultView({ data }) {
   return (
     <div className="mt-4">
       <div className="mb-2 flex min-h-[30px] items-center justify-between gap-3">
-        <span className="text-[0.78rem] text-tertiary tabular-nums">
+        <span className="text-[0.78rem] text-secondary tabular-nums">
           {data.length} {data.length === 1 ? 'row' : 'rows'}
         </span>
         <div className="flex min-w-0 items-center gap-2">
           {chart && shown !== 'table' && chart.metrics.length > 1 && (
             <select
-              className="max-w-[180px] min-w-0 cursor-pointer rounded-lg border border-line bg-elevated px-2 py-[0.3rem] text-[0.78rem] text-ellipsis text-primary transition-colors hover:border-strong focus:border-strong focus:outline-none"
+              className="max-w-[180px] min-w-0 cursor-pointer rounded-lg border border-line bg-main px-2 py-[0.3rem] text-[0.78rem] text-ellipsis text-primary transition-colors hover:border-secondary focus:border-secondary focus:outline-none"
               value={activeMetric}
               onChange={(e) => setMetric(e.target.value)}
               aria-label="Metric to chart"
@@ -52,7 +52,7 @@ export default function ResultView({ data }) {
             </select>
           )}
           {visual && (
-            <div className="inline-flex rounded-[9px] bg-hover p-0.5" role="tablist" aria-label="Result view">
+            <div className="inline-flex rounded-[9px] bg-line p-0.5" role="tablist" aria-label="Result view">
               {tabs.map((v) => (
                 <button
                   key={v}
@@ -61,7 +61,7 @@ export default function ResultView({ data }) {
                   className={cn(
                     'rounded-[7px] px-[0.7rem] py-1 text-[0.78rem] font-medium transition duration-[180ms]',
                     shown === v
-                      ? 'bg-elevated text-primary shadow-[var(--elevation-sm),0_0_0_1px_var(--border-light)]'
+                      ? 'bg-main text-primary shadow-sm ring-1 ring-line'
                       : 'text-secondary hover:text-primary'
                   )}
                   onClick={() => setView(v)}
@@ -78,7 +78,7 @@ export default function ResultView({ data }) {
         <StatTiles row={data[0]} stats={stats} />
       ) : shown !== 'table' && chart ? (
         <div
-          className="animate-[fadeIn_0.3s_var(--ease-smooth)_both] rounded-xl border border-line bg-elevated px-[1.1rem] pt-4 pb-[0.9rem] shadow-sm max-sm:px-3 max-sm:pt-[0.85rem] max-sm:pb-3"
+          className="animate-[fadeIn_0.3s_var(--ease-smooth)_both] rounded-xl border border-line bg-main px-[1.1rem] pt-4 pb-[0.9rem] shadow-sm max-sm:px-3 max-sm:pt-[0.85rem] max-sm:pb-3"
           key={`${shown}-${chart.kind}-${activeMetric}`}
         >
           <div className="mb-[0.85rem] text-[0.9rem] font-semibold wrap-anywhere text-primary">
@@ -91,7 +91,7 @@ export default function ResultView({ data }) {
               : <BarChart rows={data} label={chart.label} metric={activeMetric} />}
         </div>
       ) : (
-        <div className="max-h-[460px] animate-[fadeOnly_0.25s_ease_both] overflow-auto rounded-xl border border-line bg-elevated shadow-sm scrollbar-thin">
+        <div className="max-h-[460px] animate-[fadeOnly_0.25s_ease_both] overflow-auto rounded-xl border border-line bg-main shadow-sm scrollbar-thin">
           <table className="w-full border-separate border-spacing-0 text-left text-sm tabular-nums">
             <thead>
               <tr>
@@ -100,7 +100,7 @@ export default function ResultView({ data }) {
                     key={h}
                     className={cn(
                       cell,
-                      'sticky top-0 z-1 bg-subtle text-[0.8rem] font-semibold tracking-[0.01em] text-secondary',
+                      'sticky top-0 z-1 bg-soft text-[0.8rem] font-semibold tracking-[0.01em] text-secondary',
                       numericCols.has(h) ? 'text-right' : 'text-left'
                     )}
                   >
@@ -115,7 +115,7 @@ export default function ResultView({ data }) {
                   {headers.map((h) => (
                     <td key={h} className={cn(cell, numericCols.has(h) && 'text-right')}>
                       {row[h] === null || row[h] === undefined
-                        ? <span className="text-tertiary">—</span>
+                        ? <span className="text-secondary">—</span>
                         : formatCell(row[h], numericCols.has(h))}
                     </td>
                   ))}

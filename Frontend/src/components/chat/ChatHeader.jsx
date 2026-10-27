@@ -11,7 +11,7 @@ export default function ChatHeader({ title, bordered, sidebarOpen, onOpenSidebar
     <header
       className={cn(
         'relative z-5 flex min-h-[60px] shrink-0 items-center justify-between gap-3 border-b border-transparent px-4 transition-colors duration-200 max-md:min-h-[54px] max-md:px-3 max-md:py-2',
-        bordered && 'border-faint bg-main'
+        bordered && 'border-line bg-main'
       )}
     >
       <div className="flex min-w-0 items-center gap-1">

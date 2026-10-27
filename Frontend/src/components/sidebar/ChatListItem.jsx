@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 const row = 'group relative mb-px flex items-center rounded-[10px] transition-colors';
 // Accent marker on the open chat
 const activeMarker =
-  'before:absolute before:inset-y-1/4 before:left-0 before:w-[3px] before:animate-[fadeOnly_0.2s_ease_both] before:rounded-r-[3px] before:bg-(image:--accent-gradient)';
+  'before:absolute before:inset-y-1/4 before:left-0 before:w-[3px] before:animate-[fadeOnly_0.2s_ease_both] before:rounded-r-[3px] before:bg-accent';
 
 // One chat in the sidebar history, with its pin / rename / delete menu.
 export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin, onRename, onDelete }) {
@@ -26,9 +26,9 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
 
   if (renaming) {
     return (
-      <div className={cn(row, 'bg-active', activeMarker)}>
+      <div className={cn(row, 'bg-accent-soft', activeMarker)}>
         <input
-          className="m-[3px] flex-1 rounded-lg border border-accent bg-elevated px-2 py-[0.4rem] text-[0.9rem] text-primary shadow-[0_0_0_3px_var(--accent-ring)] outline-none"
+          className="m-[3px] flex-1 rounded-lg border border-accent bg-main px-2 py-[0.4rem] text-[0.9rem] text-primary ring-3 ring-accent-soft outline-none"
           value={draft}
           autoFocus
           onChange={(e) => setDraft(e.target.value)}
@@ -45,7 +45,7 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
   return (
     <div
       ref={itemRef}
-      className={cn(row, active ? cn('bg-active', activeMarker) : menuOpen ? 'bg-hover' : 'hover:bg-hover')}
+      className={cn(row, active ? cn('bg-accent-soft', activeMarker) : menuOpen ? 'bg-line' : 'hover:bg-line')}
     >
       <button
         className={cn(
@@ -80,7 +80,7 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
 
       {menuOpen && (
         <div
-          className="absolute top-[calc(100%+4px)] right-0 z-40 w-[170px] origin-top-right animate-menu rounded-xl border border-line bg-elevated p-[5px] shadow-lg"
+          className="absolute top-[calc(100%+4px)] right-0 z-40 w-[170px] origin-top-right animate-menu rounded-xl border border-line bg-main p-[5px] shadow-lg"
           role="menu"
         >
           <button

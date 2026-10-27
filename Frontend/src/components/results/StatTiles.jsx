@@ -20,8 +20,8 @@ export default function StatTiles({ row, stats }) {
           <div
             key={m}
             className={cn(
-              'relative animate-fade-up overflow-hidden rounded-xl border border-line bg-elevated shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-accent',
-              single ? 'bg-[linear-gradient(135deg,var(--accent-soft)_0%,transparent_70%)] px-6 py-5' : 'px-[1.15rem] py-4'
+              'relative animate-fade-up overflow-hidden rounded-xl border border-line bg-main shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-accent',
+              single ? 'bg-accent-soft px-6 py-5' : 'px-[1.15rem] py-4'
             )}
             style={{ animationDelay: `${i * 60}ms` }}
           >
@@ -35,14 +35,14 @@ export default function StatTiles({ row, stats }) {
             >
               {Math.abs(n) >= 1e4 ? compact : full}
             </div>
-            {Math.abs(n) >= 1e4 && <div className="mt-[0.3rem] text-[0.78rem] text-tertiary tabular-nums">{full}</div>}
+            {Math.abs(n) >= 1e4 && <div className="mt-[0.3rem] text-[0.78rem] text-secondary tabular-nums">{full}</div>}
           </div>
         );
       })}
       {stats.context.length > 0 && (
         <div className="col-span-full flex flex-wrap gap-[0.4rem]">
           {stats.context.map((c) => (
-            <span key={c.name} className="rounded-full bg-hover px-[0.6rem] py-[0.2rem] text-[0.78rem] text-primary">
+            <span key={c.name} className="rounded-full bg-line px-[0.6rem] py-[0.2rem] text-[0.78rem] text-primary">
               <span className="text-secondary">{c.name}</span> {c.value}
             </span>
           ))}

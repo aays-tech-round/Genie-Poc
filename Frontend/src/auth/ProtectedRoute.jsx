@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (starting) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-gray-300 text-sm">
+      <div className="min-h-screen bg-soft flex items-center justify-center text-secondary text-sm">
         Loading…
       </div>
     );

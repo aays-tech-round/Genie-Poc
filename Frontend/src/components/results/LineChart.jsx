@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toNumber, timeValue, fmtFull, fmtCompact, formatValue, formatLabel, niceTicks } from './resultUtils';
 
-const axisText = 'fill-tertiary text-[11px] tabular-nums';
-const dot = 'fill-accent stroke-elevated stroke-2';
+const axisText = 'fill-secondary text-[11px] tabular-nums';
+const dot = 'fill-accent stroke-main stroke-2';
 
 // Time series with a hover crosshair; resizes with its container.
 export default function LineChart({ rows, label, metric }) {
@@ -26,7 +26,7 @@ export default function LineChart({ rows, label, metric }) {
     [rows, label, metric]
   );
 
-  if (points.length < 2) return <div className="mt-[0.6rem] text-[0.78rem] text-tertiary">Not enough data to chart.</div>;
+  if (points.length < 2) return <div className="mt-[0.6rem] text-[0.78rem] text-secondary">Not enough data to chart.</div>;
 
   const height = 240;
   const pad = { top: 16, right: 56, bottom: 28, left: 48 };
@@ -82,14 +82,14 @@ export default function LineChart({ rows, label, metric }) {
         </text>
         {hp && (
           <g>
-            <line x1={x(hover)} x2={x(hover)} y1={pad.top} y2={pad.top + innerH} className="stroke-strong stroke-1" />
+            <line x1={x(hover)} x2={x(hover)} y1={pad.top} y2={pad.top + innerH} className="stroke-secondary stroke-1" />
             <circle cx={x(hover)} cy={y(hp.v)} r="5" className={dot} />
           </g>
         )}
       </svg>
       {hp && (
         <div
-          className="pointer-events-none absolute -translate-x-1/2 -translate-y-full animate-[fadeOnly_0.12s_ease_both] rounded-[10px] border border-line bg-elevated px-[0.6rem] py-[0.4rem] whitespace-nowrap shadow-lg"
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-full animate-[fadeOnly_0.12s_ease_both] rounded-[10px] border border-line bg-main px-[0.6rem] py-[0.4rem] whitespace-nowrap shadow-lg"
           style={{
             left: Math.min(Math.max(x(hover), 70), width - 70),
             top: Math.max(y(hp.v) - 12, 0),

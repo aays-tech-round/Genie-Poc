@@ -24,7 +24,7 @@ export default function UserMenu() {
       {open && (
         // Opens upward from the account row
         <div
-          className="absolute right-0 bottom-[calc(100%+6px)] left-0 z-40 origin-bottom animate-menu rounded-xl border border-line bg-elevated p-[5px] shadow-lg"
+          className="absolute right-0 bottom-[calc(100%+6px)] left-0 z-40 origin-bottom animate-menu rounded-xl border border-line bg-main p-[5px] shadow-lg"
           role="menu"
         >
           {email && (
@@ -49,22 +49,22 @@ export default function UserMenu() {
       <button
         className={cn(
           'flex w-full items-center gap-[0.65rem] rounded-[10px] px-[0.6rem] py-2 text-left transition-colors',
-          open ? 'bg-hover' : 'hover:bg-hover'
+          open ? 'bg-line' : 'hover:bg-line'
         )}
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-(image:--accent-gradient) text-[0.72rem] font-semibold tracking-[0.3px] text-white">
+        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-brand text-[0.72rem] font-semibold tracking-[0.3px] text-main dark:text-primary">
           {getInitials(name, email)}
         </span>
         <span className="flex min-w-0 flex-1 flex-col leading-[1.3]">
           <span className="truncate text-sm font-medium text-primary">{name || 'Signed in'}</span>
-          {email && <span className="truncate text-xs text-tertiary">{email}</span>}
+          {email && <span className="truncate text-xs text-secondary">{email}</span>}
         </span>
         <ChevronDown
           size={16}
-          className={cn('shrink-0 text-tertiary transition-transform duration-200 ease-smooth', !open && 'rotate-180')}
+          className={cn('shrink-0 text-secondary transition-transform duration-200 ease-smooth', !open && 'rotate-180')}
         />
       </button>
 
@@ -74,7 +74,7 @@ export default function UserMenu() {
           onClick={() => setConfirmLogout(false)}
         >
           <div
-            className="w-[400px] max-w-full animate-dialog rounded-2xl bg-elevated p-6 shadow-xl"
+            className="w-[400px] max-w-full animate-dialog rounded-2xl bg-main p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -83,14 +83,14 @@ export default function UserMenu() {
             <p className="mb-6 text-[0.9rem] wrap-break-word text-secondary">Log out of Genie as {email || name}?</p>
             <div className="flex justify-end gap-2">
               <button
-                className={cn(dialogButton, 'border border-strong text-primary hover:bg-hover')}
+                className={cn(dialogButton, 'border border-secondary text-primary hover:bg-line')}
                 onClick={() => setConfirmLogout(false)}
               >
                 Cancel
               </button>
               {/* Ends the Entra ID session and returns to postLogoutRedirectUri */}
               <button
-                className={cn(dialogButton, 'bg-[#ff3621] text-white hover:bg-[#e02e1a]')}
+                className={cn(dialogButton, 'bg-danger text-main hover:opacity-90')}
                 onClick={() => instance.logoutRedirect()}
               >
                 Log out

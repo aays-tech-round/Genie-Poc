@@ -5,7 +5,7 @@
 const SAFE_URL = /^(https?:|mailto:)/i;
 
 const HEADING_SIZES = { h3: 'text-[1.125rem]', h4: 'text-[1.025rem]' };
-const LIST = 'space-y-[0.3rem] pl-[1.4rem] marker:text-tertiary';
+const LIST = 'space-y-[0.3rem] pl-[1.4rem] marker:text-secondary';
 const CELL = 'border-b border-line px-[0.9rem] py-[0.55rem] text-left';
 
 // Inline: `code`, **bold**, __bold__, *italic*, _italic_, [text](url).
@@ -27,7 +27,7 @@ function renderInline(text, keyPrefix = 'i') {
     const token = m[0];
     const key = `${keyPrefix}-${n++}`;
     if (m[1]) {
-      out.push(<code key={key} className="rounded-md border border-line bg-user-bubble px-[0.4em] py-[0.12em] font-mono text-[0.85em]">{token.slice(1, -1)}</code>);
+      out.push(<code key={key} className="rounded-md border border-line bg-accent-soft px-[0.4em] py-[0.12em] font-mono text-[0.85em]">{token.slice(1, -1)}</code>);
     } else if (m[2]) {
       out.push(<strong key={key} className="font-semibold">{renderInline(token.slice(2, -2), key)}</strong>);
     } else if (m[3]) {
@@ -42,7 +42,7 @@ function renderInline(text, keyPrefix = 'i') {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-accent-strong underline decoration-accent-ring underline-offset-2 transition-[text-decoration-color] hover:decoration-current"
+              className="text-accent underline decoration-accent-soft underline-offset-2 transition-[text-decoration-color] hover:decoration-current"
             >
               {renderInline(label, key)}
             </a>
@@ -179,7 +179,7 @@ export default function Markdown({ text }) {
             return (
               <pre
                 key={key}
-                className="overflow-x-auto rounded-xl border border-line bg-subtle px-4 py-[0.85rem] font-mono text-[0.85rem] leading-[1.6] whitespace-pre"
+                className="overflow-x-auto rounded-xl border border-line bg-soft px-4 py-[0.85rem] font-mono text-[0.85rem] leading-[1.6] whitespace-pre"
               >
                 <code>{b.text}</code>
               </pre>
@@ -188,7 +188,7 @@ export default function Markdown({ text }) {
             return <hr key={key} className="my-5 h-px border-none bg-line" />;
           case 'quote':
             return (
-              <blockquote key={key} className="border-l-[3px] border-accent-ring py-[0.15rem] pl-[0.9rem] text-secondary">
+              <blockquote key={key} className="border-l-[3px] border-accent py-[0.15rem] pl-[0.9rem] text-secondary">
                 {withBreaks(b.text, key)}
               </blockquote>
             );
@@ -211,7 +211,7 @@ export default function Markdown({ text }) {
                   <thead>
                     <tr>
                       {b.header.map((h, j) => (
-                        <th key={j} className={`${CELL} bg-subtle text-[0.8rem] font-semibold text-secondary`}>
+                        <th key={j} className={`${CELL} bg-soft text-[0.8rem] font-semibold text-secondary`}>
                           {renderInline(h, `${key}-h${j}`)}
                         </th>
                       ))}
