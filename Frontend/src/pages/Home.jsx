@@ -14,7 +14,7 @@ export default function Home() {
   const { name, email } = useCurrentUser();
   const {
     chats, activeChat, activeChatId, messages, isProcessing, processingChatIds,
-    selectChat, startNewChat, sendQuestion, rateAnswer, togglePin, renameChat, deleteChat,
+    selectChat, startNewChat, sendQuestion, togglePin, renameChat, deleteChat,
   } = useChats(email);
   const [inputValue, setInputValue] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -98,7 +98,6 @@ export default function Home() {
               chatId={activeChatId}
               messages={messages}
               isProcessing={isProcessing}
-              onFeedback={rateAnswer}
               onRetry={sendQuestion}
               onAsk={sendQuestion}
             />

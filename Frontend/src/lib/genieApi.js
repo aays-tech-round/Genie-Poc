@@ -32,8 +32,3 @@ export async function getMessageStatus(messageId, conversationId) {
   const res = await fetch(`${GENIE_API_BASE}/status/${messageId}?conversation_id=${conversationId}`);
   return res.json();
 }
-
-// rating: 'POSITIVE' | 'NEGATIVE'
-export function sendFeedback(conversationId, messageId, rating) {
-  return postJson('/feedback', { conversation_id: conversationId, message_id: messageId, rating });
-}

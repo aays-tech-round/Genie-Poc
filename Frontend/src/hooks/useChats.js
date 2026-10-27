@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   GENIE_STEPS, POLL_INITIAL_DELAY_MS, POLL_MAX_DELAY_MS, POLL_TIMEOUT_MS, TERMINAL_STATUSES,
 } from '@/constants/genie';
-import { askGenie, getMessageStatus, sendFeedback } from '@/lib/genieApi';
+import { askGenie, getMessageStatus } from '@/lib/genieApi';
 import { loadChats, saveChats } from '@/lib/chatStorage';
 import { makeId, titleFrom } from '@/lib/utils';
 
@@ -145,14 +145,6 @@ export default function useChats(email) {
     }
   };
 
-  const rateAnswer = async (msgId, rating) => {
-    try {
-      await sendFeedback(conversationId, msgId, rating);
-    } catch (err) {
-      console.error('Failed to submit feedback:', err);
-    }
-  };
-
   const togglePin = (chatId) => updateChat(chatId, (c) => ({ ...c, pinned: !c.pinned }));
 
   const renameChat = (chatId, title) => updateChat(chatId, (c) => ({ ...c, title }));
@@ -172,7 +164,6 @@ export default function useChats(email) {
     selectChat: setActiveChatId,
     startNewChat: () => setActiveChatId(null),
     sendQuestion,
-    rateAnswer,
     togglePin,
     renameChat,
     deleteChat,

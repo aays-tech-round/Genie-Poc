@@ -175,6 +175,12 @@
   position: relative;
   width: min(100cqw, 140cqh, 620px);
   aspect-ratio: 560 / 400;
+  container-type: inline-size;
+  /* One design pixel: 1px at the full 620px width, smaller as the visual
+     shrinks. Cards are sized in it so they scale with their % positions
+     instead of overlapping on short screens. Resolved inside the cards, so
+     100cqw is this element's width. */
+  --u: calc(100cqw / 620);
 }
 
 .graph {
@@ -253,9 +259,9 @@
 
 .card {
   position: absolute;
-  padding: 12px 14px;
+  padding: calc(var(--u) * 12) calc(var(--u) * 14);
   border: 1px solid rgba(231, 232, 238, 0.95);
-  border-radius: 14px;
+  border-radius: calc(var(--u) * 14);
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
@@ -268,7 +274,7 @@
 
 .cardLabel {
   display: block;
-  font-size: 11px;
+  font-size: calc(var(--u) * 11);
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -278,37 +284,37 @@
 .cardLabelGenie {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: calc(var(--u) * 5);
 }
 
 .cardLabelIcon {
-  width: 16px;
-  height: 16px;
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
   flex: none;
 }
 
 .cardMetric {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-top: 4px;
-  font-size: 20px;
+  gap: calc(var(--u) * 8);
+  margin-top: calc(var(--u) * 4);
+  font-size: calc(var(--u) * 20);
   font-weight: 650;
   letter-spacing: -0.02em;
   color: var(--ink);
 }
 
 .delta {
-  font-size: 12px;
+  font-size: calc(var(--u) * 12);
   font-weight: 600;
   color: #0f9d6b;
 }
 
 .spark {
   display: block;
-  width: 120px;
-  height: 30px;
-  margin-top: 6px;
+  width: calc(var(--u) * 120);
+  height: calc(var(--u) * 30);
+  margin-top: calc(var(--u) * 6);
 }
 
 .cardKpi {
@@ -325,9 +331,9 @@
 
 .sql {
   display: block;
-  margin-top: 8px;
+  margin-top: calc(var(--u) * 8);
   font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
-  font-size: 11.5px;
+  font-size: calc(var(--u) * 11.5);
   line-height: 1.55;
   color: var(--ink-2);
   white-space: nowrap;
@@ -345,19 +351,19 @@
 .sqlStatus {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 2px 8px;
+  gap: calc(var(--u) * 6);
+  margin-top: calc(var(--u) * 8);
+  padding: calc(var(--u) * 2) calc(var(--u) * 8);
   border-radius: 999px;
   background: rgba(15, 157, 107, 0.1);
-  font-size: 11px;
+  font-size: calc(var(--u) * 11);
   font-weight: 500;
   color: #0b7a53;
 }
 
 .sqlDot {
-  width: 6px;
-  height: 6px;
+  width: calc(var(--u) * 6);
+  height: calc(var(--u) * 6);
   border-radius: 50%;
   background: #0f9d6b;
 }
@@ -365,52 +371,52 @@
 .cardAsk {
   bottom: 2%;
   left: 8%;
-  max-width: 290px;
+  max-width: calc(var(--u) * 290);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: calc(var(--u) * 10);
   animation-delay: -4.5s;
   animation-duration: 9s;
 }
 
 .askAvatar {
-  width: 28px;
-  height: 28px;
+  width: calc(var(--u) * 28);
+  height: calc(var(--u) * 28);
   flex: none;
   display: grid;
   place-items: center;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: calc(var(--u) * 8);
   background: #fff;
 }
 
 .askAvatar img {
-  width: 16px;
-  height: 16px;
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
 }
 
 .askAvatarGenie svg {
-  width: 22px;
-  height: 22px;
+  width: calc(var(--u) * 22);
+  height: calc(var(--u) * 22);
 }
 
 .askText {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(var(--u) * 13);
   line-height: 1.4;
   color: var(--ink-2);
 }
 
 .typing {
   display: inline-flex;
-  gap: 3px;
-  margin-left: 4px;
+  gap: calc(var(--u) * 3);
+  margin-left: calc(var(--u) * 4);
   vertical-align: middle;
 }
 
 .typing span {
-  width: 4px;
-  height: 4px;
+  width: calc(var(--u) * 4);
+  height: calc(var(--u) * 4);
   border-radius: 50%;
   background: var(--indigo);
   animation: blink 1.2s ease-in-out infinite;

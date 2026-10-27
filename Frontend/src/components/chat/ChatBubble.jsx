@@ -1,26 +1,17 @@
-import { useState } from 'react';
 import styles from './ChatBubble.module.css';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 import { FAILED_STATUSES } from '@/constants/genie';
 import { getInitials } from '@/lib/utils';
-import { AlertIcon, GenieLogo, RetryIcon, ThumbsDownIcon, ThumbsUpIcon } from '@/components/ui/icons';
+import { AlertIcon, GenieLogo, RetryIcon } from '@/components/ui/icons';
 import Markdown from '@/components/ui/Markdown';
 import ResultView from '@/components/results/ResultView';
 import ThoughtsPanel, { hasInsights } from './ThoughtsPanel';
 import FollowUps from './FollowUps';
 
 // onAsk is only passed for the latest answer, so follow-up suggestions show there alone.
-export default function ChatBubble({ message, onFeedback, onRetry, onAsk }) {
+export default function ChatBubble({ message, onRetry, onAsk }) {
   const isUser = message.role === 'user';
   const { name, email } = useCurrentUser();
-  const [feedbackSent, setFeedbackSent] = useState(null);
-
-  const handleFeedback = (rating) => {
-    if (onFeedback && !feedbackSent) {
-      onFeedback(message.message_id, rating);
-      setFeedbackSent(rating);
-    }
-  };
 
   const failed = FAILED_STATUSES.includes(message.status);
   const working = !isUser && message.status !== 'COMPLETED' && !failed;
@@ -56,28 +47,6 @@ export default function ChatBubble({ message, onFeedback, onRetry, onAsk }) {
             <Markdown text={message.summary} />
             {message.data && <ResultView data={message.data} />}
             {onAsk && <FollowUps questions={message.suggested_questions} onAsk={onAsk} />}
-
-            <div className={`${styles.feedbackActions} ${feedbackSent ? styles.feedbackDone : ''}`}>
-              <button
-                className={`${styles.iconBtn} ${feedbackSent === 'POSITIVE' ? styles.selectedBtn : ''}`}
-                onClick={() => handleFeedback('POSITIVE')}
-                disabled={feedbackSent !== null}
-                title="Helpful"
-                aria-label="Helpful"
-              >
-                <ThumbsUpIcon size={16} />
-              </button>
-              <button
-                className={`${styles.iconBtn} ${feedbackSent === 'NEGATIVE' ? styles.selectedBtn : ''}`}
-                onClick={() => handleFeedback('NEGATIVE')}
-                disabled={feedbackSent !== null}
-                title="Not Helpful"
-                aria-label="Not helpful"
-              >
-                <ThumbsDownIcon size={16} />
-              </button>
-              {feedbackSent && <span className={styles.feedbackThanks}>Thanks for the feedback</span>}
-            </div>
           </div>
         ) : failed ? (
           <div className={styles.errorCard} role="alert">

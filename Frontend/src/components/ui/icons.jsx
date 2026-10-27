@@ -82,20 +82,6 @@ export const PlusIcon = (p) => (
   <Icon {...p}><path d="M12 5v14" /><path d="M5 12h14" /></Icon>
 );
 
-export const ThumbsUpIcon = (p) => (
-  <Icon {...p}>
-    <path d="M7 10v11" />
-    <path d="M15 5.9 14 10h5.8a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 18.4 21H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h2.8a2 2 0 0 0 1.8-1.1L12 2a3.1 3.1 0 0 1 3 3.9Z" />
-  </Icon>
-);
-
-export const ThumbsDownIcon = (p) => (
-  <Icon {...p}>
-    <path d="M17 14V3" />
-    <path d="M9 18.1 10 14H4.2a2 2 0 0 1-2-2.3l1.4-7A2 2 0 0 1 5.6 3H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-2.8a2 2 0 0 0-1.8 1.1L12 22a3.1 3.1 0 0 1-3-3.9Z" />
-  </Icon>
-);
-
 export const AlertIcon = (p) => (
   <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 8v4" /><path d="M12 16h.01" /></Icon>
 );

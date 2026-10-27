@@ -161,68 +161,6 @@
   font-size: 0.85rem;
 }
 
-/* Feedback */
-.feedbackActions {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.6rem;
-  opacity: 0;
-  transform: translateY(-2px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.genieRow:hover .feedbackActions,
-.feedbackActions:focus-within,
-.feedbackDone {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* No hover on touch screens, so keep the buttons visible */
-@media (hover: none) {
-  .feedbackActions {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.iconBtn {
-  width: 30px;
-  height: 30px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  border-radius: 8px;
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
-}
-
-.iconBtn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.iconBtn:active:not(:disabled) {
-  transform: scale(0.9);
-}
-
-.iconBtn:disabled {
-  cursor: default;
-}
-
-.selectedBtn {
-  color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.feedbackThanks {
-  margin-left: 0.35rem;
-  font-size: 0.78rem;
-  color: var(--text-tertiary);
-  animation: fadeOnly 0.3s ease both;
-}
-
 @media (max-width: 640px) {
   .messageRow {
     gap: 0.6rem;
