@@ -27,7 +27,7 @@ export async function askGenie(content, conversationId) {
   return res.json();
 }
 
-// Current state of an answer: status, status_message, summary, data, error, ...
+// Current state of an answer: Genie's status code, plus summary, data, sql, thoughts, error, ...
 export async function getMessageStatus(messageId, conversationId) {
   const res = await fetch(`${GENIE_API_BASE}/status/${messageId}?conversation_id=${conversationId}`);
   return res.json();

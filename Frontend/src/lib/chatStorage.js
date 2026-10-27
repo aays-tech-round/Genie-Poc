@@ -11,7 +11,7 @@ export function loadChats(email) {
       ...chat,
       messages: chat.messages.map((m) =>
         m.role === 'genie' && !TERMINAL_STATUSES.includes(m.status)
-          ? { ...m, status: 'FAILED', status_message: 'Interrupted' }
+          ? { ...m, status: 'FAILED', error: 'Interrupted: the page was closed before Genie answered' }
           : m
       ),
     }));

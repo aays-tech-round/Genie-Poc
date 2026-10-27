@@ -1,18 +1,16 @@
 import { useState } from 'react';
-import { GENIE_STEPS, THOUGHT_LABELS } from '@/constants/genie';
+import { TERMINAL_STATUSES } from '@/constants/genie';
 import { Check, ChevronDown, Code, Copy, Database, Lightbulb } from 'lucide-react';
 import Markdown from '@/components/ui/Markdown';
-import { cn } from '@/lib/utils';
+import { cn, formatCode } from '@/lib/utils';
 
 const sectionTitle =
   'inline-flex items-center gap-[0.4rem] text-xs font-semibold tracking-[0.04em] text-secondary uppercase';
 const spinner = 'size-3.5 animate-spinner rounded-full border-2 border-accent-soft border-t-accent';
 
-// Live progress text: the backend's status message, or a generic line before Genie reports one.
-const progressText = (message) =>
-  ['SUBMITTED', 'STARTING', 'PENDING', undefined].includes(message.status) || !message.status_message
-    ? 'Genie is thinking…'
-    : message.status_message.replace(/\.\.\.$/, '…');
+// What Genie is doing now: its current status code, or null before it has reported one.
+const currentStatus = (message) =>
+  message.status && !TERMINAL_STATUSES.includes(message.status) ? formatCode(message.status) : null;
 
 function SqlBlock({ sql, parameters }) {
   const [copied, setCopied] = useState(false);
@@ -63,15 +61,17 @@ function SqlBlock({ sql, parameters }) {
 }
 
 /**
- * How Genie got to an answer: progress steps, its thoughts and the SQL it ran.
- * While `live` it is open and shows the current step; once the answer arrives it
- * collapses to a one-line summary the user can expand.
+ * How Genie got to an answer, built only from what the Genie API returns: the status
+ * codes it reported while working (in order), its thoughts, the query title and
+ * description, and the SQL. Everything updates on each poll. While `live` it is open;
+ * once the answer arrives it collapses to a one-line summary the user can expand.
  */
 export default function ThoughtsPanel({ message, live }) {
   const [open, setOpen] = useState(live);
   const [wasLive, setWasLive] = useState(live);
   const steps = message.steps || [];
   const thoughts = message.thoughts || [];
+  const status = currentStatus(message);
 
   // Fold away when the answer lands (the bubble stays mounted across that change)
   if (live !== wasLive) {
@@ -105,14 +105,18 @@ export default function ThoughtsPanel({ message, live }) {
                 />
               ))}
             </span>
-            {/* key restarts the fade each time the step changes; the shimmer sweeps across it while Genie works */}
+            {/* Genie's current status code; until it reports one, only the dots show.
+                key restarts the fade when the status changes. */}
             <span
-              key={progressText(message)}
-              className="animate-[fadeOnly_0.35s_ease_both] text-[0.9rem] text-secondary motion-safe:animate-[fadeOnly_0.35s_ease_both,shimmer_2.2s_linear_infinite] motion-safe:bg-[linear-gradient(90deg,var(--secondary)_30%,var(--primary)_50%,var(--secondary)_70%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:text-transparent"
+              key={status || 'waiting'}
+              className={cn(
+                'animate-[fadeOnly_0.35s_ease_both] text-[0.9rem] text-secondary motion-safe:animate-[fadeOnly_0.35s_ease_both,shimmer_2.2s_linear_infinite] motion-safe:bg-[linear-gradient(90deg,var(--secondary)_30%,var(--primary)_50%,var(--secondary)_70%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:text-transparent',
+                !status && 'sr-only'
+              )}
               role="status"
               aria-live="polite"
             >
-              {progressText(message)}
+              {status || 'Waiting for Genie'}
             </span>
           </>
         ) : (
@@ -160,7 +164,7 @@ export default function ThoughtsPanel({ message, live }) {
                       >
                         {current ? <span className={spinner} /> : <Check size={11} />}
                       </span>
-                      {current ? GENIE_STEPS[s].active : GENIE_STEPS[s].done}
+                      {formatCode(s)}
                     </li>
                   );
                 })}
@@ -178,10 +182,13 @@ export default function ThoughtsPanel({ message, live }) {
 
             {thoughts.map((t, i) => (
               <div key={i} className="flex animate-fade flex-col gap-[0.35rem]">
-                <div className={sectionTitle}>
-                  {t.type === 'data_sourcing' ? <Database size={14} /> : <Lightbulb size={14} />}
-                  {THOUGHT_LABELS[t.type] || 'Thought'}
-                </div>
+                {/* Heading is Genie's thought type, e.g. data_sourcing -> "Data sourcing" */}
+                {t.type && (
+                  <div className={sectionTitle}>
+                    {t.type === 'data_sourcing' ? <Database size={14} /> : <Lightbulb size={14} />}
+                    {formatCode(t.type)}
+                  </div>
+                )}
                 {/* Thought text stays at the panel's smaller size; Markdown headings keep theirs */}
                 <div className="text-sm text-secondary [&_:not(h3,h4,h5,h6)]:text-[length:inherit]">
                   <Markdown text={t.content} />

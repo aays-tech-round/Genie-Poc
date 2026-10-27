@@ -3,6 +3,17 @@ import { MOBILE_QUERY } from '@/constants/genie';
 // Joins class names, skipping falsy ones: cn('a', isOpen && 'b') -> 'a b' or 'a'.
 export const cn = (...classes) => classes.filter(Boolean).join(' ');
 
+// Shows an API code as words without rewording it, so the UI never claims text Genie
+// didn't send: 'FETCHING_METADATA' -> 'Fetching metadata', 'ASKING_AI' -> 'Asking AI',
+// 'data_sourcing' -> 'Data sourcing'. Short words (AI, ID) stay upper case.
+export const formatCode = (code) =>
+  String(code)
+    .toLowerCase()
+    .split('_')
+    .filter(Boolean)
+    .map((w, i) => (w.length <= 2 ? w.toUpperCase() : i === 0 ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(' ');
+
 export const makeId = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID
     ? crypto.randomUUID()

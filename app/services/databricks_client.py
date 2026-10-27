@@ -4,19 +4,6 @@ from databricks.sdk.service.dashboards import GenieFeedbackRating
 
 logger = logging.getLogger(__name__)
 
-STATUS_MESSAGES = {
-    "SUBMITTED": "Message sent",
-    "FETCHING_METADATA": "Reading table metadata...",
-    "FILTERING_CONTEXT": "Finding relevant context...",
-    "ASKING_AI": "Genie is thinking...",
-    "PENDING_WAREHOUSE": "Waiting for the SQL warehouse to start...",
-    "EXECUTING_QUERY": "Running SQL on the warehouse...",
-    "COMPLETED": "Query complete",
-    "FAILED": "Query failed",
-    "CANCELLED": "Query cancelled",
-    "QUERY_RESULT_EXPIRED": "Query result expired. Please ask again.",
-}
-
 class DatabricksGenieClient:
     def __init__(self):
         # By default, WorkspaceClient picks up environment variables:
@@ -80,9 +67,9 @@ class DatabricksGenieClient:
         trusted_asset = False
         error = None
 
-        status_message = STATUS_MESSAGES.get(status_val, "Processing...")
-
-        if status_val == "FAILED" and getattr(msg, "error", None):
+        # Genie reports progress only as a status code (e.g. FETCHING_METADATA); it sends
+        # no progress text, so the code is passed through unchanged for the UI to show.
+        if getattr(msg, "error", None):
             error = msg.error.error or (msg.error.type.value if msg.error.type else None)
 
         # Genie's reasoning, SQL and follow-ups arrive as attachments while it works,
@@ -115,7 +102,6 @@ class DatabricksGenieClient:
 
         return {
             "status": status_val,
-            "status_message": status_message,
             "summary": summary,
             "data": data,
             "trusted_asset": trusted_asset,

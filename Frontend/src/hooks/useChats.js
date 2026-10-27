@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  GENIE_STEPS, POLL_INITIAL_DELAY_MS, POLL_MAX_DELAY_MS, POLL_TIMEOUT_MS, TERMINAL_STATUSES,
+  POLL_INITIAL_DELAY_MS, POLL_MAX_DELAY_MS, POLL_TIMEOUT_MS, TERMINAL_STATUSES,
 } from '@/constants/genie';
 import { askGenie, getMessageStatus } from '@/lib/genieApi';
 import { loadChats, saveChats } from '@/lib/chatStorage';
@@ -8,14 +8,13 @@ import { makeId, titleFrom } from '@/lib/utils';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Appends a polled status to the message's progress steps (shown in the Thoughts panel).
-// Steps shorter than the poll interval (up to 2s) can be skipped; that's fine for a summary.
-const nextSteps = (steps = [], status) => {
-  // ASKING_AI after the query has run means Genie is writing the answer
-  const step = status === 'ASKING_AI' && steps.includes('EXECUTING_QUERY') ? 'SUMMARIZING' : status;
-  if (!GENIE_STEPS[step] || steps[steps.length - 1] === step) return steps;
-  return [...steps, step];
-};
+// Records each status code Genie reports while working, in the order it reports them,
+// for the Thoughts panel. A code can recur (e.g. ASKING_AI before and after the query
+// runs); a status shorter than the poll interval (up to 2s) may not be seen at all.
+const nextSteps = (steps = [], status) =>
+  !status || TERMINAL_STATUSES.includes(status) || steps[steps.length - 1] === status
+    ? steps
+    : [...steps, status];
 
 /**
  * Chat history for one user plus the Genie question/answer flow:
@@ -101,7 +100,7 @@ export default function useChats(email) {
       delay = Math.min(delay * 2, POLL_MAX_DELAY_MS);
     }
 
-    updateMessage(chatId, msgId, { status: 'FAILED', status_message: 'Timed out' });
+    updateMessage(chatId, msgId, { status: 'FAILED', error: 'No answer from Genie after 10 minutes' });
     setChatProcessing(chatId, false);
   };
 
@@ -131,7 +130,8 @@ export default function useChats(email) {
 
       appendMessage(
         chatId,
-        { role: 'genie', message_id: newMsgId, status: 'STARTING', status_message: 'Message Sent' },
+        // No status until the first poll: the UI shows a plain loading indicator meanwhile
+        { role: 'genie', message_id: newMsgId },
         { conversationId: conversationId || newConvId }
       );
 
@@ -140,7 +140,7 @@ export default function useChats(email) {
       appendMessage(chatId, {
         role: 'genie',
         status: 'FAILED',
-        status_message: err.message || 'Failed to connect to backend',
+        error: err.message || 'Failed to connect to backend',
       });
       setChatProcessing(chatId, false);
     }

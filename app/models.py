@@ -10,8 +10,7 @@ class AskResponse(BaseModel):
     conversation_id: str
 
 class StatusResponse(BaseModel):
-    status: str
-    status_message: str
+    status: str  # Genie's MessageStatus code, e.g. FETCHING_METADATA, EXECUTING_QUERY, COMPLETED
     trusted_asset: bool = False
     summary: Optional[str] = None
     data: Optional[Any] = None
