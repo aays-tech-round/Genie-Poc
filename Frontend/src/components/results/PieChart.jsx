@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { fmtFull, formatLabel, formatValue, toNumber } from './resultUtils';
-import styles from './PieChart.module.css';
+import { cn } from '@/lib/utils';
 
 const SIZE = 200;
 const OUTER = 96;
@@ -39,11 +39,11 @@ export default function PieChart({ rows, label, metric }) {
   const focus = active !== null ? slices[active] : null;
 
   return (
-    <div className={styles.pie}>
-      <div className={styles.donutWrap}>
+    <div className="flex flex-wrap items-center gap-7 max-sm:gap-4">
+      <div className="relative size-[200px] shrink-0 max-sm:mx-auto max-sm:size-[170px]">
         <svg
           viewBox={`0 0 ${SIZE} ${SIZE}`}
-          className={styles.donut}
+          className="block size-full overflow-visible"
           role="img"
           aria-label={`Pie chart of ${metric} by ${label}`}
           onPointerLeave={() => setActive(null)}
@@ -53,7 +53,12 @@ export default function PieChart({ rows, label, metric }) {
               key={i}
               d={arcPath(s.a0, s.a1)}
               fill={s.color}
-              className={`${styles.slice} ${active !== null && active !== i ? styles.sliceDim : ''}`}
+              // The card-coloured stroke leaves a gap between neighbouring slices. The entrance
+              // animation fills backwards, not both: a held end state would override the dimming.
+              className={cn(
+                'origin-[100px_100px] animate-[sliceIn_0.5s_var(--ease-smooth)_backwards] cursor-default stroke-elevated stroke-2 [stroke-linejoin:round] transition-opacity duration-200',
+                active !== null && active !== i && 'opacity-35'
+              )}
               style={{ animationDelay: `${i * 50}ms` }}
               onPointerEnter={() => setActive(i)}
             >
@@ -62,29 +67,34 @@ export default function PieChart({ rows, label, metric }) {
           ))}
         </svg>
         {/* Centre readout: the total, or the hovered slice */}
-        <div className={styles.center} aria-hidden="true">
-          <div className={styles.centerValue}>{formatValue(focus ? focus.value : total)}</div>
-          <div className={styles.centerLabel} title={focus ? focus.name : 'Total'}>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center" aria-hidden="true">
+          <div className="text-[1.35rem] font-semibold tracking-[-0.02em] text-primary tabular-nums">
+            {formatValue(focus ? focus.value : total)}
+          </div>
+          <div className="max-w-[110px] truncate text-xs text-secondary" title={focus ? focus.name : 'Total'}>
             {focus ? fmtPct.format(focus.share) : 'Total'}
           </div>
         </div>
       </div>
 
-      <ul className={styles.legend}>
+      <ul className="flex max-w-[400px] min-w-[220px] flex-1 flex-col gap-0.5 max-sm:max-w-none max-sm:min-w-full">
         {slices.map((s, i) => (
           <li
             key={i}
-            className={`${styles.legendItem} ${active === i ? styles.legendActive : ''}`}
+            className={cn(
+              'grid grid-cols-[10px_minmax(0,1fr)_auto_3.5rem] items-center gap-[0.65rem] rounded-lg px-2 py-[0.4rem] text-[0.85rem] outline-none transition-colors hover:bg-subtle focus-visible:bg-subtle focus-visible:shadow-[0_0_0_2px_var(--accent-ring)]',
+              active === i && 'bg-subtle'
+            )}
             tabIndex={0}
             onPointerEnter={() => setActive(i)}
             onPointerLeave={() => setActive(null)}
             onFocus={() => setActive(i)}
             onBlur={() => setActive(null)}
           >
-            <span className={styles.swatch} style={{ background: s.color }} aria-hidden="true" />
-            <span className={styles.legendName} title={s.name}>{s.name}</span>
-            <span className={styles.legendValue}>{formatValue(s.value)}</span>
-            <span className={styles.legendPct}>{fmtPct.format(s.share)}</span>
+            <span className="size-2.5 rounded-[3px]" style={{ background: s.color }} aria-hidden="true" />
+            <span className={cn('truncate', active === i ? 'text-primary' : 'text-secondary')} title={s.name}>{s.name}</span>
+            <span className="text-right font-medium text-primary tabular-nums">{formatValue(s.value)}</span>
+            <span className="text-right text-tertiary tabular-nums">{fmtPct.format(s.share)}</span>
           </li>
         ))}
       </ul>

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import "@/styles/globals.css";
-import "@/auth/app-utilities.css";
 import AuthProvider from "@/auth/AuthProvider";
 import ProtectedRoute from "@/auth/ProtectedRoute";
 import { applySavedTheme } from "@/constants/theme";

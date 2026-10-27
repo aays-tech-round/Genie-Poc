@@ -1,11 +1,10 @@
 import { useEffect } from "react";
-import "@/auth/login.css";
+import "@/styles/globals.css";
 import AuthProvider from "@/auth/AuthProvider";
 import LoginPage from "@/auth/LoginPage";
 
-// Separate layout so the login screen gets full Tailwind (with preflight)
-// without the main app's globals.css. Moving between this and MainLayout is
-// a full page load, so neither page's global CSS leaks into the other.
+// Layout for the sign-in screen. It shares globals.css with the chat app but not
+// the chat's theme (no applySavedTheme): the login screen is always light.
 export default function LoginLayout() {
   useEffect(() => {
     document.title = "Sign in · Databricks Genie";

@@ -4,7 +4,9 @@ import StatTiles from './StatTiles';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
 import PieChart from './PieChart';
-import styles from './ResultView.module.css';
+import { cn } from '@/lib/utils';
+
+const cell = 'border-b border-line px-4 py-[0.65rem] whitespace-nowrap max-sm:px-3 max-sm:py-[0.55rem]';
 
 // Renders a Genie query result (array of {column: value} rows) as a table,
 // plus a bar or line chart, or headline figures, when the shape of the data suits one.
@@ -33,15 +35,15 @@ export default function ResultView({ data }) {
     v === 'table' ? 'Table' : v === 'pie' ? 'Pie' : visual === 'summary' ? 'Summary' : pieOk ? 'Bar' : 'Chart';
 
   return (
-    <div className={styles.result}>
-      <div className={styles.toolbar}>
-        <span className={styles.meta}>
+    <div className="mt-4">
+      <div className="mb-2 flex min-h-[30px] items-center justify-between gap-3">
+        <span className="text-[0.78rem] text-tertiary tabular-nums">
           {data.length} {data.length === 1 ? 'row' : 'rows'}
         </span>
-        <div className={styles.toolbarRight}>
+        <div className="flex min-w-0 items-center gap-2">
           {chart && shown !== 'table' && chart.metrics.length > 1 && (
             <select
-              className={styles.metricSelect}
+              className="max-w-[180px] min-w-0 cursor-pointer rounded-lg border border-line bg-elevated px-2 py-[0.3rem] text-[0.78rem] text-ellipsis text-primary transition-colors hover:border-strong focus:border-strong focus:outline-none"
               value={activeMetric}
               onChange={(e) => setMetric(e.target.value)}
               aria-label="Metric to chart"
@@ -50,13 +52,18 @@ export default function ResultView({ data }) {
             </select>
           )}
           {visual && (
-            <div className={styles.segmented} role="tablist" aria-label="Result view">
+            <div className="inline-flex rounded-[9px] bg-hover p-0.5" role="tablist" aria-label="Result view">
               {tabs.map((v) => (
                 <button
                   key={v}
                   role="tab"
                   aria-selected={shown === v}
-                  className={`${styles.segment} ${shown === v ? styles.segmentActive : ''}`}
+                  className={cn(
+                    'rounded-[7px] px-[0.7rem] py-1 text-[0.78rem] font-medium transition duration-[180ms]',
+                    shown === v
+                      ? 'bg-elevated text-primary shadow-[var(--elevation-sm),0_0_0_1px_var(--border-light)]'
+                      : 'text-secondary hover:text-primary'
+                  )}
                   onClick={() => setView(v)}
                 >
                   {tabLabel(v)}
@@ -70,9 +77,12 @@ export default function ResultView({ data }) {
       {shown === 'visual' && stats ? (
         <StatTiles row={data[0]} stats={stats} />
       ) : shown !== 'table' && chart ? (
-        <div className={styles.chartCard} key={`${shown}-${chart.kind}-${activeMetric}`}>
-          <div className={styles.chartTitle}>
-            {prettyName(activeMetric)} <span className={styles.chartSubtitle}>by {prettyName(chart.label)}</span>
+        <div
+          className="animate-[fadeIn_0.3s_var(--ease-smooth)_both] rounded-xl border border-line bg-elevated px-[1.1rem] pt-4 pb-[0.9rem] shadow-sm max-sm:px-3 max-sm:pt-[0.85rem] max-sm:pb-3"
+          key={`${shown}-${chart.kind}-${activeMetric}`}
+        >
+          <div className="mb-[0.85rem] text-[0.9rem] font-semibold wrap-anywhere text-primary">
+            {prettyName(activeMetric)} <span className="font-normal text-secondary">by {prettyName(chart.label)}</span>
           </div>
           {shown === 'pie'
             ? <PieChart rows={data} label={chart.label} metric={activeMetric} />
@@ -81,22 +91,31 @@ export default function ResultView({ data }) {
               : <BarChart rows={data} label={chart.label} metric={activeMetric} />}
         </div>
       ) : (
-        <div className={styles.tableContainer}>
-          <table className={styles.dataTable}>
+        <div className="max-h-[460px] animate-[fadeOnly_0.25s_ease_both] overflow-auto rounded-xl border border-line bg-elevated shadow-sm scrollbar-thin">
+          <table className="w-full border-separate border-spacing-0 text-left text-sm tabular-nums">
             <thead>
               <tr>
                 {headers.map((h) => (
-                  <th key={h} className={numericCols.has(h) ? styles.num : ''}>{h}</th>
+                  <th
+                    key={h}
+                    className={cn(
+                      cell,
+                      'sticky top-0 z-1 bg-subtle text-[0.8rem] font-semibold tracking-[0.01em] text-secondary',
+                      numericCols.has(h) ? 'text-right' : 'text-left'
+                    )}
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {data.map((row, i) => (
-                <tr key={i}>
+                <tr key={i} className="transition-colors hover:bg-accent-soft [&:last-child>td]:border-b-0">
                   {headers.map((h) => (
-                    <td key={h} className={numericCols.has(h) ? styles.num : ''}>
+                    <td key={h} className={cn(cell, numericCols.has(h) && 'text-right')}>
                       {row[h] === null || row[h] === undefined
-                        ? <span className={styles.nullCell}>—</span>
+                        ? <span className="text-tertiary">—</span>
                         : formatCell(row[h], numericCols.has(h))}
                     </td>
                   ))}

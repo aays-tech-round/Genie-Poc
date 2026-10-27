@@ -8,7 +8,6 @@ import WelcomeScreen from '@/components/chat/WelcomeScreen';
 import MessageList from '@/components/chat/MessageList';
 import ChatFooter from '@/components/chat/ChatFooter';
 import Composer from '@/components/chat/Composer';
-import styles from './Home.module.css';
 
 export default function Home() {
   const { name, email } = useCurrentUser();
@@ -57,7 +56,7 @@ export default function Home() {
   );
 
   return (
-    <div className={styles.appShell}>
+    <div className="flex h-dvh overflow-hidden bg-sidebar">
       <Sidebar
         open={sidebarOpen}
         chats={chats}
@@ -71,8 +70,14 @@ export default function Home() {
         onToggle={() => setSidebarOpen((o) => !o)}
       />
 
-      <main className={styles.container}>
-        {isEmpty && <div className={styles.ambient} aria-hidden="true" />}
+      <main className="relative flex h-dvh min-w-0 flex-1 flex-col overflow-hidden bg-main">
+        {/* Soft purple / blue glow behind the welcome screen */}
+        {isEmpty && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 animate-[fadeOnly_1s_ease_both] bg-[radial-gradient(520px_circle_at_30%_18%,var(--glow-1),transparent_70%),radial-gradient(480px_circle_at_72%_30%,var(--glow-2),transparent_70%)] opacity-90"
+          />
+        )}
 
         <ChatHeader
           title={isEmpty ? null : activeChat?.title}

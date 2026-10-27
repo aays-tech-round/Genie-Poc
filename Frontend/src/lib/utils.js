@@ -1,5 +1,8 @@
 import { MOBILE_QUERY } from '@/constants/genie';
 
+// Joins class names, skipping falsy ones: cn('a', isOpen && 'b') -> 'a b' or 'a'.
+export const cn = (...classes) => classes.filter(Boolean).join(' ');
+
 export const makeId = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID
     ? crypto.randomUUID()

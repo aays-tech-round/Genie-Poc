@@ -4,7 +4,10 @@ import GenieLogo from '@/components/ui/GenieLogo';
 import ChatListItem from './ChatListItem';
 import SearchDialog from './SearchDialog';
 import UserMenu from './UserMenu';
-import styles from './Sidebar.module.css';
+import { iconButton } from '@/components/ui/classes';
+import { cn } from '@/lib/utils';
+
+const sectionLabel = 'px-[0.6rem] pt-2 pb-[0.3rem] text-xs font-semibold tracking-[0.02em] text-tertiary';
 
 // Buckets chats (already sorted newest first) into Today / Yesterday / Previous 7 days / Older.
 const groupByDate = (chats) => {
@@ -62,59 +65,86 @@ export default function Sidebar({
 
   return (
     <>
-      <aside className={`${styles.sidebar} ${open ? '' : styles.sidebarClosed}`} aria-hidden={!open} inert={!open}>
-        <div className={styles.header}>
-          <div className={styles.brand}>
+      {/* On phones the sidebar slides over the chat instead of pushing it */}
+      <aside
+        className={cn(
+          'z-30 flex h-dvh w-[268px] shrink-0 flex-col border-r border-faint bg-sidebar transition-[margin-left,opacity] duration-[0.32s,0.25s] ease-swing',
+          'max-md:fixed max-md:top-0 max-md:left-0 max-md:w-[min(280px,85vw)] max-md:shadow-xl',
+          !open && '-ml-[268px] opacity-0 max-md:ml-[max(-280px,-85vw)] max-md:shadow-none'
+        )}
+        aria-hidden={!open}
+        inert={!open}
+      >
+        <div className="flex min-h-[60px] items-center justify-between pr-[0.6rem] pl-4">
+          <div className="flex items-center gap-[0.6rem]">
             <GenieLogo size={26} />
-            <span className={styles.brandText}>Genie</span>
+            <span className="text-[1.05rem] font-[650] tracking-[-0.01em] text-primary">Genie</span>
           </div>
-          <button className={styles.iconBtn} onClick={onToggle} title="Close sidebar" aria-label="Close sidebar">
+          <button className={iconButton} onClick={onToggle} title="Close sidebar" aria-label="Close sidebar">
             <PanelLeft size={20} />
           </button>
         </div>
 
-        <div className={styles.actions}>
-          <button className={styles.newChatBtn} onClick={onNewChat}>
-            <span className={styles.newChatIcon}><PenLine size={16} /></span>
+        <div className="flex flex-col gap-0.5 px-[0.6rem] pt-1 pb-2">
+          <button
+            className="mb-1 flex items-center gap-[0.6rem] rounded-xl border border-line bg-elevated py-2 pr-[0.6rem] pl-2 text-left text-[0.9rem] font-medium text-primary shadow-sm transition duration-200 hover:border-accent-ring hover:shadow-md active:scale-98"
+            onClick={onNewChat}
+          >
+            <span className="inline-flex size-[26px] items-center justify-center rounded-lg bg-(image:--accent-gradient) text-white shadow-accent">
+              <PenLine size={16} />
+            </span>
             New chat
           </button>
-          <button className={styles.searchBtn} onClick={() => setSearchOpen(true)}>
+          <button
+            className="flex items-center gap-[0.6rem] rounded-[10px] py-2 pr-[0.6rem] pl-3 text-left text-sm text-secondary transition hover:bg-hover hover:text-primary"
+            onClick={() => setSearchOpen(true)}
+          >
             <Search size={16} />
-            <span className={styles.searchBtnText}>Search chats</span>
-            <kbd className={styles.kbd}>{shortcut}</kbd>
+            <span className="flex-1">Search chats</span>
+            <kbd className="rounded-[5px] border border-line bg-elevated px-[0.4rem] py-[0.1rem] font-sans text-[0.68rem] text-tertiary">
+              {shortcut}
+            </kbd>
           </button>
         </div>
 
-        <nav className={styles.lists} aria-label="Chat history">
+        <nav
+          className="flex flex-1 flex-col gap-[0.6rem] overflow-y-auto scrollbar-thin px-[0.6rem] pb-4"
+          aria-label="Chat history"
+        >
           {pinned.length > 0 && (
             <section>
-              <div className={styles.sectionLabel}>Pinned</div>
+              <div className={sectionLabel}>Pinned</div>
               {pinned.map(renderItem)}
             </section>
           )}
 
           {recentGroups.map((g) => (
             <section key={g.label}>
-              <div className={styles.sectionLabel}>{g.label}</div>
+              <div className={sectionLabel}>{g.label}</div>
               {g.items.map(renderItem)}
             </section>
           ))}
 
           {chats.length === 0 && (
-            <div className={styles.emptyHistory}>
+            <div className="mx-2 mt-6 flex flex-col items-center gap-2 text-center text-[0.82rem] text-tertiary">
               <MessageCircle size={20} />
               <span>Your chats will show up here</span>
             </div>
           )}
         </nav>
 
-        <div className={styles.footer}>
+        <div className="border-t border-faint px-[0.6rem] py-2">
           <UserMenu />
         </div>
       </aside>
 
       {/* Dims the page behind the sidebar on small screens */}
-      {open && <div className={styles.mobileScrim} onClick={onToggle} />}
+      {open && (
+        <div
+          className="hidden max-md:fixed max-md:inset-0 max-md:z-25 max-md:block max-md:animate-[fadeOnly_0.25s_ease] max-md:bg-overlay"
+          onClick={onToggle}
+        />
+      )}
 
       {searchOpen && (
         <SearchDialog

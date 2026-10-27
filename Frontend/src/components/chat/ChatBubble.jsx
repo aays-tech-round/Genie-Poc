@@ -1,4 +1,3 @@
-import styles from './ChatBubble.module.css';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 import { FAILED_STATUSES } from '@/constants/genie';
 import { getInitials } from '@/lib/utils';
@@ -10,6 +9,8 @@ import ThoughtsPanel from './ThoughtsPanel';
 import { hasInsights } from './thoughtsUtils';
 import FollowUps from './FollowUps';
 
+const bubble = 'relative text-[0.975rem] leading-[1.65] wrap-anywhere max-sm:text-[0.95rem]';
+
 // onAsk is only passed for the latest answer, so follow-up suggestions show there alone.
 export default function ChatBubble({ message, onRetry, onAsk }) {
   const isUser = message.role === 'user';
@@ -20,22 +21,30 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
 
   if (isUser) {
     return (
-      <div className={`${styles.messageRow} ${styles.userRow}`}>
-        <div className={`${styles.bubble} ${styles.userBubble}`}>{message.content}</div>
-        <span className={styles.userAvatar} aria-hidden="true">{getInitials(name, email)}</span>
+      // The sent question rises from the composer
+      <div className="flex w-full animate-[userIn_0.35s_var(--ease-smooth)_both] items-start justify-end gap-[0.6rem]">
+        <div className={`${bubble} max-w-[min(78%,620px)] rounded-[20px_6px_20px_20px] border border-accent-soft bg-user-bubble px-[1.1rem] py-[0.65rem] whitespace-pre-wrap shadow-sm max-sm:max-w-[82%]`}>
+          {message.content}
+        </div>
+        <span
+          className="mt-2 inline-flex size-[30px] shrink-0 items-center justify-center rounded-full bg-(image:--accent-gradient) text-[0.7rem] font-semibold tracking-[0.3px] text-white shadow-accent select-none max-sm:size-[26px] max-sm:text-[0.62rem]"
+          aria-hidden="true"
+        >
+          {getInitials(name, email)}
+        </span>
       </div>
     );
   }
 
   return (
-    <div className={`${styles.messageRow} ${styles.genieRow}`}>
-      <div className={styles.avatar}>
+    <div className="flex w-full animate-fade-up items-start justify-start gap-3.5 max-sm:gap-[0.6rem]">
+      <div className="mt-[0.15rem] size-7 shrink-0 rounded-[9px] shadow-sm max-sm:size-6 max-sm:[&_svg]:size-6">
         <GenieLogo size={28} />
       </div>
 
-      <div className={`${styles.bubble} ${styles.genieBubble}`}>
+      <div className={`${bubble} max-w-full min-w-0 flex-1 pt-[0.15rem]`}>
         {message.trusted_asset && (
-          <div className={styles.trustedBadge}>
+          <div className="mb-[0.6rem] inline-flex items-center gap-1 rounded-full bg-success-soft px-[0.55rem] py-[0.2rem] text-[0.68rem] font-semibold tracking-[0.5px] text-success-text uppercase">
             <span aria-hidden="true">✓</span> Verified
           </div>
         )}
@@ -45,22 +54,29 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
 
         {/* Each state mounts its own element, so the answer fades in when polling completes */}
         {message.status === 'COMPLETED' ? (
-          <div className={styles.answer}>
+          <div className="animate-answer">
             <Markdown text={message.summary} />
             {message.data && <ResultView data={message.data} />}
             {onAsk && <FollowUps questions={message.suggested_questions} onAsk={onAsk} />}
           </div>
         ) : failed ? (
-          <div className={styles.errorCard} role="alert">
-            <CircleAlert size={18} className={styles.errorIcon} />
-            <div className={styles.errorBody}>
-              <div className={styles.errorTitle}>Genie failed to process this request.</div>
+          <div
+            className="flex animate-[answerIn_0.35s_var(--ease-smooth)_both] items-start gap-[0.6rem] rounded-xl border border-danger-border bg-danger-bg px-[0.9rem] py-3 text-[0.9rem] leading-normal text-danger-text"
+            role="alert"
+          >
+            <CircleAlert size={18} className="mt-px shrink-0 text-danger" />
+            <div className="min-w-0 flex-1">
+              <div className="font-medium">Genie failed to process this request.</div>
               {(message.error || message.status_message) && (
-                <div className={styles.errorDetail}>{message.error || message.status_message}</div>
+                <div className="mt-[0.15rem] text-[0.85rem] opacity-80">{message.error || message.status_message}</div>
               )}
             </div>
             {onRetry && (
-              <button type="button" className={styles.retryBtn} onClick={onRetry}>
+              <button
+                type="button"
+                className="inline-flex shrink-0 items-center gap-[0.35rem] self-center rounded-full border border-danger-border bg-elevated px-3 py-[0.35rem] text-[0.8rem] font-medium text-primary transition hover:border-strong hover:bg-hover active:scale-96"
+                onClick={onRetry}
+              >
                 <RefreshCw size={14} /> Try again
               </button>
             )}

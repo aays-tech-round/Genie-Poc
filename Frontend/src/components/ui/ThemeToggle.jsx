@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { THEME_STORAGE_KEY } from '@/constants/theme';
 import { Moon, Sun } from 'lucide-react';
-import styles from './ThemeToggle.module.css';
+import { cn } from '@/lib/utils';
+import { iconButton } from './classes';
 
 const systemTheme = () =>
   window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -24,6 +25,10 @@ const applyTheme = (theme, animate) => {
   }
   root.setAttribute('data-theme', theme);
 };
+
+const swapIcon =
+  'absolute inset-0 flex items-center justify-center transition-[opacity,rotate,scale] duration-[0.3s,0.4s,0.4s] ease-smooth';
+const hiddenIcon = 'opacity-0 -rotate-90 scale-60';
 
 export default function ThemeToggle({ className = '' }) {
   const [theme, setTheme] = useState(
@@ -60,13 +65,14 @@ export default function ThemeToggle({ className = '' }) {
   return (
     <button
       type="button"
-      className={`${styles.toggle} ${className}`}
+      className={cn(iconButton, 'relative', className)}
       onClick={toggle}
       aria-label={label}
       title={label}
     >
-      <span className={`${styles.icon} ${isDark ? styles.hidden : ''}`}><Moon size={18} /></span>
-      <span className={`${styles.icon} ${isDark ? '' : styles.hidden}`}><Sun size={18} /></span>
+      {/* Sun and moon swap with a quarter turn */}
+      <span className={cn(swapIcon, isDark && hiddenIcon)}><Moon size={18} /></span>
+      <span className={cn(swapIcon, !isDark && hiddenIcon)}><Sun size={18} /></span>
     </button>
   );
 }

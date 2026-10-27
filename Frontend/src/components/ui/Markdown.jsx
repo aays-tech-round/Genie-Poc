@@ -1,10 +1,12 @@
-import styles from './Markdown.module.css';
-
 // Small Markdown renderer for Genie's text answers. Builds React elements
 // directly (no innerHTML), covering what Genie actually returns: headings,
 // paragraphs, lists, tables, code, quotes, rules and inline emphasis/links.
 
 const SAFE_URL = /^(https?:|mailto:)/i;
+
+const HEADING_SIZES = { h3: 'text-[1.125rem]', h4: 'text-[1.025rem]' };
+const LIST = 'space-y-[0.3rem] pl-[1.4rem] marker:text-tertiary';
+const CELL = 'border-b border-line px-[0.9rem] py-[0.55rem] text-left';
 
 // Inline: `code`, **bold**, __bold__, *italic*, _italic_, [text](url).
 // Underscore emphasis must sit on word boundaries so column names like
@@ -25,16 +27,26 @@ function renderInline(text, keyPrefix = 'i') {
     const token = m[0];
     const key = `${keyPrefix}-${n++}`;
     if (m[1]) {
-      out.push(<code key={key} className={styles.inlineCode}>{token.slice(1, -1)}</code>);
+      out.push(<code key={key} className="rounded-md border border-line bg-user-bubble px-[0.4em] py-[0.12em] font-mono text-[0.85em]">{token.slice(1, -1)}</code>);
     } else if (m[2]) {
-      out.push(<strong key={key}>{renderInline(token.slice(2, -2), key)}</strong>);
+      out.push(<strong key={key} className="font-semibold">{renderInline(token.slice(2, -2), key)}</strong>);
     } else if (m[3]) {
       out.push(<em key={key}>{renderInline(token.slice(1, -1), key)}</em>);
     } else if (m[4]) {
       const [, label, href] = token.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
       out.push(
         SAFE_URL.test(href)
-          ? <a key={key} href={href} target="_blank" rel="noopener noreferrer">{renderInline(label, key)}</a>
+          ? (
+            <a
+              key={key}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent-strong underline decoration-accent-ring underline-offset-2 transition-[text-decoration-color] hover:decoration-current"
+            >
+              {renderInline(label, key)}
+            </a>
+          )
           : label
       );
     }
@@ -148,43 +160,69 @@ export default function Markdown({ text }) {
   const blocks = parseBlocks(String(text));
 
   return (
-    <div className={styles.markdown}>
+    <div className="space-y-3 leading-[1.7] text-primary">
       {blocks.map((b, idx) => {
         const key = `b${idx}`;
         switch (b.type) {
           case 'heading': {
             const Tag = `h${Math.min(b.level + 2, 6)}`;
-            return <Tag key={key} className={styles.heading}>{renderInline(b.text, key)}</Tag>;
+            return (
+              <Tag
+                key={key}
+                className={`mt-5 leading-[1.35] font-semibold tracking-[-0.01em] text-primary first:mt-0 ${HEADING_SIZES[Tag] || 'text-[0.95rem]'}`}
+              >
+                {renderInline(b.text, key)}
+              </Tag>
+            );
           }
           case 'code':
-            return <pre key={key} className={styles.codeBlock}><code>{b.text}</code></pre>;
+            return (
+              <pre
+                key={key}
+                className="overflow-x-auto rounded-xl border border-line bg-subtle px-4 py-[0.85rem] font-mono text-[0.85rem] leading-[1.6] whitespace-pre"
+              >
+                <code>{b.text}</code>
+              </pre>
+            );
           case 'hr':
-            return <hr key={key} className={styles.hr} />;
+            return <hr key={key} className="my-5 h-px border-none bg-line" />;
           case 'quote':
-            return <blockquote key={key} className={styles.quote}>{withBreaks(b.text, key)}</blockquote>;
+            return (
+              <blockquote key={key} className="border-l-[3px] border-accent-ring py-[0.15rem] pl-[0.9rem] text-secondary">
+                {withBreaks(b.text, key)}
+              </blockquote>
+            );
           case 'ul':
             return (
-              <ul key={key} className={styles.list}>
+              <ul key={key} className={`${LIST} list-disc`}>
                 {b.items.map((it, j) => <li key={j}>{withBreaks(it, `${key}-${j}`)}</li>)}
               </ul>
             );
           case 'ol':
             return (
-              <ol key={key} className={styles.list} start={b.start}>
+              <ol key={key} className={`${LIST} list-decimal`} start={b.start}>
                 {b.items.map((it, j) => <li key={j}>{withBreaks(it, `${key}-${j}`)}</li>)}
               </ol>
             );
           case 'table':
             return (
-              <div key={key} className={styles.tableWrap}>
-                <table className={styles.table}>
+              <div key={key} className="overflow-x-auto rounded-xl border border-line">
+                <table className="w-full border-collapse text-sm tabular-nums">
                   <thead>
-                    <tr>{b.header.map((h, j) => <th key={j}>{renderInline(h, `${key}-h${j}`)}</th>)}</tr>
+                    <tr>
+                      {b.header.map((h, j) => (
+                        <th key={j} className={`${CELL} bg-subtle text-[0.8rem] font-semibold text-secondary`}>
+                          {renderInline(h, `${key}-h${j}`)}
+                        </th>
+                      ))}
+                    </tr>
                   </thead>
                   <tbody>
                     {b.rows.map((r, j) => (
-                      <tr key={j}>
-                        {b.header.map((_, k) => <td key={k}>{renderInline(r[k] || '', `${key}-${j}-${k}`)}</td>)}
+                      <tr key={j} className="[&:last-child>td]:border-b-0">
+                        {b.header.map((_, k) => (
+                          <td key={k} className={CELL}>{renderInline(r[k] || '', `${key}-${j}-${k}`)}</td>
+                        ))}
                       </tr>
                     ))}
                   </tbody>
@@ -192,7 +230,7 @@ export default function Markdown({ text }) {
               </div>
             );
           default:
-            return <p key={key} className={styles.paragraph}>{withBreaks(b.text, key)}</p>;
+            return <p key={key}>{withBreaks(b.text, key)}</p>;
         }
       })}
     </div>

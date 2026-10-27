@@ -1,9 +1,9 @@
 import { useImperativeHandle, useLayoutEffect, useRef } from 'react';
 import { ArrowUp } from 'lucide-react';
-import styles from './Composer.module.css';
+import { cn } from '@/lib/utils';
 
 const MAX_HEIGHT = 200;
-const SINGLE_LINE = 38; // matches .field min-height and the send button
+const SINGLE_LINE = 38; // matches the field's min-h-[38px] and the send button
 
 // Message box: Enter sends, Shift+Enter adds a line, and the field grows with its text.
 // Typing stays possible while Genie is busy; only sending is blocked.
@@ -36,7 +36,13 @@ export default function Composer({ value, onChange, onSubmit, busy, inputRef, au
 
   return (
     <form
-      className={`${styles.composer} ${busy ? styles.busy : ''}`}
+      className={cn(
+        'flex w-full items-center gap-2 rounded-3xl border border-line py-[0.55rem] pr-[0.55rem] pl-[1.1rem] shadow-md transition duration-250',
+        'hover:not-focus-within:border-strong focus-within:border-accent-ring focus-within:shadow-[0_0_0_4px_var(--accent-softer),var(--elevation-md)]',
+        // data-multiline is set by the layout effect above
+        'data-multiline:items-end max-md:rounded-[22px]',
+        busy ? 'bg-subtle' : 'bg-input'
+      )}
       onSubmit={(e) => {
         e.preventDefault();
         if (canSend) onSubmit(e);
@@ -49,18 +55,19 @@ export default function Composer({ value, onChange, onSubmit, busy, inputRef, au
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={busy ? 'Genie is working on your answer…' : 'Ask Genie anything about your data…'}
-        className={styles.field}
+        // 16px on phones keeps iOS Safari from zooming into the field
+        className="block max-h-[200px] min-h-[38px] min-w-0 flex-1 resize-none overflow-y-hidden border-none bg-transparent py-[7px] text-base leading-6 text-primary outline-none scrollbar-thin placeholder:text-tertiary max-md:text-[16px]"
         aria-label="Message Genie"
         autoFocus={autoFocus}
       />
       <button
         type="submit"
-        className={styles.send}
+        className="flex size-[38px] shrink-0 items-center justify-center rounded-full bg-(image:--accent-gradient) text-white shadow-accent transition duration-200 ease-smooth enabled:hover:-translate-y-px enabled:hover:shadow-[0_8px_22px_rgba(143,126,221,0.45)] enabled:active:scale-90 disabled:cursor-not-allowed disabled:bg-hover disabled:bg-none disabled:text-tertiary disabled:shadow-none"
         disabled={!canSend}
         aria-label={busy ? 'Genie is answering' : 'Send'}
         title={busy ? 'Genie is answering' : 'Send'}
       >
-        {busy ? <span className={styles.spinner} aria-hidden="true" /> : <ArrowUp size={18} />}
+        {busy ? <span className="size-4 animate-spinner rounded-full border-2 border-accent-ring border-t-accent-strong" aria-hidden="true" /> : <ArrowUp size={18} />}
       </button>
     </form>
   );

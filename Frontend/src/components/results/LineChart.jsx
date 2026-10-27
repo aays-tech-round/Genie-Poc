@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toNumber, timeValue, fmtFull, fmtCompact, formatValue, formatLabel, niceTicks } from './resultUtils';
-import styles from './ResultView.module.css';
+
+const axisText = 'fill-tertiary text-[11px] tabular-nums';
+const dot = 'fill-accent stroke-elevated stroke-2';
 
 // Time series with a hover crosshair; resizes with its container.
 export default function LineChart({ rows, label, metric }) {
@@ -24,7 +26,7 @@ export default function LineChart({ rows, label, metric }) {
     [rows, label, metric]
   );
 
-  if (points.length < 2) return <div className={styles.chartNote}>Not enough data to chart.</div>;
+  if (points.length < 2) return <div className="mt-[0.6rem] text-[0.78rem] text-tertiary">Not enough data to chart.</div>;
 
   const height = 240;
   const pad = { top: 16, right: 56, bottom: 28, left: 48 };
@@ -51,11 +53,11 @@ export default function LineChart({ rows, label, metric }) {
   const hp = hover !== null ? points[hover] : null;
 
   return (
-    <div className={styles.lineWrap} ref={wrapRef}>
+    <div className="relative w-full" ref={wrapRef}>
       <svg
         width={width}
         height={height}
-        className={styles.lineSvg}
+        className="block max-w-full touch-pan-y overflow-visible"
         role="img"
         aria-label={`Line chart of ${metric} over ${label}`}
         onPointerMove={onMove}
@@ -63,38 +65,38 @@ export default function LineChart({ rows, label, metric }) {
       >
         {ticks.map((t) => (
           <g key={t}>
-            <line x1={pad.left} x2={width - pad.right} y1={y(t)} y2={y(t)} className={styles.grid} />
-            <text x={pad.left - 8} y={y(t)} className={styles.axisText} textAnchor="end" dominantBaseline="middle">
+            <line x1={pad.left} x2={width - pad.right} y1={y(t)} y2={y(t)} className="stroke-line stroke-1" />
+            <text x={pad.left - 8} y={y(t)} className={axisText} textAnchor="end" dominantBaseline="middle">
               {fmtCompact.format(t)}
             </text>
           </g>
         ))}
         {points.map((p, i) => (i % labelEvery === 0 || i === points.length - 1) && (
-          <text key={i} x={x(i)} y={height - 8} className={styles.axisText} textAnchor="middle">{p.label}</text>
+          <text key={i} x={x(i)} y={height - 8} className={axisText} textAnchor="middle">{p.label}</text>
         ))}
-        <path d={area} className={styles.area} />
-        <path d={line} className={styles.line} />
-        <circle cx={x(points.length - 1)} cy={y(last.v)} r="4" className={styles.dot} />
-        <text x={x(points.length - 1) + 8} y={y(last.v)} className={styles.endLabel} dominantBaseline="middle">
+        <path d={area} className="fill-accent opacity-10" />
+        <path d={line} className="fill-none stroke-accent stroke-2 [stroke-linecap:round] [stroke-linejoin:round]" />
+        <circle cx={x(points.length - 1)} cy={y(last.v)} r="4" className={dot} />
+        <text x={x(points.length - 1) + 8} y={y(last.v)} className="fill-primary text-[12px] font-medium tabular-nums" dominantBaseline="middle">
           {formatValue(last.v)}
         </text>
         {hp && (
           <g>
-            <line x1={x(hover)} x2={x(hover)} y1={pad.top} y2={pad.top + innerH} className={styles.crosshair} />
-            <circle cx={x(hover)} cy={y(hp.v)} r="5" className={styles.dot} />
+            <line x1={x(hover)} x2={x(hover)} y1={pad.top} y2={pad.top + innerH} className="stroke-strong stroke-1" />
+            <circle cx={x(hover)} cy={y(hp.v)} r="5" className={dot} />
           </g>
         )}
       </svg>
       {hp && (
         <div
-          className={styles.tooltip}
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-full animate-[fadeOnly_0.12s_ease_both] rounded-[10px] border border-line bg-elevated px-[0.6rem] py-[0.4rem] whitespace-nowrap shadow-lg"
           style={{
             left: Math.min(Math.max(x(hover), 70), width - 70),
             top: Math.max(y(hp.v) - 12, 0),
           }}
         >
-          <div className={styles.tooltipLabel}>{hp.label}</div>
-          <div className={styles.tooltipValue}>{fmtFull.format(hp.v)}</div>
+          <div className="text-[0.72rem] text-secondary">{hp.label}</div>
+          <div className="text-[0.85rem] font-semibold text-primary tabular-nums">{fmtFull.format(hp.v)}</div>
         </div>
       )}
     </div>

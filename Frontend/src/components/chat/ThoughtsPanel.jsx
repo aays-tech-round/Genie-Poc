@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { GENIE_STEPS, THOUGHT_LABELS } from '@/constants/genie';
 import { Check, ChevronDown, Code, Copy, Database, Lightbulb } from 'lucide-react';
 import Markdown from '@/components/ui/Markdown';
-import styles from './ThoughtsPanel.module.css';
+import { cn } from '@/lib/utils';
+
+const sectionTitle =
+  'inline-flex items-center gap-[0.4rem] text-xs font-semibold tracking-[0.04em] text-tertiary uppercase';
+const spinner = 'size-3.5 animate-spinner rounded-full border-2 border-accent-ring border-t-accent-strong';
 
 // Live progress text: the backend's status message, or a generic line before Genie reports one.
 const progressText = (message) =>
@@ -25,24 +29,35 @@ function SqlBlock({ sql, parameters }) {
   };
 
   return (
-    <div className={styles.sql}>
-      <div className={styles.sqlHeader}>
-        <span className={styles.sectionTitle}><Code size={14} /> Generated SQL</span>
-        <button type="button" className={styles.copyBtn} onClick={copy} aria-label="Copy SQL">
+    <div className="flex animate-fade flex-col gap-[0.45rem]">
+      <div className="flex items-center justify-between">
+        <span className={sectionTitle}><Code size={14} /> Generated SQL</span>
+        <button
+          type="button"
+          className="inline-flex items-center gap-[0.3rem] rounded-md px-2 py-[0.2rem] text-xs text-secondary transition hover:bg-hover hover:text-primary"
+          onClick={copy}
+          aria-label="Copy SQL"
+        >
           {copied ? <Check size={14} /> : <Copy size={14} />}
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
       {parameters?.length > 0 && (
-        <div className={styles.params}>
+        <div className="flex flex-wrap gap-[0.35rem]">
           {parameters.map((p) => (
-            <span key={p.keyword} className={styles.param} title={p.sql_type || undefined}>
-              <span className={styles.paramKey}>:{p.keyword}</span> = {String(p.value)}
+            <span
+              key={p.keyword}
+              className="rounded-full bg-accent-soft px-2 py-[0.15rem] font-mono text-xs text-primary"
+              title={p.sql_type || undefined}
+            >
+              <span className="text-accent-strong">:{p.keyword}</span> = {String(p.value)}
             </span>
           ))}
         </div>
       )}
-      <pre className={styles.code}><code>{text}</code></pre>
+      <pre className="max-h-80 overflow-auto rounded-[10px] border border-line bg-subtle px-[0.9rem] py-3 font-mono text-[0.8rem] leading-[1.6] whitespace-pre text-primary scrollbar-thin">
+        <code>{text}</code>
+      </pre>
     </div>
   );
 }
@@ -71,48 +86,79 @@ export default function ThoughtsPanel({ message, live }) {
   ].filter(Boolean).join(' · ');
 
   return (
-    <div className={`${styles.panel} ${live ? styles.live : ''}`}>
+    <div className="mb-3 animate-fade">
       <button
         type="button"
-        className={styles.header}
+        className="-ml-[0.4rem] inline-flex min-h-7 items-center gap-2 rounded-lg py-[0.2rem] pr-[0.55rem] pl-[0.4rem] text-left text-sm text-secondary transition enabled:hover:bg-hover enabled:hover:text-primary"
         onClick={() => hasBody && setOpen((o) => !o)}
         aria-expanded={hasBody ? open : undefined}
         disabled={!hasBody}
       >
         {live ? (
           <>
-            <span className={styles.typing} aria-hidden="true">
-              <span className={styles.dot} /><span className={styles.dot} /><span className={styles.dot} />
+            <span className="inline-flex h-4 items-center gap-1" aria-hidden="true">
+              {[0, 0.15, 0.3].map((delay) => (
+                <span
+                  key={delay}
+                  className="size-1.5 animate-[typingDot_1.3s_ease-in-out_infinite_both] rounded-full bg-accent"
+                  style={{ animationDelay: `${delay}s` }}
+                />
+              ))}
             </span>
-            {/* key restarts the fade each time the step changes */}
-            <span key={progressText(message)} className={styles.liveText} role="status" aria-live="polite">
+            {/* key restarts the fade each time the step changes; the shimmer sweeps across it while Genie works */}
+            <span
+              key={progressText(message)}
+              className="animate-[fadeOnly_0.35s_ease_both] text-[0.9rem] text-secondary motion-safe:animate-[fadeOnly_0.35s_ease_both,shimmer_2.2s_linear_infinite] motion-safe:bg-[linear-gradient(90deg,var(--text-secondary)_30%,var(--text-primary)_50%,var(--text-secondary)_70%)] motion-safe:bg-size-[200%_100%] motion-safe:bg-clip-text motion-safe:text-transparent"
+              role="status"
+              aria-live="polite"
+            >
               {progressText(message)}
             </span>
           </>
         ) : (
           <>
-            <Lightbulb size={15} className={styles.headerIcon} />
-            <span className={styles.headerTitle}>Thoughts</span>
-            {summary && <span className={styles.headerMeta}>{summary}</span>}
+            <Lightbulb size={15} className="shrink-0 text-accent-strong" />
+            <span className="font-medium">Thoughts</span>
+            {summary && <span className="text-tertiary before:mr-2 before:content-['·']">{summary}</span>}
           </>
         )}
         {hasBody && (
-          <ChevronDown size={15} className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} />
+          <ChevronDown
+            size={15}
+            className={cn('shrink-0 text-tertiary transition-transform duration-250 ease-smooth', open && 'rotate-180')}
+          />
         )}
       </button>
 
       {/* grid-template-rows 0fr -> 1fr animates the height without measuring it */}
-      <div className={`${styles.collapse} ${open && hasBody ? styles.collapseOpen : ''}`}>
-        <div className={styles.collapseInner}>
-          <div className={styles.body}>
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-300 ease-smooth',
+          open && hasBody ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="mt-2 mb-1 ml-[0.45rem] flex flex-col gap-[0.85rem] border-l-2 border-line py-[0.1rem] pl-4">
             {steps.length > 0 && (
-              <ol className={styles.steps}>
+              <ol className="flex flex-col gap-[0.4rem]">
                 {steps.map((s, i) => {
                   const current = live && i === steps.length - 1;
                   return (
-                    <li key={`${s}-${i}`} className={`${styles.step} ${current ? styles.stepCurrent : ''}`}>
-                      <span className={styles.stepMarker} aria-hidden="true">
-                        {current ? <span className={styles.spinner} /> : <Check size={11} />}
+                    <li
+                      key={`${s}-${i}`}
+                      className={cn(
+                        'flex animate-[riseIn_0.3s_var(--ease-smooth)_both] items-center gap-[0.55rem] text-[0.85rem]',
+                        current ? 'text-primary' : 'text-secondary'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full text-accent-strong',
+                          !current && 'bg-accent-soft'
+                        )}
+                        aria-hidden="true"
+                      >
+                        {current ? <span className={spinner} /> : <Check size={11} />}
                       </span>
                       {current ? GENIE_STEPS[s].active : GENIE_STEPS[s].done}
                     </li>
@@ -122,19 +168,24 @@ export default function ThoughtsPanel({ message, live }) {
             )}
 
             {(message.query_title || message.query_description) && (
-              <div className={styles.section}>
-                {message.query_title && <div className={styles.queryTitle}>{message.query_title}</div>}
+              <div className="flex animate-fade flex-col gap-[0.35rem]">
+                {message.query_title && (
+                  <div className="text-[0.9rem] font-semibold text-primary">{message.query_title}</div>
+                )}
                 {message.query_description && <Markdown text={message.query_description} />}
               </div>
             )}
 
             {thoughts.map((t, i) => (
-              <div key={i} className={styles.section}>
-                <div className={styles.sectionTitle}>
+              <div key={i} className="flex animate-fade flex-col gap-[0.35rem]">
+                <div className={sectionTitle}>
                   {t.type === 'data_sourcing' ? <Database size={14} /> : <Lightbulb size={14} />}
                   {THOUGHT_LABELS[t.type] || 'Thought'}
                 </div>
-                <div className={styles.thought}><Markdown text={t.content} /></div>
+                {/* Thought text stays at the panel's smaller size; Markdown headings keep theirs */}
+                <div className="text-sm text-secondary [&_:not(h3,h4,h5,h6)]:text-[length:inherit]">
+                  <Markdown text={t.content} />
+                </div>
               </div>
             ))}
 
