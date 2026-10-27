@@ -1,9 +1,0 @@
-/* Tailwind for the auth UI rendered inside the main app (LogoutButton modal,
-   "Loading…" / "Completing sign-in…" placeholders).
-
-   No preflight, so the existing app's base styles are untouched. Utilities are
-   unlayered on purpose: globals.css resets `* { margin: 0; padding: 0 }` and
-   `button { border: none; background: none }` without a layer, which would
-   otherwise beat layered utilities such as px-4, border and bg-[#0078D4]. */
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css";

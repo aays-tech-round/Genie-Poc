@@ -1,0 +1,272 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+/* The app's one stylesheet, loaded by both layouts (chat and login). Components are
+   styled with Tailwind classes; this file holds what classes can't: the design
+   tokens, base element styles, keyframes and a few shared utilities. */
+
+/* `dark:` follows the theme toggle (data-theme on <html>), not the OS setting */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ───────────── Colours: the only 11 in the app ─────────────
+   Change the look here and nowhere else. Each is a Tailwind class too:
+   bg-main, bg-soft, border-line, text-primary, text-secondary, bg-accent, text-danger…
+   Light is the default; [data-theme="dark"] on <html> (set by applySavedTheme() in
+   MainLayout) swaps in the dark values. The login screen is always light. */
+:root {
+  color-scheme: light;
+
+  --main: #ffffff;                   /* chat area, cards, menus, inputs */
+  --soft: #f6f6f9;                   /* sidebar, table headers, code blocks */
+  --line: #e5e5ec;                   /* borders, dividers, hover */
+  --primary: #111118;                /* main text */
+  --secondary: #6b6b7b;              /* supporting text, labels, placeholders */
+  --brand: #0000a0;                  /* client brand blue: send button, avatars, new chat */
+  --accent: #0000a0;                 /* links, icons, charts (lighter in dark mode to stay readable) */
+  --accent-soft: #e6e6f6;            /* light brand blue: selected chat, your messages */
+  --success: #059669;
+  --danger: #dc2626;
+  --overlay: rgba(17, 17, 32, 0.35); /* dims the page behind dialogs */
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --main: #16171c;
+  --soft: #1e1f26;
+  --line: #2a2b34;
+  --primary: #ececf2;
+  --secondary: #a0a0b0;
+  --brand: #0000a0;
+  --accent: #8c8cff;
+  --accent-soft: #1d1d46;
+  --success: #34d399;
+  --danger: #f87171;
+  --overlay: rgba(0, 0, 0, 0.55);
+}
+
+/* `inline` keeps the classes pointing at the variables above, so they follow the theme.
+   Shadows are Tailwind's own (shadow-sm … shadow-xl). Radii use Tailwind's scale:
+   rounded-lg 8px, xl 12px, 2xl 16px, 3xl 24px. */
+@theme inline {
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Turn off Tailwind's built-in palette (red-500, gray-300, white…), so only these exist */
+  --color-*: initial;
+  --color-brand: var(--brand);
+  --color-main: var(--main);
+  --color-soft: var(--soft);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-overlay: var(--overlay);
+
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-swing: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Entrance animations shared by several components; one-offs use animate-[...] */
+  --animate-fade: fadeOnly 0.3s ease both;
+  --animate-fade-up: fadeIn 0.35s var(--ease-smooth) both;
+  --animate-rise: riseIn 0.5s var(--ease-smooth) both;
+  --animate-answer: answerIn 0.45s var(--ease-smooth) both;
+  --animate-backdrop: fadeOnly 0.15s ease;
+  --animate-menu: popIn 0.16s var(--ease-smooth);
+  --animate-dialog: popIn 0.22s var(--ease-smooth);
+  --animate-spinner: spin 0.8s linear infinite;
+}
+
+@layer base {
+  /* The app shell owns scrolling, so the page itself never shows a scrollbar */
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--soft);
+    color: var(--primary);
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+  }
+
+  button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:disabled {
+    cursor: default;
+  }
+
+  button:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  select option {
+    background: var(--main);
+    color: var(--primary);
+  }
+}
+
+/* Thin, theme-coloured scrollbar for scrolling panels */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary);
+  }
+}
+
+/* Theme switch: colours cross-fade while ThemeToggle holds this class on <html> */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease,
+      fill 0.35s ease, stroke 0.35s ease, box-shadow 0.35s ease !important;
+  }
+}
+
+/* Keyframes (outside @theme so animate-[...] one-offs can use them too) */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeOnly {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Sent question rises from the composer */
+@keyframes userIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Answer settles in once polling completes */
+@keyframes answerIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes logoIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Waiting dots while Genie works */
+@keyframes typingDot {
+  0%, 70%, 100% { transform: translateY(0); opacity: 0.3; }
+  35% { transform: translateY(-3px); opacity: 0.9; }
+}
+
+/* Highlight sweeping across the live progress text */
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+/* Chat that is still waiting on Genie, in the sidebar */
+@keyframes busyPulse {
+  0% { box-shadow: 0 0 0 0 var(--accent-soft); }
+  70%, 100% { box-shadow: 0 0 0 6px transparent; }
+}
+
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes sliceIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Login page: data visual and sign-in panel */
+@keyframes graphFlow {
+  to { stroke-dashoffset: -68; }
+}
+
+@keyframes nodePulse {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes hubBreathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+
+@keyframes typingBlink {
+  0%, 80%, 100% { opacity: 0.25; }
+  40% { opacity: 1; }
+}
+
+@keyframes starTwinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(0.88) rotate(12deg); opacity: 0.8; }
+}
+
+@keyframes panelRise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
