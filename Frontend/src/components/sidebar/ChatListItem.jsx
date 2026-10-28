@@ -50,7 +50,7 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
       <button
         className={cn(
           'min-w-0 flex-1 truncate px-[0.6rem] py-[0.45rem] text-left text-sm',
-          active ? 'font-medium text-primary' : 'text-secondary group-hover:text-primary'
+          active ? 'font-semibold text-primary' : 'font-medium text-secondary group-hover:text-primary'
         )}
         onClick={() => onSelect(chat.id)}
         title={chat.title}

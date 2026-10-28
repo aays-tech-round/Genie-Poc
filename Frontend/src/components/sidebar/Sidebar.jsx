@@ -90,7 +90,7 @@ export default function Sidebar({
             New chat
           </button>
           <button
-            className="flex items-center gap-[0.6rem] rounded-[10px] py-2 pr-[0.6rem] pl-3 text-left text-sm text-secondary transition hover:bg-line hover:text-primary"
+            className="flex items-center gap-[0.6rem] rounded-[10px] py-2 pr-[0.6rem] pl-3 text-left text-sm font-medium text-secondary transition hover:bg-line hover:text-primary"
             onClick={() => setSearchOpen(true)}
           >
             <Search size={16} />
