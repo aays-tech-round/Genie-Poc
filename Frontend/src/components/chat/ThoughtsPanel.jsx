@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { TERMINAL_STATUSES } from '@/constants/genie';
-import { Check, ChevronDown, Code, Copy, Database, Lightbulb } from 'lucide-react';
+import { Check, ChevronDown, Code, Copy, Database, Lightbulb, ListChecks } from 'lucide-react';
 import Markdown from '@/components/ui/Markdown';
+import TypingDots from '@/components/ui/TypingDots';
+import StepFlow from './StepFlow';
 import { cn, formatCode } from '@/lib/utils';
 
 const sectionTitle =
-  'inline-flex items-center gap-[0.4rem] text-xs font-semibold tracking-[0.04em] text-secondary uppercase';
-const spinner = 'size-3.5 animate-spinner rounded-full border-2 border-accent-soft border-t-accent';
+  'inline-flex items-center gap-[0.4rem] text-xs font-semibold tracking-[0.04em] text-accent uppercase';
 
 // What Genie is doing now: its current status code, or null before it has reported one.
 const currentStatus = (message) =>
@@ -96,15 +97,11 @@ export default function ThoughtsPanel({ message, live }) {
       >
         {live ? (
           <>
-            <span className="inline-flex h-4 items-center gap-1" aria-hidden="true">
-              {[0, 0.15, 0.3].map((delay) => (
-                <span
-                  key={delay}
-                  className="size-1.5 animate-[typingDot_1.3s_ease-in-out_infinite_both] rounded-full bg-accent"
-                  style={{ animationDelay: `${delay}s` }}
-                />
-              ))}
-            </span>
+            <TypingDots
+              className="inline-flex h-4 items-center gap-1"
+              dotClassName="size-1.5 animate-[typingDot_1.3s_ease-in-out_infinite_both]"
+              aria-hidden="true"
+            />
             {/* Genie's current status code; until it reports one, only the dots show.
                 key restarts the fade when the status changes. */}
             <span
@@ -144,31 +141,10 @@ export default function ThoughtsPanel({ message, live }) {
         <div className="min-h-0 overflow-hidden">
           <div className="mt-2 mb-1 ml-[0.45rem] flex flex-col gap-[0.85rem] border-l-2 border-line py-[0.1rem] pl-4">
             {steps.length > 0 && (
-              <ol className="flex flex-col gap-[0.4rem]">
-                {steps.map((s, i) => {
-                  const current = live && i === steps.length - 1;
-                  return (
-                    <li
-                      key={`${s}-${i}`}
-                      className={cn(
-                        'flex animate-[riseIn_0.3s_var(--ease-smooth)_both] items-center gap-[0.55rem] text-[0.85rem]',
-                        current ? 'text-primary' : 'text-secondary'
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full text-accent',
-                          !current && 'bg-accent-soft'
-                        )}
-                        aria-hidden="true"
-                      >
-                        {current ? <span className={spinner} /> : <Check size={11} />}
-                      </span>
-                      {formatCode(s)}
-                    </li>
-                  );
-                })}
-              </ol>
+              <div className="flex flex-col gap-[0.45rem]">
+                <span className={sectionTitle}><ListChecks size={14} /> Steps</span>
+                <StepFlow steps={steps} live={live} />
+              </div>
             )}
 
             {(message.query_title || message.query_description) && (

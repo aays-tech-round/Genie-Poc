@@ -1,7 +1,9 @@
 import { useCurrentUser } from '@/auth/useCurrentUser';
 import { FAILED_STATUSES } from '@/constants/genie';
-import { formatCode, getInitials } from '@/lib/utils';
+import { formatCode } from '@/lib/utils';
 import { CircleAlert, RefreshCw } from 'lucide-react';
+import Avatar from '@/components/ui/Avatar';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import GenieLogo from '@/components/ui/GenieLogo';
 import Markdown from '@/components/ui/Markdown';
 import ResultView from '@/components/results/ResultView';
@@ -28,12 +30,12 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
         <div className={`${bubble} max-w-[min(78%,620px)] rounded-[20px_6px_20px_20px] border border-accent-soft bg-accent-soft px-[1.1rem] py-[0.65rem] whitespace-pre-wrap shadow-sm max-sm:max-w-[82%]`}>
           {message.content}
         </div>
-        <span
-          className="mt-2 inline-flex size-[30px] shrink-0 items-center justify-center rounded-full bg-brand text-[0.7rem] font-semibold tracking-[0.3px] text-main dark:text-primary shadow-md select-none max-sm:size-[26px] max-sm:text-[0.62rem]"
+        <Avatar
+          name={name}
+          email={email}
+          className="mt-2 size-[30px] text-[0.7rem] shadow-md select-none max-sm:size-[26px] max-sm:text-[0.62rem]"
           aria-hidden="true"
-        >
-          {getInitials(name, email)}
-        </span>
+        />
       </div>
     );
   }
@@ -58,7 +60,11 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
         {message.status === 'COMPLETED' ? (
           <div className="animate-answer">
             <Markdown text={message.summary} />
-            {message.data && <ResultView data={message.data} />}
+            {message.data && (
+              <ErrorBoundary message="Couldn't display this result.">
+                <ResultView data={message.data} />
+              </ErrorBoundary>
+            )}
             {onAsk && <FollowUps questions={message.suggested_questions} onAsk={onAsk} />}
           </div>
         ) : failed ? (

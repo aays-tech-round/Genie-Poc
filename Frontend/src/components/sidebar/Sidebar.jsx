@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { MessageCircle, PanelLeft, PenLine, Search } from 'lucide-react';
 import ChatListItem from './ChatListItem';
 import SearchDialog from './SearchDialog';
 import UserMenu from './UserMenu';
 import { iconButton } from '@/components/ui/classes';
+import useKeydown from '@/hooks/useKeydown';
 import { cn } from '@/lib/utils';
 
 const sectionLabel = 'px-[0.6rem] pt-2 pb-[0.3rem] text-xs font-semibold tracking-[0.02em] text-secondary';
@@ -33,16 +34,12 @@ export default function Sidebar({
   const closeSearch = useCallback(() => setSearchOpen(false), []);
 
   // Ctrl+K / ⌘K opens chat search from anywhere
-  useEffect(() => {
-    const onKey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setSearchOpen(true);
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, []);
+  useKeydown((e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      setSearchOpen(true);
+    }
+  });
 
   const sorted = useMemo(
     () => [...chats].sort((a, b) => b.updatedAt - a.updatedAt),
@@ -93,7 +90,7 @@ export default function Sidebar({
             New chat
           </button>
           <button
-            className="flex items-center gap-[0.6rem] rounded-[10px] py-2 pr-[0.6rem] pl-3 text-left text-sm text-secondary transition hover:bg-line hover:text-primary"
+            className="flex items-center gap-[0.6rem] rounded-[10px] py-2 pr-[0.6rem] pl-3 text-left text-sm font-medium text-secondary transition hover:bg-line hover:text-primary"
             onClick={() => setSearchOpen(true)}
           >
             <Search size={16} />

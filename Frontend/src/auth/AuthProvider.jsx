@@ -1,4 +1,5 @@
 import { MsalProvider } from "@azure/msal-react";
+import FullScreenMessage from "@/components/ui/FullScreenMessage";
 import { msalInstance, isMsalPopup } from "./authConfig";
 
 // Wraps the app in MsalProvider.
@@ -9,11 +10,7 @@ import { msalInstance, isMsalPopup } from "./authConfig";
 // so the popup only shows a placeholder until MSAL closes it.
 const AuthProvider = ({ children }) => {
   if (isMsalPopup()) {
-    return (
-      <div className="min-h-screen bg-soft flex items-center justify-center text-secondary text-sm">
-        Completing sign-in…
-      </div>
-    );
+    return <FullScreenMessage>Completing sign-in…</FullScreenMessage>;
   }
 
   // Config missing: no MSAL instance. msal-react's default context reports no
