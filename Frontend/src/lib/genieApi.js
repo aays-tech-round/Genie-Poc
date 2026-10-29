@@ -28,7 +28,11 @@ export async function askGenie(content, conversationId) {
 }
 
 // Current state of an answer: Genie's status code, plus summary, data, sql, thoughts, error, ...
+// Throws on an HTTP error, so a failed poll is retried instead of read as a status.
 export async function getMessageStatus(messageId, conversationId) {
-  const res = await fetch(`${GENIE_API_BASE}/status/${messageId}?conversation_id=${conversationId}`);
+  const res = await fetch(
+    `${GENIE_API_BASE}/status/${encodeURIComponent(messageId)}?conversation_id=${encodeURIComponent(conversationId)}`
+  );
+  if (!res.ok) throw new Error(await errorFrom(res));
   return res.json();
 }

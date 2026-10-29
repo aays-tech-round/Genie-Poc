@@ -3,6 +3,7 @@ import { FAILED_STATUSES } from '@/constants/genie';
 import { formatCode } from '@/lib/utils';
 import { CircleAlert, RefreshCw } from 'lucide-react';
 import Avatar from '@/components/ui/Avatar';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import GenieLogo from '@/components/ui/GenieLogo';
 import Markdown from '@/components/ui/Markdown';
 import ResultView from '@/components/results/ResultView';
@@ -59,7 +60,11 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
         {message.status === 'COMPLETED' ? (
           <div className="animate-answer">
             <Markdown text={message.summary} />
-            {message.data && <ResultView data={message.data} />}
+            {message.data && (
+              <ErrorBoundary message="Couldn't display this result.">
+                <ResultView data={message.data} />
+              </ErrorBoundary>
+            )}
             {onAsk && <FollowUps questions={message.suggested_questions} onAsk={onAsk} />}
           </div>
         ) : failed ? (
