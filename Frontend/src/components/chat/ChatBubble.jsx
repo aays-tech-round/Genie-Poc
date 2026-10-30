@@ -42,9 +42,7 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
 
   return (
     <div className="flex w-full animate-fade-up items-start justify-start gap-3.5 max-sm:gap-[0.6rem]">
-      <div className="mt-[0.15rem] size-7 shrink-0 rounded-[9px] shadow-sm max-sm:size-6 max-sm:[&_svg]:size-6">
-        <GenieLogo size={28} />
-      </div>
+      <GenieLogo className="mt-[0.15rem] size-7 shadow-sm max-sm:size-6" />
 
       <div className={`${bubble} max-w-full min-w-0 flex-1 pt-[0.15rem]`}>
         {message.trusted_asset && (

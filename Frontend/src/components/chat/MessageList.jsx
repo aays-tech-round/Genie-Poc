@@ -34,7 +34,7 @@ export default function MessageList({ chatId, messages, isProcessing, onRetry, o
       ref={scrollerRef}
       className="flex min-h-0 flex-1 justify-center overflow-y-auto scrollbar-thin px-4 py-7 max-md:px-3.5 max-md:py-4"
     >
-      <div className="flex h-fit w-full max-w-[960px] flex-col gap-7 pb-8 max-lg:max-w-[720px] max-md:gap-[1.4rem] max-md:pb-4">
+      <div className="flex h-fit w-full max-w-[1080px] flex-col gap-7 pb-8 max-lg:max-w-[720px] max-md:gap-[1.4rem] max-md:pb-4">
         {displayed.map((msg, idx) => (
           <ChatBubble
             // Genie replies are keyed by position so the waiting placeholder
