@@ -7,9 +7,7 @@ export default function WelcomeScreen({ firstName, composer, onPickSuggestion, b
   return (
     <div className="relative flex min-h-0 flex-1 justify-center overflow-y-auto scrollbar-thin px-5">
       <div className="my-auto flex w-full max-w-[760px] flex-col items-center pt-6 pb-8 max-md:pt-4 max-md:pb-6">
-        <div className="mb-[0.9rem] animate-[logoIn_0.6s_var(--ease-smooth)_both] rounded-[13px] leading-0 shadow-md max-md:[&_svg]:size-10">
-          <GenieLogo size={44} />
-        </div>
+        <GenieLogo className="mb-[0.9rem] size-11 animate-[logoIn_0.6s_var(--ease-smooth)_both] shadow-md max-md:size-10" />
         <p className="mb-[0.4rem] animate-rise text-[0.95rem] font-semibold text-accent [animation-delay:0.05s]">
           {firstName ? `Hi ${firstName}` : 'Welcome to Genie'}
         </p>

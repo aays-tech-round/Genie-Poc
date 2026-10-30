@@ -1,5 +1,5 @@
 import DataVisual from './DataVisual';
-import TwinklingGenieIcon from './TwinklingGenieIcon';
+import { GenieMark } from '@/components/ui/GenieLogo';
 import { databricksLogo } from './assets';
 
 const STEPS = ['Ask a question', 'Genie writes the SQL', 'Get trusted answers'];
@@ -19,7 +19,7 @@ export default function Showcase() {
         </span>
         <span className="mx-1 h-5 w-px bg-line" aria-hidden="true" />
         <span className="inline-flex items-center gap-1.5 font-medium text-secondary">
-          <TwinklingGenieIcon className="size-[22px] flex-none" />
+          <GenieMark className="size-[22px] flex-none" />
           Genie AI Workspace
         </span>
       </div>

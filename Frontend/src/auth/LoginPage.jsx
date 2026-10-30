@@ -4,7 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import LoginError from "@/components/login/LoginError";
 import Showcase from "@/components/login/Showcase";
 import SignInButton from "@/components/login/SignInButton";
-import TwinklingGenieIcon from "@/components/login/TwinklingGenieIcon";
+import { GenieMark } from "@/components/ui/GenieLogo";
 import { databricksLogo } from "@/components/login/assets";
 import { loginRequest, missingConfig, missingConfigMessage } from "./authConfig";
 import { getAuthErrorMessage } from "./authErrors";
@@ -59,7 +59,7 @@ const LoginPage = () => {
             <img className="size-[30px]" src={databricksLogo} alt="Databricks" />
             {/* Genie sparkle tucked onto the corner of the Databricks tile */}
             <span className="absolute -right-2 -bottom-2 grid size-[26px] place-items-center rounded-lg border border-line bg-main shadow-md">
-              <TwinklingGenieIcon className="size-5" />
+              <GenieMark className="size-5" />
             </span>
           </span>
 
