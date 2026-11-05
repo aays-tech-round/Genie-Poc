@@ -3,12 +3,14 @@ from functools import lru_cache
 from typing import Optional
 from models import AskRequest, AskResponse, StatusResponse, FeedbackRequest
 from services.databricks_client import DatabricksGenieClient
+from auth import get_current_user
 import logging
 import os
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+# Every Genie route requires a signed-in user (see auth.py).
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 def get_space_id() -> str:
     space_id = os.getenv("GENIE_SPACE_ID")

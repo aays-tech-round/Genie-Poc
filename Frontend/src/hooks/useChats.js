@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   POLL_INITIAL_DELAY_MS, POLL_MAX_DELAY_MS, POLL_TIMEOUT_MS, TERMINAL_STATUSES,
 } from '@/constants/genie';
-import { askGenie, getMessageStatus } from '@/lib/genieApi';
+import { ApiError, askGenie, getMessageStatus } from '@/lib/genieApi';
 import { loadChats, saveChats } from '@/lib/chatStorage';
 import { makeId, titleFrom } from '@/lib/utils';
 
@@ -93,6 +93,12 @@ export default function useChats(email) {
           return;
         }
       } catch (err) {
+        // The backend answered with an error (e.g. 401/403/500): retrying won't help, so stop and show it.
+        if (err instanceof ApiError) {
+          updateMessage(chatId, msgId, { status: 'FAILED', status_message: err.message, error: err.message });
+          setChatProcessing(chatId, false);
+          return;
+        }
         console.error('Polling error:', err);
       }
 

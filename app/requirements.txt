@@ -3,3 +3,4 @@ uvicorn
 databricks-sdk
 pydantic
 python-dotenv
+PyJWT[crypto]
