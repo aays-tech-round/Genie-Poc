@@ -73,6 +73,12 @@ export default function ThoughtsPanel({ message, live }) {
   const steps = message.steps || [];
   const thoughts = message.thoughts || [];
   const status = currentStatus(message);
+  // Genie often sends the query description again as a "description" thought; show it once
+  const description =
+    message.query_description &&
+    !thoughts.some((t) => t.content?.trim() === message.query_description.trim())
+      ? message.query_description
+      : null;
 
   // Fold away when the answer lands (the bubble stays mounted across that change)
   if (live !== wasLive) {
@@ -142,17 +148,17 @@ export default function ThoughtsPanel({ message, live }) {
           <div className="mt-2 mb-1 ml-[0.45rem] flex flex-col gap-[0.85rem] border-l-2 border-line py-[0.1rem] pl-4">
             {steps.length > 0 && (
               <div className="flex flex-col gap-[0.45rem]">
-                <span className={sectionTitle}><ListChecks size={14} /> Steps</span>
+                <span className={sectionTitle}><ListChecks size={14} /> Progress</span>
                 <StepFlow steps={steps} live={live} />
               </div>
             )}
 
-            {(message.query_title || message.query_description) && (
+            {(message.query_title || description) && (
               <div className="flex animate-fade flex-col gap-[0.35rem]">
                 {message.query_title && (
                   <div className="text-[0.9rem] font-semibold text-primary">{message.query_title}</div>
                 )}
-                {message.query_description && <Markdown text={message.query_description} />}
+                {description && <Markdown text={description} />}
               </div>
             )}
 
