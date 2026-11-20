@@ -58,3 +58,23 @@ export function getMessageStatus(messageId, conversationId) {
   const params = new URLSearchParams({ conversation_id: conversationId });
   return request(`/status/${encodeURIComponent(messageId)}?${params}`);
 }
+
+// The signed-in user's chats, newest first: [{ id, conversation_id, title, is_pinned, created_at, updated_at }].
+export function getChats() {
+  return request('/chats');
+}
+
+// A chat's questions and answers, oldest first. Each item has the same fields as getMessageStatus
+// plus message_id and content (the question).
+export function getChatMessages(conversationId) {
+  return request(`/chats/${encodeURIComponent(conversationId)}/messages`);
+}
+
+// Saves a new title and/or pin state: updateChatSettings(id, { title }) or ({ is_pinned }).
+export function updateChatSettings(conversationId, changes) {
+  return request(`/chats/${encodeURIComponent(conversationId)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(changes),
+  });
+}

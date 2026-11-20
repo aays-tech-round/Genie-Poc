@@ -86,9 +86,12 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
           <MenuItem onClick={() => { setMenuOpen(false); setDraft(chat.title); setRenaming(true); }}>
             <Pencil size={16} /> Rename
           </MenuItem>
-          <MenuItem tone="danger" onClick={() => { setMenuOpen(false); onDelete(chat.id); }}>
-            <Trash size={16} /> Delete
-          </MenuItem>
+          {/* Only offered once the backend can delete a chat; otherwise it would reappear on reload */}
+          {onDelete && (
+            <MenuItem tone="danger" onClick={() => { setMenuOpen(false); onDelete(chat.id); }}>
+              <Trash size={16} /> Delete
+            </MenuItem>
+          )}
         </Menu>
       )}
     </div>

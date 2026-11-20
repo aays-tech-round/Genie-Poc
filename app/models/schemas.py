@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from datetime import datetime
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, Any, Dict, List
 
 class AskRequest(BaseModel):
@@ -28,3 +29,38 @@ class FeedbackRequest(BaseModel):
     conversation_id: str
     message_id: str
     rating: str = Field(..., description="Either 'POSITIVE' or 'NEGATIVE'")
+
+class ChatMessage(StatusResponse):
+    """One question and Genie's answer to it, as returned when a chat is opened."""
+    message_id: str
+    content: str  # the question
+
+class ChatUpdate(BaseModel):
+    """New title and/or pin state for a chat; fields left out stay as they are."""
+    title: Optional[str] = Field(None, max_length=200)
+    is_pinned: Optional[bool] = None
+
+    @field_validator("title")
+    @classmethod
+    def title_not_blank(cls, value):
+        if value is None:
+            return value
+        value = " ".join(value.split())
+        if not value:
+            raise ValueError("Title can't be empty.")
+        return value
+
+    @model_validator(mode="after")
+    def something_to_change(self):
+        if self.title is None and self.is_pinned is None:
+            raise ValueError("Provide a title and/or is_pinned.")
+        return self
+
+class ChatSummary(BaseModel):
+    """One entry of the signed-in user's chat list."""
+    id: str
+    conversation_id: str
+    title: str
+    is_pinned: bool
+    created_at: datetime
+    updated_at: datetime

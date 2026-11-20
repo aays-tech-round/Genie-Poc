@@ -4,3 +4,6 @@ databricks-sdk
 pydantic
 python-dotenv
 PyJWT[crypto]
+SQLAlchemy
+pyodbc
+azure-identity

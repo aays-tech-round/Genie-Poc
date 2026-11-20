@@ -1,8 +1,14 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.dashboards import GenieFeedbackRating
 
 logger = logging.getLogger(__name__)
+
+# Opening a chat fetches one result table per answer; a few at a time keeps it quick without flooding Databricks.
+_MESSAGE_FETCH_WORKERS = 4
+_MESSAGE_PAGE_SIZE = 100
+_MESSAGE_MAX_PAGES = 20
 
 class DatabricksGenieClient:
     def __init__(self):
@@ -59,7 +65,52 @@ class DatabricksGenieClient:
             conversation_id=conversation_id,
             message_id=message_id
         )
+        return self._status_from_message(msg, space_id, conversation_id, message_id)
 
+    def list_messages(self, space_id: str, conversation_id: str):
+        """
+        Every message of a conversation, oldest first, each in the same shape as get_status
+        plus the question that was asked ("content") and its "message_id".
+        """
+        messages = []
+        page_token = None
+        for _ in range(_MESSAGE_MAX_PAGES):
+            page = self.client.genie.list_conversation_messages(
+                space_id=space_id,
+                conversation_id=conversation_id,
+                page_size=_MESSAGE_PAGE_SIZE,
+                page_token=page_token,
+            )
+            messages.extend(page.messages or [])
+            page_token = page.next_page_token
+            if not page_token:
+                break
+        messages.sort(key=lambda m: m.created_timestamp or 0)
+
+        def build(msg):
+            message_id = msg.message_id or msg.id
+            status = msg.status.value if hasattr(msg.status, "value") else str(msg.status)
+            # The listing may leave out attachments (answer text, SQL); read the full message then.
+            if status == "COMPLETED" and not msg.attachments:
+                try:
+                    msg = self.client.genie.get_message(
+                        space_id=space_id, conversation_id=conversation_id, message_id=message_id
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to read message {message_id}: {e}")
+            return {
+                "message_id": message_id,
+                "content": msg.content or "",
+                **self._status_from_message(msg, space_id, conversation_id, message_id),
+            }
+
+        with ThreadPoolExecutor(max_workers=_MESSAGE_FETCH_WORKERS) as pool:
+            return list(pool.map(build, messages))
+
+    def _status_from_message(self, msg, space_id: str, conversation_id: str, message_id: str):
+        """
+        Turns a Genie message into the status, answer text, table and SQL details the UI shows.
+        """
         status_val = msg.status.value if hasattr(msg.status, "value") else str(msg.status)
         
         summary = None

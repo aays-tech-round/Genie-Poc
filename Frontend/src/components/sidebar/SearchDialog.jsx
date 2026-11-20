@@ -6,17 +6,14 @@ import Modal from '@/components/ui/Modal';
 const resultRow =
   'flex w-full items-center gap-3 rounded-[10px] px-3 py-[0.65rem] text-left text-[0.9rem] text-primary transition-colors duration-[120ms] hover:bg-line';
 
-// Modal search over chat titles and the text of every question / answer.
+// Modal search over chat titles.
 export default function SearchDialog({ chats, onSelect, onNewChat, onClose }) {
   const [query, setQuery] = useState('');
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return chats;
-    return chats.filter((c) =>
-      c.title.toLowerCase().includes(q) ||
-      c.messages.some((m) => (m.content || m.summary || '').toLowerCase().includes(q))
-    );
+    return chats.filter((c) => c.title.toLowerCase().includes(q));
   }, [chats, query]);
 
   return (

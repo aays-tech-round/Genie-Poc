@@ -8,7 +8,7 @@ const SINGLE_LINE = 38; // matches the field's min-h-[38px] and the send button
 
 // Message box: Enter sends, Shift+Enter adds a line, and the field grows with its text.
 // Typing stays possible while Genie is busy; only sending is blocked.
-export default function Composer({ value, onChange, onSubmit, busy, inputRef, autoFocus }) {
+export default function Composer({ value, onChange, onSubmit, busy, placeholder, inputRef, autoFocus }) {
   const canSend = value.trim().length > 0 && !busy;
   const fieldRef = useRef(null);
 
@@ -55,7 +55,7 @@ export default function Composer({ value, onChange, onSubmit, busy, inputRef, au
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={busy ? 'Genie is working on your answer…' : 'Ask Genie anything about your data…'}
+        placeholder={placeholder ?? (busy ? 'Genie is working on your answer…' : 'Ask Genie anything about your data…')}
         // 16px on phones keeps iOS Safari from zooming into the field
         className="block max-h-[200px] min-h-[38px] min-w-0 flex-1 resize-none overflow-y-hidden border-none bg-transparent py-[7px] text-base leading-6 text-primary outline-none scrollbar-thin placeholder:text-secondary max-md:text-[16px]"
         aria-label="Message Genie"
