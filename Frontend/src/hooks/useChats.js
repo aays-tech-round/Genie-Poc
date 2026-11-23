@@ -28,6 +28,8 @@ const nextSteps = (steps = [], status) =>
 export default function useChats(email) {
   const [chats, setChats] = useState([]);
   const [chatsEmail, setChatsEmail] = useState(email);
+  // True until the chat list for the signed-in user has come back from the backend
+  const [chatsLoading, setChatsLoading] = useState(true);
   const [activeChatId, setActiveChatId] = useState(null);
   const [processingChatIds, setProcessingChatIds] = useState(() => new Set());
   // Latest chats for code that runs after an await, where the state in scope may be stale
@@ -45,6 +47,7 @@ export default function useChats(email) {
     setChatsEmail(email);
     setChats([]);
     setActiveChatId(null);
+    setChatsLoading(true);
   }
 
   useEffect(() => {
@@ -57,7 +60,10 @@ export default function useChats(email) {
       .then((remote) => {
         if (!cancelled) setChats((prev) => mergeChats(prev, remote));
       })
-      .catch((err) => console.error('Could not load the chat list:', err));
+      .catch((err) => console.error('Could not load the chat list:', err))
+      .finally(() => {
+        if (!cancelled) setChatsLoading(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -271,6 +277,7 @@ export default function useChats(email) {
 
   return {
     chats,
+    chatsLoading,
     activeChat,
     activeChatId,
     messages,

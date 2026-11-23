@@ -209,6 +209,26 @@
   to { background-position: -100% 0; }
 }
 
+/* Placeholder bar for content that is still loading (sidebar chat list) */
+.skeleton {
+  border-radius: 6px;
+  background-color: var(--line);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--main) 55%, transparent) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+
 /* Chat that is still waiting on Genie, in the sidebar */
 @keyframes busyPulse {
   0% { box-shadow: 0 0 0 0 var(--accent-soft); }

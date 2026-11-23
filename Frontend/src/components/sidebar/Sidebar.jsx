@@ -24,11 +24,36 @@ const groupByDate = (chats) => {
   return groups.filter((g) => g.items.length > 0);
 };
 
+// Placeholder list shown while the chat list loads; rows match ChatListItem's size so nothing shifts
+const skeletonGroups = [
+  { label: 'w-10', rows: ['w-[82%]', 'w-[64%]', 'w-[74%]'] },
+  { label: 'w-24', rows: ['w-[70%]', 'w-[88%]', 'w-[58%]', 'w-[78%]', 'w-[66%]'] },
+];
+
+function ChatListSkeleton() {
+  return (
+    <div className="flex animate-fade flex-col gap-[0.6rem]" role="status" aria-label="Loading chats">
+      {skeletonGroups.map((g, gi) => (
+        <section key={gi} aria-hidden="true">
+          <div className="flex h-4 items-center px-[0.6rem] pt-2 pb-[0.3rem] box-content">
+            <div className={cn('skeleton h-2', g.label)} />
+          </div>
+          {g.rows.map((w) => (
+            <div key={w} className="mb-px flex h-5 items-center px-[0.6rem] py-[0.45rem] box-content">
+              <div className={cn('skeleton h-2.5', w)} />
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 const isMac = () => /Mac|iPhone|iPad/.test(navigator.platform);
 
 // Left rail: branding, new chat, search, chat history (pinned + by date) and the account menu.
 export default function Sidebar({
-  open, chats, activeChatId, processingChatIds, onSelect, onNewChat, onTogglePin, onRename, onDelete, onToggle,
+  open, chats, loading, activeChatId, processingChatIds, onSelect, onNewChat, onTogglePin, onRename, onDelete, onToggle,
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   // The chat the user asked to delete; the dialog confirms before onDelete runs
@@ -128,7 +153,9 @@ export default function Sidebar({
             </section>
           ))}
 
-          {chats.length === 0 && (
+          {loading && chats.length === 0 && <ChatListSkeleton />}
+
+          {!loading && chats.length === 0 && (
             <div className="mx-2 mt-6 flex flex-col items-center gap-2 text-center text-[0.82rem] text-secondary">
               <MessageCircle size={20} />
               <span>Your chats will show up here</span>

@@ -13,7 +13,7 @@ import Spinner from '@/components/ui/Spinner';
 export default function Home() {
   const { name, email } = useCurrentUser();
   const {
-    chats, activeChat, activeChatId, messages, isProcessing, isUnloaded, loadError, processingChatIds,
+    chats, chatsLoading, activeChat, activeChatId, messages, isProcessing, isUnloaded, loadError, processingChatIds,
     selectChat, reloadActiveChat, startNewChat, sendQuestion, togglePin, renameChat, deleteChat,
   } = useChats(email);
   const [inputValue, setInputValue] = useState('');
@@ -63,6 +63,7 @@ export default function Home() {
       <Sidebar
         open={sidebarOpen}
         chats={chats}
+        loading={chatsLoading}
         activeChatId={activeChatId}
         processingChatIds={processingChatIds}
         onSelect={handleSelectChat}
