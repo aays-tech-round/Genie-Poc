@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import Boolean, Unicode, text
 from sqlalchemy.dialects.mssql import DATETIME2, UNIQUEIDENTIFIER
@@ -16,6 +17,7 @@ class Chat(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UNIQUEIDENTIFIER(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[str] = mapped_column(Unicode(64))  # Microsoft Entra `oid`
+    email_id: Mapped[Optional[str]] = mapped_column(Unicode(320), nullable=True)  # token's `preferred_username`; display only
     genie_conversation_id: Mapped[str] = mapped_column(Unicode(64), unique=True)
     space_id: Mapped[str] = mapped_column(Unicode(64))
     title: Mapped[str] = mapped_column(Unicode(200))

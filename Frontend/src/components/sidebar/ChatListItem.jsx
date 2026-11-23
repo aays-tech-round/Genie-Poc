@@ -86,9 +86,15 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
           <MenuItem onClick={() => { setMenuOpen(false); setDraft(chat.title); setRenaming(true); }}>
             <Pencil size={16} /> Rename
           </MenuItem>
-          {/* Only offered once the backend can delete a chat; otherwise it would reappear on reload */}
+          {/* Not while Genie is still answering in this chat */}
           {onDelete && (
-            <MenuItem tone="danger" onClick={() => { setMenuOpen(false); onDelete(chat.id); }}>
+            <MenuItem
+              tone="danger"
+              disabled={busy}
+              title={busy ? 'Wait for Genie to finish answering' : undefined}
+              className="disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+              onClick={() => { setMenuOpen(false); onDelete(chat.id); }}
+            >
               <Trash size={16} /> Delete
             </MenuItem>
           )}

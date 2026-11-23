@@ -1,6 +1,7 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from databricks.sdk import WorkspaceClient
+from databricks.sdk.errors import NotFound
 from databricks.sdk.service.dashboards import GenieFeedbackRating
 
 logger = logging.getLogger(__name__)
@@ -213,6 +214,17 @@ class DatabricksGenieClient:
         columns = [c.name for c in (statement.manifest.schema.columns or [])]
         rows = (statement.result.data_array if statement.result else None) or []
         return [dict(zip(columns, row)) for row in rows]
+
+    def delete_conversation(self, space_id: str, conversation_id: str) -> bool:
+        """
+        Deletes a conversation and all its messages in Genie. Returns False when Genie no longer
+        has it (already deleted), so a retried delete still completes.
+        """
+        try:
+            self.client.genie.delete_conversation(space_id=space_id, conversation_id=conversation_id)
+            return True
+        except NotFound:
+            return False
 
     def submit_feedback(self, space_id: str, conversation_id: str, message_id: str, rating: str):
         """

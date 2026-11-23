@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { MessageCircle, PanelLeft, PenLine, Search } from 'lucide-react';
 import ChatListItem from './ChatListItem';
+import DeleteChatDialog from './DeleteChatDialog';
 import SearchDialog from './SearchDialog';
 import UserMenu from './UserMenu';
 import { iconButton } from '@/components/ui/classes';
@@ -30,8 +31,11 @@ export default function Sidebar({
   open, chats, activeChatId, processingChatIds, onSelect, onNewChat, onTogglePin, onRename, onDelete, onToggle,
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
+  // The chat the user asked to delete; the dialog confirms before onDelete runs
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const shortcut = isMac() ? '⌘K' : 'Ctrl K';
   const closeSearch = useCallback(() => setSearchOpen(false), []);
+  const closeDelete = useCallback(() => setDeleteTarget(null), []);
 
   // Ctrl+K / ⌘K opens chat search from anywhere
   useKeydown((e) => {
@@ -48,7 +52,12 @@ export default function Sidebar({
   const pinned = sorted.filter((c) => c.pinned);
   const recentGroups = groupByDate(sorted.filter((c) => !c.pinned));
 
-  const itemProps = { onSelect, onTogglePin, onRename, onDelete };
+  const itemProps = {
+    onSelect,
+    onTogglePin,
+    onRename,
+    onDelete: onDelete && ((chatId) => setDeleteTarget(chats.find((c) => c.id === chatId) || null)),
+  };
   const renderItem = (c) => (
     <ChatListItem
       key={c.id}
@@ -147,6 +156,10 @@ export default function Sidebar({
           onNewChat={onNewChat}
           onClose={closeSearch}
         />
+      )}
+
+      {deleteTarget && (
+        <DeleteChatDialog chat={deleteTarget} onConfirm={onDelete} onClose={closeDelete} />
       )}
     </>
   );

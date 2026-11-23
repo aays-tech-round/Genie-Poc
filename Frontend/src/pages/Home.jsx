@@ -14,7 +14,7 @@ export default function Home() {
   const { name, email } = useCurrentUser();
   const {
     chats, activeChat, activeChatId, messages, isProcessing, isUnloaded, loadError, processingChatIds,
-    selectChat, reloadActiveChat, startNewChat, sendQuestion, togglePin, renameChat,
+    selectChat, reloadActiveChat, startNewChat, sendQuestion, togglePin, renameChat, deleteChat,
   } = useChats(email);
   const [inputValue, setInputValue] = useState('');
   // Starts closed on mobile, where it would cover the chat
@@ -69,6 +69,7 @@ export default function Home() {
         onNewChat={handleNewChat}
         onTogglePin={togglePin}
         onRename={renameChat}
+        onDelete={deleteChat}
         onToggle={() => setSidebarOpen((o) => !o)}
       />
 

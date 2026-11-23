@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
 from datetime import timezone
 from functools import lru_cache
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 from models import (
     AskRequest, AskResponse, StatusResponse, FeedbackRequest, Chat, ChatMessage, ChatSummary, ChatUpdate,
@@ -92,14 +92,19 @@ def ask_genie(
         raise HTTPException(status_code=500, detail=str(e))
 
     if request.conversation_id:
+        # Keep the stored email current, but never blank it (e.g. when the token has none)
+        values = {"updated_at": func.sysutcdatetime()}
+        if user.email:
+            values["email_id"] = user.email
         db.execute(
             update(Chat)
             .where(Chat.user_id == user.oid, Chat.genie_conversation_id == res.conversation_id)
-            .values(updated_at=func.sysutcdatetime())
+            .values(**values)
         )
     else:
         db.add(Chat(
             user_id=user.oid,
+            email_id=user.email,
             genie_conversation_id=res.conversation_id,
             space_id=space_id,
             title=title_from(request.content),
@@ -136,6 +141,32 @@ def update_chat(
         chat.is_pinned = changes.is_pinned
     db.commit()
     return chat_summary(chat)
+
+@router.delete("/chats/{conversation_id}")
+def delete_chat(
+    conversation_id: str,
+    client: DatabricksGenieClient = Depends(get_genie_client),
+    user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Permanently deletes one of the signed-in user's chats, in Genie and in the chat list.
+    Genie goes first: if removing our row then fails, a retry finds the conversation already
+    gone in Genie and still completes. The other way round could leave a hidden conversation in Genie.
+    """
+    require_owner(db, user, conversation_id)
+    try:
+        client.delete_conversation(space_id=get_space_id(), conversation_id=conversation_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting conversation {conversation_id} in Genie: {e}")
+        raise HTTPException(status_code=500, detail=f"Could not delete the chat in Genie: {e}")
+
+    db.execute(delete(Chat).where(Chat.user_id == user.oid, Chat.genie_conversation_id == conversation_id))
+    db.commit()
+    logger.info(f"User {user.oid} deleted conversation {conversation_id}")
+    return {"success": True}
 
 @router.get("/chats/{conversation_id}/messages", response_model=list[ChatMessage])
 def get_chat_messages(

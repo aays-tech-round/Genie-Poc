@@ -78,3 +78,8 @@ export function updateChatSettings(conversationId, changes) {
     body: JSON.stringify(changes),
   });
 }
+
+// Permanently deletes a chat, in Genie and in the chat list. Throws ApiError (404 = already gone).
+export function deleteChat(conversationId) {
+  return request(`/chats/${encodeURIComponent(conversationId)}`, { method: 'DELETE' });
+}

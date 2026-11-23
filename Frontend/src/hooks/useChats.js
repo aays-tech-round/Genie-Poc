@@ -3,7 +3,8 @@ import {
   POLL_INITIAL_DELAY_MS, POLL_MAX_DELAY_MS, POLL_TIMEOUT_MS, TERMINAL_STATUSES,
 } from '@/constants/genie';
 import {
-  ApiError, askGenie, getChatMessages, getChats, getMessageStatus, updateChatSettings,
+  ApiError, askGenie, deleteChat as deleteChatRequest, getChatMessages, getChats, getMessageStatus,
+  updateChatSettings,
 } from '@/lib/genieApi';
 import { mergeChats, messagesFromBackend } from '@/lib/chatMapping';
 import { makeId, titleFrom } from '@/lib/utils';
@@ -251,6 +252,23 @@ export default function useChats(email) {
     saveSettings(chat, { title }, { title: chat.title });
   };
 
+  // Deletes a chat for good. The chat leaves the list only once the backend has deleted it, so a
+  // failure throws (the caller shows it) and the chat stays. A 404 means it is already gone.
+  const deleteChat = async (chatId) => {
+    const chat = chats.find((c) => c.id === chatId);
+    if (!chat) return;
+    if (chat.conversationId) {
+      try {
+        await deleteChatRequest(chat.conversationId);
+      } catch (err) {
+        if (!(err instanceof ApiError && err.status === 404)) throw err;
+      }
+    }
+    setChats((prev) => prev.filter((c) => c.id !== chatId));
+    setActiveChatId((current) => (current === chatId ? null : current));
+    setChatProcessing(chatId, false);
+  };
+
   return {
     chats,
     activeChat,
@@ -266,5 +284,6 @@ export default function useChats(email) {
     sendQuestion,
     togglePin,
     renameChat,
+    deleteChat,
   };
 }
