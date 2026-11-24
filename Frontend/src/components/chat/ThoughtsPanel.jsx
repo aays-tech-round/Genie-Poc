@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TERMINAL_STATUSES } from '@/constants/genie';
 import { Check, ChevronDown, Code, Copy, Database, Lightbulb, ListChecks } from 'lucide-react';
 import Markdown from '@/components/ui/Markdown';
@@ -15,13 +15,18 @@ const currentStatus = (message) =>
 
 function SqlBlock({ sql, parameters }) {
   const [copied, setCopied] = useState(false);
+  const resetTimer = useRef(null);
   const text = sql.replace(/\r\n?/g, '\n').trim();
+
+  // Cancel a pending "Copied" reset if the block unmounts first
+  useEffect(() => () => clearTimeout(resetTimer.current), []);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      clearTimeout(resetTimer.current);
+      resetTimer.current = setTimeout(() => setCopied(false), 1500);
     } catch {
       // Clipboard blocked (e.g. insecure context): the SQL is still selectable
     }

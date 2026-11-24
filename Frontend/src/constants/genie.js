@@ -11,6 +11,3 @@ export const FAILED_STATUSES = ['FAILED', 'CANCELLED', 'QUERY_RESULT_EXPIRED'];
 export const POLL_INITIAL_DELAY_MS = 1000;
 export const POLL_MAX_DELAY_MS = 2000;
 export const POLL_TIMEOUT_MS = 10 * 60 * 1000;
-
-// Below this width the sidebar overlays the chat instead of sitting beside it.
-export const MOBILE_QUERY = '(max-width: 768px)';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { THEME_STORAGE_KEY, systemTheme } from '@/constants/theme';
+import { THEME_STORAGE_KEY, systemTheme } from '@/lib/theme';
 import { Moon, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { iconButton } from './classes';

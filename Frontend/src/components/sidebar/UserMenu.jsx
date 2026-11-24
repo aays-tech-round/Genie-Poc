@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { useCurrentUser } from '@/auth/useCurrentUser';
 import useDismiss from '@/hooks/useDismiss';
@@ -18,7 +18,7 @@ export default function UserMenu() {
   const [confirmLogout, setConfirmLogout] = useState(false);
   const menuRef = useRef(null);
 
-  useDismiss(menuRef, open, useCallback(() => setOpen(false), []));
+  useDismiss(menuRef, open, () => setOpen(false));
 
   return (
     <div className="relative" ref={menuRef}>
@@ -31,7 +31,6 @@ export default function UserMenu() {
             </div>
           )}
           <MenuItem
-            role="menuitem"
             onClick={() => {
               setOpen(false);
               setConfirmLogout(true);
@@ -44,6 +43,7 @@ export default function UserMenu() {
       )}
 
       <button
+        type="button"
         className={cn(
           'flex w-full items-center gap-[0.65rem] rounded-[10px] px-[0.6rem] py-2 text-left transition-colors',
           open ? 'bg-line' : 'hover:bg-line'
@@ -63,10 +63,10 @@ export default function UserMenu() {
         />
       </button>
 
-      {/* No closeOnEscape: this dialog has never closed on Escape */}
       {confirmLogout && (
         <Modal
           onClose={() => setConfirmLogout(false)}
+          label="Log out"
           overlayClassName="items-center p-4 backdrop-blur-[2px]"
           className="w-[400px] p-6"
         >
@@ -74,6 +74,7 @@ export default function UserMenu() {
           <p className="mb-6 text-[0.9rem] wrap-break-word text-secondary">Log out of Genie as {email || name}?</p>
           <div className="flex justify-end gap-2">
             <button
+              type="button"
               className={cn(dialogButton, 'border border-secondary text-primary hover:bg-line')}
               onClick={() => setConfirmLogout(false)}
             >
@@ -81,6 +82,7 @@ export default function UserMenu() {
             </button>
             {/* Ends the Entra ID session and returns to postLogoutRedirectUri */}
             <button
+              type="button"
               className={cn(dialogButton, 'bg-danger text-main hover:opacity-90')}
               onClick={() => instance.logoutRedirect()}
             >

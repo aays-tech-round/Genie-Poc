@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { MessageCircle, PanelLeft, PenLine, Search } from 'lucide-react';
 import ChatListItem from './ChatListItem';
 import DeleteChatDialog from './DeleteChatDialog';
@@ -51,7 +51,7 @@ function ChatListSkeleton() {
   );
 }
 
-const isMac = () => /Mac|iPhone|iPad/.test(navigator.platform);
+const isMac = () => /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform || navigator.userAgent);
 
 // Left rail: branding, new chat, search, chat history (pinned + by date) and the account menu.
 export default function Sidebar({
@@ -61,8 +61,6 @@ export default function Sidebar({
   // The chat the user asked to delete; the dialog confirms before onDelete runs
   const [deleteTarget, setDeleteTarget] = useState(null);
   const shortcut = isMac() ? '⌘K' : 'Ctrl K';
-  const closeSearch = useCallback(() => setSearchOpen(false), []);
-  const closeDelete = useCallback(() => setDeleteTarget(null), []);
 
   // Ctrl+K / ⌘K opens chat search from anywhere
   useKeydown((e) => {
@@ -72,10 +70,7 @@ export default function Sidebar({
     }
   });
 
-  const sorted = useMemo(
-    () => [...chats].sort((a, b) => b.updatedAt - a.updatedAt),
-    [chats]
-  );
+  const sorted = [...chats].sort((a, b) => b.updatedAt - a.updatedAt);
   const pinned = sorted.filter((c) => c.pinned);
   const recentGroups = groupByDate(sorted.filter((c) => !c.pinned));
 
@@ -110,13 +105,14 @@ export default function Sidebar({
         <div className="flex min-h-[60px] items-center justify-between pr-[0.6rem] pl-4">
           {/* Served from public/ */}
           <img className="h-7 w-auto" src="/MarsLogo1.png" alt="Mars" />
-          <button className={iconButton} onClick={onToggle} title="Close sidebar" aria-label="Close sidebar">
+          <button type="button" className={iconButton} onClick={onToggle} title="Close sidebar" aria-label="Close sidebar">
             <PanelLeft size={20} />
           </button>
         </div>
 
         <div className="flex flex-col gap-0.5 px-[0.6rem] pt-1 pb-2">
           <button
+            type="button"
             className="mb-1 flex items-center gap-[0.6rem] rounded-xl border border-line bg-main py-2 pr-[0.6rem] pl-2 text-left text-[0.9rem] font-medium text-primary shadow-sm transition duration-200 hover:border-accent hover:shadow-md active:scale-98"
             onClick={onNewChat}
           >
@@ -126,6 +122,7 @@ export default function Sidebar({
             New chat
           </button>
           <button
+            type="button"
             className="flex items-center gap-[0.6rem] rounded-[10px] py-2 pr-[0.6rem] pl-3 text-left text-sm font-medium text-secondary transition hover:bg-line hover:text-primary"
             onClick={() => setSearchOpen(true)}
           >
@@ -183,12 +180,12 @@ export default function Sidebar({
           chats={sorted}
           onSelect={onSelect}
           onNewChat={onNewChat}
-          onClose={closeSearch}
+          onClose={() => setSearchOpen(false)}
         />
       )}
 
       {deleteTarget && (
-        <DeleteChatDialog chat={deleteTarget} onConfirm={onDelete} onClose={closeDelete} />
+        <DeleteChatDialog chat={deleteTarget} onConfirm={onDelete} onClose={() => setDeleteTarget(null)} />
       )}
     </>
   );

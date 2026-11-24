@@ -1,4 +1,5 @@
-import { MOBILE_QUERY } from '@/constants/genie';
+// Below this width the sidebar overlays the chat instead of sitting beside it.
+const MOBILE_QUERY = '(max-width: 768px)';
 
 // Joins class names, skipping falsy ones: cn('a', isOpen && 'b') -> 'a b' or 'a'.
 export const cn = (...classes) => classes.filter(Boolean).join(' ');

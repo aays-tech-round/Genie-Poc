@@ -23,6 +23,7 @@ export default function ChatHeader({ title, bordered, sidebarOpen, onOpenSidebar
           )}
         >
           <button
+            type="button"
             className={iconButton}
             onClick={onOpenSidebar}
             title="Open sidebar"
@@ -32,6 +33,7 @@ export default function ChatHeader({ title, bordered, sidebarOpen, onOpenSidebar
             <PanelLeft size={20} />
           </button>
           <button
+            type="button"
             className={iconButton}
             onClick={onNewChat}
             title="New chat"

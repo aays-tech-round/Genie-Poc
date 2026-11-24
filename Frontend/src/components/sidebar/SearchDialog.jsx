@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { MessageCircle, PenLine, Pin, Search, X } from 'lucide-react';
 import { iconButton } from '@/components/ui/classes';
 import Modal from '@/components/ui/Modal';
@@ -10,16 +10,13 @@ const resultRow =
 export default function SearchDialog({ chats, onSelect, onNewChat, onClose }) {
   const [query, setQuery] = useState('');
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return chats;
-    return chats.filter((c) => c.title.toLowerCase().includes(q));
-  }, [chats, query]);
+  const q = query.trim().toLowerCase();
+  const results = q ? chats.filter((c) => c.title.toLowerCase().includes(q)) : chats;
 
   return (
     <Modal
       onClose={onClose}
-      closeOnEscape
+      label="Search chats"
       overlayClassName="items-start px-4 pt-[12vh] pb-4 backdrop-blur-[3px]"
       className="flex max-h-[70vh] w-[640px] flex-col overflow-hidden"
     >
@@ -32,18 +29,19 @@ export default function SearchDialog({ chats, onSelect, onNewChat, onClose }) {
           autoFocus
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button className={iconButton} onClick={onClose} aria-label="Close search">
+        <button type="button" className={iconButton} onClick={onClose} aria-label="Close search">
           <X size={18} />
         </button>
       </div>
       <div className="overflow-y-auto p-2">
         {!query && (
-          <button className={resultRow} onClick={() => { onNewChat(); onClose(); }}>
+          <button type="button" className={resultRow} onClick={() => { onNewChat(); onClose(); }}>
             <PenLine size={18} /> New chat
           </button>
         )}
         {results.map((c) => (
           <button
+            type="button"
             key={c.id}
             className={resultRow}
             onClick={() => { onSelect(c.id); onClose(); }}
