@@ -10,14 +10,16 @@ import { cn } from '@/lib/utils';
 
 const sectionLabel = 'px-[0.6rem] pt-2 pb-[0.3rem] text-xs font-semibold tracking-[0.02em] text-secondary';
 
-// Buckets chats (already sorted newest first) into Today / Yesterday / Previous 7 days / Older.
+// Buckets chats (already sorted newest first) into Today / Yesterday / Older.
 const groupByDate = (chats) => {
-  const startOfToday = new Date().setHours(0, 0, 0, 0);
-  const day = 24 * 60 * 60 * 1000;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startOfToday = today.getTime();
+  // Calendar-based (not minus 24h) so the boundary stays at midnight across DST changes
+  const startOfYesterday = today.setDate(today.getDate() - 1);
   const groups = [
     { label: 'Today', from: startOfToday, items: [] },
-    { label: 'Yesterday', from: startOfToday - day, items: [] },
-    { label: 'Previous 7 days', from: startOfToday - 7 * day, items: [] },
+    { label: 'Yesterday', from: startOfYesterday, items: [] },
     { label: 'Older', from: -Infinity, items: [] },
   ];
   chats.forEach((c) => groups.find((g) => (c.updatedAt || 0) >= g.from).items.push(c));
