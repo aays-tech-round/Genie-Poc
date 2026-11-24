@@ -1,10 +1,22 @@
-from fastapi import FastAPI
+import os
+import logging
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
 from routers import genie
+from auth import validate_auth_config
+from db import validate_db_config
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env if present
 load_dotenv()
+
+# Refuse to start rather than serve Genie without authentication or without its chat database settings.
+validate_auth_config()
+validate_db_config()
 
 app = FastAPI(
     title="Databricks Genie Integration API",
@@ -12,13 +24,21 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow CORS for the custom UI to communicate with this backend
+@app.exception_handler(SQLAlchemyError)
+def database_error_handler(request: Request, exc: SQLAlchemyError):
+    # Details stay in the server log; the caller only learns the chat database is unavailable.
+    logger.error(f"Database error on {request.method} {request.url.path}: {exc}")
+    return JSONResponse(status_code=503, content={"detail": "Chat history database is unavailable. Please try again."})
+
+# Only the frontend origins listed in CORS_ORIGINS (comma-separated) may call this API from a browser.
+cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to specific origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 app.include_router(genie.router, prefix="/api/v1/genie", tags=["Genie"])

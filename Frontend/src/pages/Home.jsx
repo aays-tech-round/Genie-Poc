@@ -8,12 +8,13 @@ import WelcomeScreen from '@/components/chat/WelcomeScreen';
 import MessageList from '@/components/chat/MessageList';
 import ChatFooter from '@/components/chat/ChatFooter';
 import Composer from '@/components/chat/Composer';
+import Spinner from '@/components/ui/Spinner';
 
 export default function Home() {
   const { name, email } = useCurrentUser();
   const {
-    chats, activeChat, activeChatId, messages, isProcessing, processingChatIds,
-    selectChat, startNewChat, sendQuestion, togglePin, renameChat, deleteChat,
+    chats, chatsLoading, activeChat, activeChatId, messages, isProcessing, isUnloaded, loadError, processingChatIds,
+    selectChat, reloadActiveChat, startNewChat, sendQuestion, togglePin, renameChat, deleteChat,
   } = useChats(email);
   const [inputValue, setInputValue] = useState('');
   // Starts closed on mobile, where it would cover the chat
@@ -21,7 +22,8 @@ export default function Home() {
   const inputRef = useRef(null);
 
   const firstName = (name || '').split(' ')[0];
-  const isEmpty = messages.length === 0;
+  // No open chat, or an open chat that really has no messages: show the welcome screen
+  const isEmpty = !isUnloaded && messages.length === 0;
 
   const closeSidebarOnMobile = () => {
     if (isMobileViewport()) setSidebarOpen(false);
@@ -50,7 +52,8 @@ export default function Home() {
       value={inputValue}
       onChange={setInputValue}
       onSubmit={handleSend}
-      busy={isProcessing}
+      busy={isProcessing || isUnloaded}
+      placeholder={isUnloaded ? (loadError ? 'This chat could not be loaded' : 'Loading chat…') : undefined}
       inputRef={inputRef}
     />
   );
@@ -60,6 +63,7 @@ export default function Home() {
       <Sidebar
         open={sidebarOpen}
         chats={chats}
+        loading={chatsLoading}
         activeChatId={activeChatId}
         processingChatIds={processingChatIds}
         onSelect={handleSelectChat}
@@ -96,13 +100,35 @@ export default function Home() {
           />
         ) : (
           <>
-            <MessageList
-              chatId={activeChatId}
-              messages={messages}
-              isProcessing={isProcessing}
-              onRetry={sendQuestion}
-              onAsk={sendQuestion}
-            />
+            {isUnloaded ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center text-sm text-secondary">
+                {loadError ? (
+                  <>
+                    <span>{loadError}</span>
+                    <button
+                      type="button"
+                      className="rounded-full border border-line bg-main px-3 py-[0.35rem] text-[0.8rem] font-medium text-primary transition hover:border-secondary hover:bg-line active:scale-96"
+                      onClick={reloadActiveChat}
+                    >
+                      Try again
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Spinner className="size-5" aria-hidden="true" />
+                    <span role="status">Loading chat…</span>
+                  </>
+                )}
+              </div>
+            ) : (
+              <MessageList
+                chatId={activeChatId}
+                messages={messages}
+                isProcessing={isProcessing}
+                onRetry={sendQuestion}
+                onAsk={sendQuestion}
+              />
+            )}
             <ChatFooter composer={composer} />
           </>
         )}

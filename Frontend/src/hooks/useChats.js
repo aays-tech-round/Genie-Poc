@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   POLL_INITIAL_DELAY_MS, POLL_MAX_DELAY_MS, POLL_TIMEOUT_MS, TERMINAL_STATUSES,
 } from '@/constants/genie';
-import { askGenie, getMessageStatus } from '@/lib/genieApi';
-import { loadChats, saveChats } from '@/lib/chatStorage';
+import {
+  ApiError, askGenie, deleteChat as deleteChatRequest, getChatMessages, getChats, getMessageStatus,
+  updateChatSettings,
+} from '@/lib/genieApi';
+import { mergeChats, messagesFromBackend } from '@/lib/chatMapping';
 import { makeId, titleFrom } from '@/lib/utils';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -19,28 +22,52 @@ const nextSteps = (steps = [], status) =>
 /**
  * Chat history for one user plus the Genie question/answer flow:
  * POST /ask, then poll /status until the answer reaches a terminal status.
- * History persists to localStorage; several chats can be answering at once.
+ * The chat list, titles and pins live on the backend; a chat's messages are read from Genie
+ * when it is opened. Several chats can be answering at once.
  */
 export default function useChats(email) {
-  const [chats, setChats] = useState(() => loadChats(email));
+  const [chats, setChats] = useState([]);
   const [chatsEmail, setChatsEmail] = useState(email);
+  // True until the chat list for the signed-in user has come back from the backend
+  const [chatsLoading, setChatsLoading] = useState(true);
   const [activeChatId, setActiveChatId] = useState(null);
   const [processingChatIds, setProcessingChatIds] = useState(() => new Set());
+  // Latest chats for code that runs after an await, where the state in scope may be stale
+  const chatsRef = useRef(chats);
 
   const activeChat = chats.find((c) => c.id === activeChatId) || null;
   const messages = activeChat ? activeChat.messages : [];
   const conversationId = activeChat ? activeChat.conversationId : null;
   const isProcessing = activeChatId ? processingChatIds.has(activeChatId) : false;
+  // An open chat whose messages haven't arrived yet (loading, or failed to load)
+  const isUnloaded = !!activeChat && !activeChat.loaded;
 
   // A different signed-in user gets their own history
   if (email !== chatsEmail) {
     setChatsEmail(email);
-    setChats(loadChats(email));
+    setChats([]);
+    setActiveChatId(null);
+    setChatsLoading(true);
   }
 
   useEffect(() => {
-    saveChats(email, chats);
-  }, [chats, email]);
+    chatsRef.current = chats;
+  }, [chats]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getChats()
+      .then((remote) => {
+        if (!cancelled) setChats((prev) => mergeChats(prev, remote));
+      })
+      .catch((err) => console.error('Could not load the chat list:', err))
+      .finally(() => {
+        if (!cancelled) setChatsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [email]);
 
   const updateChat = useCallback((chatId, update) => {
     setChats((prev) => prev.map((c) => (c.id === chatId ? update(c) : c)));
@@ -93,6 +120,12 @@ export default function useChats(email) {
           return;
         }
       } catch (err) {
+        // The backend answered with an error (e.g. 401/403/500): retrying won't help, so stop and show it.
+        if (err instanceof ApiError) {
+          updateMessage(chatId, msgId, { status: 'FAILED', status_message: err.message, error: err.message });
+          setChatProcessing(chatId, false);
+          return;
+        }
         console.error('Polling error:', err);
       }
 
@@ -104,9 +137,71 @@ export default function useChats(email) {
     setChatProcessing(chatId, false);
   };
 
+  // Reads an opened chat's questions and answers from Genie. Answers that were still being
+  // worked on (e.g. the page was closed meanwhile) carry on polling.
+  const loadMessages = (chat) => {
+    updateChat(chat.id, (c) => ({ ...c, loading: true, loadError: null }));
+    getChatMessages(chat.conversationId)
+      .then((items) => {
+        updateChat(chat.id, (c) => ({
+          ...c,
+          messages: messagesFromBackend(items).map((m) =>
+            m.role === 'genie' ? { ...m, steps: nextSteps([], m.status) } : m
+          ),
+          loaded: true,
+          loading: false,
+        }));
+        const unfinished = items.filter((m) => !TERMINAL_STATUSES.includes(m.status));
+        if (unfinished.length > 0) {
+          setChatProcessing(chat.id, true);
+          unfinished.forEach((m) => pollStatus(m.message_id, chat.conversationId, chat.id));
+        }
+      })
+      .catch((err) => {
+        console.error('Could not load the chat:', err);
+        updateChat(chat.id, (c) => ({
+          ...c,
+          loading: false,
+          loadError: err.message || 'Could not load this chat.',
+        }));
+      });
+  };
+
+  const selectChat = (chatId) => {
+    setActiveChatId(chatId);
+    const chat = chats.find((c) => c.id === chatId);
+    if (chat && !chat.loaded && !chat.loading && chat.conversationId) loadMessages(chat);
+  };
+
+  const reloadActiveChat = () => {
+    if (activeChat && !activeChat.loading) loadMessages(activeChat);
+  };
+
+  // Saves a pin or rename. Until a brand-new chat's first answer has started it has no
+  // conversation to save to; syncNewChat saves its changes once /ask returns.
+  const saveSettings = (chat, changes, undo) => {
+    if (!chat.conversationId) return;
+    updateChatSettings(chat.conversationId, changes).catch((err) => {
+      console.error('Could not save the chat change:', err);
+      updateChat(chat.id, (c) => ({ ...c, ...undo }));
+    });
+  };
+
+  const syncNewChat = (chatId, newConversationId, originalTitle) => {
+    const chat = chatsRef.current.find((c) => c.id === chatId);
+    if (!chat) return;
+    const changes = {};
+    if (chat.title !== originalTitle) changes.title = chat.title;
+    if (chat.pinned) changes.is_pinned = true;
+    if (Object.keys(changes).length === 0) return;
+    updateChatSettings(newConversationId, changes).catch((err) =>
+      console.error('Could not save the chat change:', err)
+    );
+  };
+
   // Asks in the open chat, or starts a new chat when none is open.
   const sendQuestion = async (content) => {
-    if (!content.trim() || isProcessing) return;
+    if (!content.trim() || isProcessing || isUnloaded) return;
 
     let chatId = activeChatId;
     if (!chatId) {
@@ -118,6 +213,7 @@ export default function useChats(email) {
         messages: [],
         pinned: false,
         updatedAt: Date.now(),
+        loaded: true,
       }, ...prev]);
       setActiveChatId(chatId);
     }
@@ -134,6 +230,7 @@ export default function useChats(email) {
         { role: 'genie', message_id: newMsgId },
         { conversationId: conversationId || newConvId }
       );
+      if (!conversationId) syncNewChat(chatId, newConvId, titleFrom(content));
 
       pollStatus(newMsgId, newConvId, chatId);
     } catch (err) {
@@ -146,23 +243,50 @@ export default function useChats(email) {
     }
   };
 
-  const togglePin = (chatId) => updateChat(chatId, (c) => ({ ...c, pinned: !c.pinned }));
+  const togglePin = (chatId) => {
+    const chat = chats.find((c) => c.id === chatId);
+    if (!chat) return;
+    const pinned = !chat.pinned;
+    updateChat(chatId, (c) => ({ ...c, pinned }));
+    saveSettings(chat, { is_pinned: pinned }, { pinned: chat.pinned });
+  };
 
-  const renameChat = (chatId, title) => updateChat(chatId, (c) => ({ ...c, title }));
+  const renameChat = (chatId, title) => {
+    const chat = chats.find((c) => c.id === chatId);
+    if (!chat) return;
+    updateChat(chatId, (c) => ({ ...c, title }));
+    saveSettings(chat, { title }, { title: chat.title });
+  };
 
-  const deleteChat = (chatId) => {
+  // Deletes a chat for good. The chat leaves the list only once the backend has deleted it, so a
+  // failure throws (the caller shows it) and the chat stays. A 404 means it is already gone.
+  const deleteChat = async (chatId) => {
+    const chat = chats.find((c) => c.id === chatId);
+    if (!chat) return;
+    if (chat.conversationId) {
+      try {
+        await deleteChatRequest(chat.conversationId);
+      } catch (err) {
+        if (!(err instanceof ApiError && err.status === 404)) throw err;
+      }
+    }
     setChats((prev) => prev.filter((c) => c.id !== chatId));
-    if (chatId === activeChatId) setActiveChatId(null);
+    setActiveChatId((current) => (current === chatId ? null : current));
+    setChatProcessing(chatId, false);
   };
 
   return {
     chats,
+    chatsLoading,
     activeChat,
     activeChatId,
     messages,
     isProcessing,
+    isUnloaded,
+    loadError: activeChat?.loadError || null,
     processingChatIds,
-    selectChat: setActiveChatId,
+    selectChat,
+    reloadActiveChat,
     startNewChat: () => setActiveChatId(null),
     sendQuestion,
     togglePin,
