@@ -11,7 +11,7 @@
 /* ───────────── Colours: the only 11 in the app ─────────────
    Change the look here and nowhere else. Each is a Tailwind class too:
    bg-main, bg-soft, border-line, text-primary, text-secondary, bg-accent, text-danger…
-   Light is the default; [data-theme="dark"] on <html> (set by applySavedTheme() in
+   Light is the default; [data-theme="dark"] on <html> (set by applySavedTheme() (lib/theme.js) in
    MainLayout) swaps in the dark values. The login screen is always light. */
 :root {
   color-scheme: light;

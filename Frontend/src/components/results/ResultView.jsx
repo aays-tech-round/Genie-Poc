@@ -55,6 +55,7 @@ export default function ResultView({ data }) {
             <div className="inline-flex rounded-[9px] bg-line p-0.5" role="tablist" aria-label="Result view">
               {tabs.map((v) => (
                 <button
+                  type="button"
                   key={v}
                   role="tab"
                   aria-selected={shown === v}

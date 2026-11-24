@@ -27,7 +27,7 @@ export default function DeleteChatDialog({ chat, onConfirm, onClose }) {
     <Modal
       // Can't be dismissed while the delete is running
       onClose={deleting ? () => {} : onClose}
-      closeOnEscape
+      label="Delete chat"
       overlayClassName="items-center px-4 backdrop-blur-[3px]"
       className="w-[420px] p-6"
     >

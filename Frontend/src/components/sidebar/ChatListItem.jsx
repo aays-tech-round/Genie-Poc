@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import useDismiss from '@/hooks/useDismiss';
 import { Ellipsis, Pencil, Pin, Trash } from 'lucide-react';
 import { Menu, MenuItem } from '@/components/ui/Menu';
@@ -16,7 +16,7 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
   const [draft, setDraft] = useState(chat.title);
   const itemRef = useRef(null);
 
-  useDismiss(itemRef, menuOpen, useCallback(() => setMenuOpen(false), []));
+  useDismiss(itemRef, menuOpen, () => setMenuOpen(false));
 
   const commitRename = () => {
     const title = draft.trim();
@@ -48,6 +48,7 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
       className={cn(row, active ? cn('bg-accent-soft', activeMarker) : menuOpen ? 'bg-line' : 'hover:bg-line')}
     >
       <button
+        type="button"
         className={cn(
           'min-w-0 flex-1 truncate px-[0.6rem] py-[0.45rem] text-left text-sm',
           active ? 'font-semibold text-primary' : 'font-medium text-secondary group-hover:text-primary'
@@ -67,13 +68,16 @@ export default function ChatListItem({ chat, active, busy, onSelect, onTogglePin
         />
       )}
       <button
+        type="button"
         // Hidden until hover, except on touch screens, which have no hover
         className={cn(
-          'mr-1 flex size-[30px] items-center justify-center rounded-md text-secondary transition hover:text-primary [@media(hover:none)]:opacity-100',
+          'mr-1 flex size-[30px] items-center justify-center rounded-md text-secondary transition hover:text-primary [@media(hover:none)]:opacity-100 focus-visible:opacity-100',
           active || menuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
         )}
         onClick={() => setMenuOpen((o) => !o)}
         aria-label="Chat options"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
       >
         <Ellipsis size={18} />
       </button>
