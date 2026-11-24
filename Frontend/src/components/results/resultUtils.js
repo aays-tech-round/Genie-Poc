@@ -1,7 +1,7 @@
 // Pure helpers for Genie query results (arrays of {column: value} rows):
 // number parsing / formatting, column naming, and deciding how to visualise a result.
 
-export const MAX_BARS = 25;
+export const MAX_BARS = 50;
 
 export const toNumber = (v) => {
   if (v === null || v === undefined || v === '') return null;
