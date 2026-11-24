@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Path, Query, Depends, Response
+from databricks.sdk.errors import NotFound
 from datetime import timezone
 from functools import lru_cache
 from sqlalchemy import delete, func, select, update
@@ -16,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 # Every Genie route requires a signed-in user (see auth.py).
 router = APIRouter(dependencies=[Depends(get_current_user)])
+
+_GENIE_ID_PATTERN = r"^[A-Za-z0-9_-]+$"
 
 def get_space_id() -> str:
     space_id = os.getenv("GENIE_SPACE_ID")
@@ -213,6 +216,45 @@ def get_status(
         if "Timeout" in str(e) or "Warehouse" in str(e):
             raise HTTPException(status_code=503, detail="Service unavailable or timeout.")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get(
+    "/visualization/{message_id}/{attachment_id}",
+    response_class=Response,
+    responses={200: {"content": {"image/png": {}}, "description": "The chart Genie rendered, as a PNG."}},
+)
+def get_visualization(
+    # Genie IDs are plain tokens; anything else could alter the Databricks URL they are put in.
+    message_id: str = Path(..., pattern=_GENIE_ID_PATTERN),
+    attachment_id: str = Path(..., pattern=_GENIE_ID_PATTERN),
+    conversation_id: str = Query(..., description="The Genie Conversation ID"),
+    client: DatabricksGenieClient = Depends(get_genie_client),
+    user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Downloads the chart Genie generated for a visualization attachment, so the browser can show
+    it without ever holding Databricks credentials. Any failure tells the UI to draw its own chart.
+    """
+    require_owner(db, user, conversation_id)
+    try:
+        image = client.download_visualization(
+            space_id=get_space_id(),
+            conversation_id=conversation_id,
+            message_id=message_id,
+            attachment_id=attachment_id,
+        )
+    except HTTPException:
+        raise
+    except NotFound:
+        raise HTTPException(status_code=404, detail="Visualization not found.")
+    except Exception as e:
+        logger.error(f"Error downloading visualization {attachment_id} of message {message_id}: {e}")
+        raise HTTPException(status_code=502, detail="Could not download the visualization from Genie.")
+
+    if not image:
+        raise HTTPException(status_code=404, detail="Visualization not found.")
+    # A rendered chart never changes, so the browser may reuse it; "private" keeps shared caches out.
+    return Response(content=image, media_type="image/png", headers={"Cache-Control": "private, max-age=3600"})
 
 @router.post("/feedback")
 def submit_feedback(

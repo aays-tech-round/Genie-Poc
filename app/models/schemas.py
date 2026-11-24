@@ -10,11 +10,21 @@ class AskResponse(BaseModel):
     message_id: str
     conversation_id: str
 
+class GenieVisualization(BaseModel):
+    """A chart Genie rendered for the answer; the image is fetched from /visualization."""
+    attachment_id: str
+    query_attachment_id: Optional[str] = None  # the query attachment the chart was drawn from
+    title: Optional[str] = None
+    message_id: str
+    conversation_id: str
+
 class StatusResponse(BaseModel):
     status: str  # Genie's MessageStatus code, e.g. FETCHING_METADATA, EXECUTING_QUERY, COMPLETED
     trusted_asset: bool = False
     summary: Optional[str] = None
     data: Optional[Any] = None
+    # Present only when the message is COMPLETED and Genie generated a chart.
+    visualization: Optional[GenieVisualization] = None
     error: Optional[str] = None
     # How Genie got to the answer. The SQL appears as soon as Genie has written it
     # (before the query runs); the rest may be empty depending on the space.

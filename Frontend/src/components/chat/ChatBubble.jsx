@@ -60,7 +60,7 @@ export default function ChatBubble({ message, onRetry, onAsk }) {
             <Markdown text={message.summary} />
             {message.data && (
               <ErrorBoundary message="Couldn't display this result.">
-                <ResultView data={message.data} />
+                <ResultView data={message.data} visualization={message.visualization} />
               </ErrorBoundary>
             )}
             {onAsk && <FollowUps questions={message.suggested_questions} onAsk={onAsk} />}

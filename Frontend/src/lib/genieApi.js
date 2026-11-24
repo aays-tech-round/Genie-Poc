@@ -70,6 +70,35 @@ export function getChatMessages(conversationId) {
   return request(`/chats/${encodeURIComponent(conversationId)}/messages`);
 }
 
+// Object URLs of Genie-rendered charts already downloaded, by attachment, so reopening a chat
+// or switching tabs doesn't download the same image again. Failures aren't kept, so a later
+// render can try again.
+const visualizationUrls = new Map();
+
+/**
+ * Downloads the chart Genie rendered for a visualization attachment ({ message_id,
+ * conversation_id, attachment_id } as returned in `visualization`). Resolves to an object URL
+ * for an <img>; throws ApiError when the backend can't provide it.
+ */
+export function getVisualizationUrl({ message_id: messageId, conversation_id: conversationId, attachment_id: attachmentId }) {
+  const key = `${conversationId}/${messageId}/${attachmentId}`;
+  if (!visualizationUrls.has(key)) {
+    const params = new URLSearchParams({ conversation_id: conversationId });
+    const path = `/visualization/${encodeURIComponent(messageId)}/${encodeURIComponent(attachmentId)}?${params}`;
+    const pending = (async () => {
+      const token = await getToken();
+      const res = await fetch(`${GENIE_API_BASE}${path}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new ApiError(await messageFor(res), res.status);
+      const blob = await res.blob();
+      if (!blob.type.startsWith('image/') || blob.size === 0) throw new ApiError('Not an image', res.status);
+      return URL.createObjectURL(blob);
+    })();
+    pending.catch(() => visualizationUrls.delete(key));
+    visualizationUrls.set(key, pending);
+  }
+  return visualizationUrls.get(key);
+}
+
 // Saves a new title and/or pin state: updateChatSettings(id, { title }) or ({ is_pinned }).
 export function updateChatSettings(conversationId, changes) {
   return request(`/chats/${encodeURIComponent(conversationId)}`, {

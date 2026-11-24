@@ -22,7 +22,11 @@ class DatabricksGenieClient:
         Starts a conversation or creates a new message.
         """
         logger.info(f"Asking Genie in space {space_id}...")
-        body = {"content": content}
+        # Shared by new conversations and follow-ups, so both ask Genie to render a chart when it fits.
+        body = {
+            "content": content,
+            "enable_visualization": True
+        }
         
         if conversation_id:
             try:
@@ -116,6 +120,7 @@ class DatabricksGenieClient:
         
         summary = None
         data = None
+        visualization = None
         trusted_asset = False
         error = None
 
@@ -147,6 +152,18 @@ class DatabricksGenieClient:
                             data = self._rows_from_result(result)
                         except Exception as e:
                             logger.error(f"Failed to fetch query result: {e}")
+
+                    # Only the IDs are passed on; the image itself is downloaded on demand
+                    # (the download API works only once the message is COMPLETED).
+                    viz = getattr(att, "viz", None)
+                    if viz and att.attachment_id and visualization is None:
+                        visualization = {
+                            "attachment_id": att.attachment_id,
+                            "query_attachment_id": viz.query_attachment_id or None,
+                            "title": viz.title or None,
+                            "message_id": message_id,
+                            "conversation_id": conversation_id,
+                        }
                             
             # Check for trusted asset flag
             if getattr(msg, "metadata", None) and hasattr(msg.metadata, "trusted"):
@@ -156,6 +173,7 @@ class DatabricksGenieClient:
             "status": status_val,
             "summary": summary,
             "data": data,
+            "visualization": visualization,
             "trusted_asset": trusted_asset,
             "error": error,
             **insights,
@@ -214,6 +232,22 @@ class DatabricksGenieClient:
         columns = [c.name for c in (statement.manifest.schema.columns or [])]
         rows = (statement.result.data_array if statement.result else None) or []
         return [dict(zip(columns, row)) for row in rows]
+
+    def download_visualization(self, space_id: str, conversation_id: str, message_id: str, attachment_id: str) -> bytes:
+        """
+        The PNG image Genie rendered for a visualization attachment. Raises NotFound when Genie
+        has no such visualization (e.g. the attachment isn't a chart).
+        """
+        res = self.client.genie.download_message_attachment_visualization(
+            name=f"spaces/{space_id}/conversations/{conversation_id}/messages/{message_id}/attachments/{attachment_id}"
+        )
+        contents = res.contents
+        if contents is None:
+            return b""
+        try:
+            return contents.read()
+        finally:
+            contents.close()
 
     def delete_conversation(self, space_id: str, conversation_id: str) -> bool:
         """

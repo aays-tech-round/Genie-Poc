@@ -1,23 +1,56 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { isNumericColumn, isYear, formatCell, prettyName, analyseStats, analyse, canPie } from './resultUtils';
 import StatTiles from './StatTiles';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
 import PieChart from './PieChart';
+import Spinner from '@/components/ui/Spinner';
+import { getVisualizationUrl } from '@/lib/genieApi';
 import { cn } from '@/lib/utils';
 
 const cell = 'border-b border-line px-4 py-[0.65rem] whitespace-nowrap max-sm:px-3 max-sm:py-[0.55rem]';
+const card = 'rounded-xl border border-line bg-main px-[1.1rem] pt-4 pb-[0.9rem] shadow-sm max-sm:px-3 max-sm:pt-[0.85rem] max-sm:pb-3';
+
+const isId = (v) => typeof v === 'string' && v.length > 0;
 
 // Renders a Genie query result (array of {column: value} rows) as a table,
 // plus a bar or line chart, or headline figures, when the shape of the data suits one.
 // Part-to-whole results also get a Pie option (see canPie); bars stay the default.
+// When Genie rendered its own chart (`visualization`), that is shown first instead; if it
+// can't be loaded, the view falls back to the charts drawn here.
 
-export default function ResultView({ data }) {
+export default function ResultView({ data, visualization }) {
   const chart = useMemo(() => analyse(data), [data]);
   const stats = useMemo(() => analyseStats(data), [data]);
   const visual = chart ? 'chart' : stats ? 'summary' : null;
-  // Open on the chart / headline figures; the table is one click away.
-  const [view, setView] = useState('visual');
+
+  const vizMessageId = visualization?.message_id;
+  const vizConversationId = visualization?.conversation_id;
+  const vizAttachmentId = visualization?.attachment_id;
+  const vizKey = [vizMessageId, vizConversationId, vizAttachmentId].every(isId)
+    ? `${vizConversationId}/${vizMessageId}/${vizAttachmentId}`
+    : null;
+  const [vizResult, setVizResult] = useState({ key: null, url: null });
+  useEffect(() => {
+    if (!vizKey) return undefined;
+    let cancelled = false;
+    getVisualizationUrl({ message_id: vizMessageId, conversation_id: vizConversationId, attachment_id: vizAttachmentId })
+      .then((url) => {
+        if (!cancelled) setVizResult({ key: vizKey, url });
+      })
+      .catch((err) => {
+        console.warn("Couldn't load Genie's chart; showing the built-in chart instead:", err);
+        if (!cancelled) setVizResult({ key: vizKey, url: null });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [vizKey, vizMessageId, vizConversationId, vizAttachmentId]);
+  const vizState = !vizKey ? 'none' : vizResult.key !== vizKey ? 'loading' : vizResult.url ? 'ready' : 'failed';
+  const hasGenieViz = vizState === 'loading' || vizState === 'ready';
+
+  // Open on Genie's chart, else the chart / headline figures; the table is one click away.
+  const [view, setView] = useState(() => (vizKey ? 'genie' : 'visual'));
   const [metric, setMetric] = useState(null);
 
   if (!Array.isArray(data) || data.length === 0) return null;
@@ -28,11 +61,17 @@ export default function ResultView({ data }) {
   );
   const activeMetric = chart && chart.metrics.includes(metric) ? metric : chart?.metrics[0];
   const pieOk = chart?.kind === 'bar' && canPie(data, activeMetric);
-  // Switching to a metric that can't be a pie (e.g. an average) falls back to bars
-  const shown = view === 'pie' && !pieOk ? 'visual' : view;
-  const tabs = pieOk ? ['visual', 'pie', 'table'] : ['visual', 'table'];
+  // Switching to a metric that can't be a pie (e.g. an average) falls back to bars;
+  // a Genie chart that couldn't be loaded falls back to the built-in visual.
+  const shown = (view === 'pie' && !pieOk) || (view === 'genie' && !hasGenieViz) ? 'visual' : view;
+  const tabs = [
+    ...(hasGenieViz ? ['genie'] : []),
+    ...(visual ? (pieOk ? ['visual', 'pie'] : ['visual']) : []),
+    'table',
+  ];
   const tabLabel = (v) =>
-    v === 'table' ? 'Table' : v === 'pie' ? 'Pie' : visual === 'summary' ? 'Summary' : pieOk ? 'Bar' : 'Chart';
+    v === 'genie' ? 'Genie' : v === 'table' ? 'Table' : v === 'pie' ? 'Pie' : visual === 'summary' ? 'Summary' : pieOk ? 'Bar' : 'Chart';
+  const vizTitle = visualization?.title;
 
   return (
     <div className="mt-4">
@@ -41,7 +80,7 @@ export default function ResultView({ data }) {
           {data.length} {data.length === 1 ? 'row' : 'rows'}
         </span>
         <div className="flex min-w-0 items-center gap-2">
-          {chart && shown !== 'table' && chart.metrics.length > 1 && (
+          {chart && shown !== 'table' && shown !== 'genie' && chart.metrics.length > 1 && (
             <select
               className="max-w-[180px] min-w-0 cursor-pointer rounded-lg border border-line bg-main px-2 py-[0.3rem] text-[0.78rem] text-ellipsis text-primary transition-colors hover:border-secondary focus:border-secondary focus:outline-none"
               value={activeMetric}
@@ -51,7 +90,7 @@ export default function ResultView({ data }) {
               {chart.metrics.map((m) => <option key={m} value={m}>{prettyName(m)}</option>)}
             </select>
           )}
-          {visual && (
+          {tabs.length > 1 && (
             <div className="inline-flex rounded-[9px] bg-line p-0.5" role="tablist" aria-label="Result view">
               {tabs.map((v) => (
                 <button
@@ -75,11 +114,31 @@ export default function ResultView({ data }) {
         </div>
       </div>
 
-      {shown === 'visual' && stats ? (
+      {shown === 'genie' ? (
+        <div className={cn('animate-[fadeIn_0.3s_var(--ease-smooth)_both]', card)} key="genie">
+          {vizTitle && (
+            <div className="mb-[0.85rem] text-[0.9rem] font-semibold wrap-anywhere text-primary">{vizTitle}</div>
+          )}
+          {vizState === 'ready' ? (
+            <img
+              src={vizResult.url}
+              alt={vizTitle || 'Chart generated by Genie'}
+              className="block h-auto w-full rounded-lg"
+              // An image the browser can't decode falls back like a failed download
+              onError={() => setVizResult({ key: vizKey, url: null })}
+            />
+          ) : (
+            <div className="flex h-[220px] items-center justify-center gap-2 text-[0.8rem] text-secondary" role="status">
+              <Spinner className="size-5" aria-hidden="true" />
+              Loading Genie's chart…
+            </div>
+          )}
+        </div>
+      ) : shown === 'visual' && stats ? (
         <StatTiles row={data[0]} stats={stats} />
       ) : shown !== 'table' && chart ? (
         <div
-          className="animate-[fadeIn_0.3s_var(--ease-smooth)_both] rounded-xl border border-line bg-main px-[1.1rem] pt-4 pb-[0.9rem] shadow-sm max-sm:px-3 max-sm:pt-[0.85rem] max-sm:pb-3"
+          className={cn('animate-[fadeIn_0.3s_var(--ease-smooth)_both]', card)}
           key={`${shown}-${chart.kind}-${activeMetric}`}
         >
           <div className="mb-[0.85rem] text-[0.9rem] font-semibold wrap-anywhere text-primary">

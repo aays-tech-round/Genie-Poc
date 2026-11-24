@@ -6,6 +6,7 @@ from models.schemas import (
     ChatSummary,
     ChatUpdate,
     FeedbackRequest,
+    GenieVisualization,
     StatusResponse,
 )
 
@@ -17,5 +18,6 @@ __all__ = [
     "ChatSummary",
     "ChatUpdate",
     "FeedbackRequest",
+    "GenieVisualization",
     "StatusResponse",
 ]
