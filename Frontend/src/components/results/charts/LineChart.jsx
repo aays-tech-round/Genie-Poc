@@ -1,22 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { toNumber, timeValue, fmtFull, fmtCompact, formatValue, formatLabel, niceTicks } from './resultUtils';
+import { useMemo, useRef, useState } from 'react';
+import { toNumber, timeValue, fmtFull, fmtCompact, formatValue, formatLabel, niceTicks } from '../resultUtils';
+import useElementWidth from '@/hooks/useElementWidth';
+import './charts.css';
 
 const axisText = 'fill-secondary text-[11px] tabular-nums';
-const dot = 'fill-accent stroke-main stroke-2';
+const dot = 'fill-(--series-1) stroke-main stroke-2';
 
 // Time series with a hover crosshair; resizes with its container.
 export default function LineChart({ rows, label, metric }) {
   const wrapRef = useRef(null);
-  const [width, setWidth] = useState(600);
+  const width = useElementWidth(wrapRef);
   const [hover, setHover] = useState(null);
-
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(([entry]) => setWidth(Math.max(260, entry.contentRect.width)));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
 
   const points = useMemo(
     () => rows
@@ -53,7 +47,7 @@ export default function LineChart({ rows, label, metric }) {
   const hp = hover !== null ? points[hover] : null;
 
   return (
-    <div className="relative w-full" ref={wrapRef}>
+    <div className="viz relative w-full" ref={wrapRef}>
       <svg
         width={width}
         height={height}
@@ -74,8 +68,8 @@ export default function LineChart({ rows, label, metric }) {
         {points.map((p, i) => (i % labelEvery === 0 || i === points.length - 1) && (
           <text key={i} x={x(i)} y={height - 8} className={axisText} textAnchor="middle">{p.label}</text>
         ))}
-        <path d={area} className="fill-accent opacity-10" />
-        <path d={line} className="fill-none stroke-accent stroke-2 [stroke-linecap:round] [stroke-linejoin:round]" />
+        <path d={area} className="fill-(--series-1) opacity-10" />
+        <path d={line} className="fill-none stroke-(--series-1) stroke-2 [stroke-linecap:round] [stroke-linejoin:round]" />
         <circle cx={x(points.length - 1)} cy={y(last.v)} r="4" className={dot} />
         <text x={x(points.length - 1) + 8} y={y(last.v)} className="fill-primary text-[12px] font-medium tabular-nums" dominantBaseline="middle">
           {formatValue(last.v)}

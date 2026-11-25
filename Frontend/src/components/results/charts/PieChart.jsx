@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { fmtFull, formatLabel, formatValue, toNumber } from './resultUtils';
+import { fmtFull, formatLabel, formatValue, toNumber, seriesColor } from '../resultUtils';
 import { cn } from '@/lib/utils';
+import './charts.css';
 
 const SIZE = 200;
 const OUTER = 96;
 const INNER = 62;
 const C = SIZE / 2;
 
-// Slice colours, in order: the theme's own colours, with red and green kept apart.
-const SLICE_COLORS = ['accent', 'success', 'secondary', 'danger', 'accent-soft', 'line'];
+// Slice colours are the shared series slots (charts.css), in row order.
 
 const fmtPct = new Intl.NumberFormat(undefined, { style: 'percent', maximumFractionDigits: 1 });
 
@@ -29,7 +29,7 @@ const arcPath = (a0, a1) => {
 export default function PieChart({ rows, label, metric }) {
   const [active, setActive] = useState(null);
 
-  const slices = rows.map((r, i) => ({ name: formatLabel(r[label]), value: toNumber(r[metric]), color: `var(--${SLICE_COLORS[i % SLICE_COLORS.length]})` }));
+  const slices = rows.map((r, i) => ({ name: formatLabel(r[label]), value: toNumber(r[metric]), color: seriesColor(i) }));
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   let angle = 0;
   slices.forEach((s) => {
@@ -42,7 +42,7 @@ export default function PieChart({ rows, label, metric }) {
   const focus = active !== null ? slices[active] : null;
 
   return (
-    <div className="flex flex-wrap items-center gap-7 max-sm:gap-4">
+    <div className="viz flex flex-wrap items-center gap-7 max-sm:gap-4">
       <div className="relative size-[200px] shrink-0 max-sm:mx-auto max-sm:size-[170px]">
         <svg
           viewBox={`0 0 ${SIZE} ${SIZE}`}

@@ -117,6 +117,33 @@ export function canPie(rows, metric) {
   });
 }
 
+// Chart colour for a series / category slot (0-based). Values live in charts.css (.viz),
+// with light and dark steps; there are SERIES_COUNT of them and they never repeat.
+export const SERIES_COUNT = 8;
+export const seriesColor = (slot) => `var(--series-${(slot % SERIES_COUNT) + 1})`;
+
+// Saves rows as a CSV file. Text that starts like a spreadsheet formula gets a leading '
+// so Excel shows it instead of running it; numbers (including negatives) are left as they are.
+export function downloadCsv(rows, name) {
+  if (!Array.isArray(rows) || rows.length === 0) return;
+  const headers = Object.keys(rows[0]);
+  const esc = (v) => {
+    if (v === null || v === undefined) return '';
+    let s = String(v);
+    if (/^[=+\-@\t\r]/.test(s) && Number.isNaN(Number(s))) s = `'${s}`;
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const csv = [headers, ...rows.map((r) => headers.map((h) => r[h]))]
+    .map((line) => line.map(esc).join(','))
+    .join('\r\n');
+  const url = URL.createObjectURL(new Blob(['﻿', csv], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${String(name || 'result').replace(/[^\w.-]+/g, '_')}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 export const niceTicks = (min, max, count = 4) => {
   if (min === max) {
     const pad = Math.abs(min) || 1;

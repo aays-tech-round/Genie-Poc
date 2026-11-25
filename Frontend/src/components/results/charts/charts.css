@@ -1,0 +1,81 @@
+/* Shared look for every result chart (Column, Bar, Pie, Line). Imported once by ResultView;
+   the chart card carries the .viz class.
+
+   Series colours, by slot. A colour belongs to a metric / category slot, never to its rank,
+   so hiding or re-sorting never repaints the rest. The set was validated (dataviz palette
+   checks: colour-blind separation, lightness band, contrast) against this app's own
+   surfaces: light #ffffff, dark #16171c. In light mode slots 3–5 sit below 3:1 contrast,
+   so charts always pair colour with a legend / direct labels and the Table tab. */
+.viz {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
+  --viz-track: rgba(17, 17, 24, 0.045); /* empty part of a bar row */
+}
+
+:root[data-theme='dark'] .viz {
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #0ca30c;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --viz-track: rgba(255, 255, 255, 0.045);
+}
+
+/* Columns grow out of the zero line: upwards, or downwards for a negative value.
+   `backwards` (not `both`) so hover / dim opacity is not overridden once the animation ends. */
+.viz .viz-col {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: vizGrowY 0.5s var(--ease-smooth) backwards;
+  transition: opacity 0.2s ease, filter 0.15s ease;
+}
+
+.viz .viz-col.viz-neg {
+  transform-origin: top;
+}
+
+/* Bars grow out of the zero line sideways. */
+.viz .viz-bar {
+  animation: vizGrowX 0.5s var(--ease-smooth) backwards;
+  transition: opacity 0.2s ease, filter 0.15s ease;
+}
+
+@keyframes vizGrowY {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes vizGrowX {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viz .viz-col,
+  .viz .viz-bar {
+    animation: none;
+  }
+}
+
+/* Windows high-contrast: colour fills are replaced, so outline every mark. */
+@media (forced-colors: active) {
+  .viz .viz-col {
+    stroke: CanvasText;
+    stroke-width: 1;
+  }
+
+  .viz .viz-bar {
+    outline: 1px solid CanvasText;
+  }
+}
