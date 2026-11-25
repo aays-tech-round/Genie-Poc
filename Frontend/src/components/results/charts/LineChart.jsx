@@ -7,8 +7,6 @@ import './charts.css';
 
 const COLOR = 'var(--series-1)';
 
-// Time series: points sorted by date, a line with a soft fill under it, and the latest value
-// labelled at the end. Hover or the arrow keys (after focusing the chart) open the tooltip.
 export default function LineChart({ rows, label, metric }) {
   const gradientId = `line-fill-${useId().replace(/[^\w-]/g, '')}`;
 

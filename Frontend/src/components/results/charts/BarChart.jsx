@@ -4,10 +4,6 @@ import { animation, barCursor, truncate } from './chartTheme';
 import ChartTooltip from './ChartTooltip';
 import './charts.css';
 
-// Horizontal bars for one metric, one row per category (capped at MAX_BARS). Names run down
-// the left, values line up in a column on the right, and each bar sits on a faint full-width
-// track so short values still read against the whole. Hover or the arrow keys (after
-// focusing the chart) open the tooltip.
 
 const ROW = 34; // px per row
 const nameTick = { fill: 'var(--secondary)', fontSize: 12 };
@@ -22,8 +18,6 @@ export default function BarChart({ rows, label, metric }) {
   const nameWidth = Math.min(200, Math.max(72, Math.max(...data.map((d) => d.name.length)) * 8 + 20));
   const valueWidth = Math.max(...data.map((d) => d.shown.length)) * 7.5 + 16;
 
-  // Each row's background: the faint full-width track, plus the row's value right-aligned in
-  // the margin after it, so values line up in one column whatever the bar length.
   const trackWithValue = ({ x, y, width, height, index }) => (
     <g>
       <rect x={x} y={y} width={width} height={height} rx={5} fill="var(--viz-track)" />
@@ -66,3 +60,4 @@ export default function BarChart({ rows, label, metric }) {
     </div>
   );
 }
+d

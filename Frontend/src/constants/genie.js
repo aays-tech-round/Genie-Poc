@@ -2,8 +2,6 @@
 export const GENIE_API_BASE =
   import.meta.env.VITE_GENIE_API_BASE_URL || 'http://localhost:8000/api/v1/genie';
 
-// Genie's MessageStatus codes after which it stops working on an answer. Every other code
-// (FETCHING_METADATA, ASKING_AI, EXECUTING_QUERY, ...) is progress, shown as Genie sends it.
 export const TERMINAL_STATUSES = ['COMPLETED', 'FAILED', 'CANCELLED', 'QUERY_RESULT_EXPIRED'];
 export const FAILED_STATUSES = ['FAILED', 'CANCELLED', 'QUERY_RESULT_EXPIRED'];
 
