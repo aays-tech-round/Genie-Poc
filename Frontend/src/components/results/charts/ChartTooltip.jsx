@@ -1,29 +1,33 @@
 import { fmtFull } from '../resultUtils';
 
-// Hover card listing every series' value for one category. Values lead (strong ink), series
-// names follow; each row is keyed by a short stroke of the series colour. Positioned by the
-// caller through `style`. Hidden from screen readers: the chart announces the same values in
-// its own live region.
-//   items: [{ key, name, color, value }]   value: number or null
-export default function ChartTooltip({ title, items, style }) {
+// `total`: for stacked columns. Lists the segments top-down (matching the stack) and adds a
+// Total line under them.
+export default function ChartTooltip({ active, payload, label, total = false }) {
+  if (!active || !payload?.length) return null;
+  const title = payload[0].payload?.name ?? label;
+  const rows = total ? [...payload].reverse() : payload;
+  const sum = payload.reduce((t, p) => t + (p.value ?? 0), 0);
   return (
-    <div
-      className="pointer-events-none absolute z-10 max-w-65 min-w-37.5 animate-[fadeOnly_0.12s_ease_both] rounded-[10px] border border-line bg-main px-3 py-2 shadow-lg"
-      style={style}
-      aria-hidden="true"
-    >
+    <div className="max-w-65 min-w-37.5 rounded-[10px] border border-line bg-main px-3 py-2 shadow-lg">
       <div className="mb-1.5 text-[0.78rem] font-semibold wrap-anywhere text-primary">{title}</div>
       <ul className="flex flex-col gap-1">
-        {items.map((it) => (
-          <li key={it.key} className="grid grid-cols-[12px_minmax(0,1fr)_auto] items-center gap-2 text-[0.75rem]">
-            <span className="h-0.5 w-3 rounded-full" style={{ background: it.color }} />
-            <span className="truncate text-secondary">{it.name}</span>
+        {rows.map((p) => (
+          <li key={p.dataKey} className="grid grid-cols-[12px_minmax(0,1fr)_auto] items-center gap-2 text-[0.75rem]">
+            <span className="h-0.5 w-3 rounded-full" style={{ background: p.color ?? p.payload?.fill }} />
+            <span className="truncate text-secondary">{p.name}</span>
             <span className="text-right font-semibold text-primary tabular-nums">
-              {it.value === null ? '—' : fmtFull.format(it.value)}
+              {p.value === null || p.value === undefined ? '—' : fmtFull.format(p.value)}
             </span>
           </li>
         ))}
       </ul>
+      {total && (
+        <div className="mt-1.5 grid grid-cols-[12px_minmax(0,1fr)_auto] items-center gap-2 border-t border-line pt-1.5 text-[0.75rem]">
+          <span />
+          <span className="font-medium text-primary">Total</span>
+          <span className="text-right font-semibold text-primary tabular-nums">{fmtFull.format(sum)}</span>
+        </div>
+      )}
     </div>
   );
 }

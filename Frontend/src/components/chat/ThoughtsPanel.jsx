@@ -9,7 +9,6 @@ import { cn, formatCode } from '@/lib/utils';
 const sectionTitle =
   'inline-flex items-center gap-[0.4rem] text-xs font-semibold tracking-[0.04em] text-accent uppercase';
 
-// What Genie is doing now: its current status code, or null before it has reported one.
 const currentStatus = (message) =>
   message.status && !TERMINAL_STATUSES.includes(message.status) ? formatCode(message.status) : null;
 
@@ -66,12 +65,7 @@ function SqlBlock({ sql, parameters }) {
   );
 }
 
-/**
- * How Genie got to an answer, built only from what the Genie API returns: the status
- * codes it reported while working (in order), its thoughts, the query title and
- * description, and the SQL. Everything updates on each poll. While `live` it is open;
- * once the answer arrives it collapses to a one-line summary the user can expand.
- */
+
 export default function ThoughtsPanel({ message, live }) {
   const [open, setOpen] = useState(live);
   const [wasLive, setWasLive] = useState(live);
@@ -113,8 +107,7 @@ export default function ThoughtsPanel({ message, live }) {
               dotClassName="size-1.5 animate-[typingDot_1.3s_ease-in-out_infinite_both]"
               aria-hidden="true"
             />
-            {/* Genie's current status code; until it reports one, only the dots show.
-                key restarts the fade when the status changes. */}
+
             <span
               key={status || 'waiting'}
               className={cn(

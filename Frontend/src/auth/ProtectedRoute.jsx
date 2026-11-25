@@ -8,8 +8,6 @@ const ProtectedRoute = ({ children }) => {
   const { inProgress } = useMsal();
   const isAuthenticated = useIsAuthenticated();
 
-  // Wait for MSAL startup / redirect handling (e.g. returning from logout)
-  // before deciding, so the user isn't bounced while the cache is loading.
   const starting =
     inProgress === InteractionStatus.Startup || inProgress === InteractionStatus.HandleRedirect;
   const shouldRedirect = !isAuthenticated && !starting;

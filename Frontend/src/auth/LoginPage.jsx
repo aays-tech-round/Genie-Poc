@@ -47,8 +47,6 @@ const LoginPage = () => {
   const year = new Date().getFullYear();
 
   return (
-    // Desktop: two columns, exactly one screen tall. Tablet: stacked and scrolling.
-    // Phone: the showcase is dropped and the sign-in panel leads.
     <div className="grid h-dvh grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] overflow-hidden bg-main text-primary antialiased max-[1180px]:grid-cols-2 max-[900px]:grid-cols-1 max-[900px]:overflow-y-auto">
       <Showcase />
 

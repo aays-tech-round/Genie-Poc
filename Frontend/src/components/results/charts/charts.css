@@ -1,11 +1,4 @@
-/* Shared look for every result chart (Column, Bar, Pie, Line). Imported once by ResultView;
-   the chart card carries the .viz class.
 
-   Series colours, by slot. A colour belongs to a metric / category slot, never to its rank,
-   so hiding or re-sorting never repaints the rest. The set was validated (dataviz palette
-   checks: colour-blind separation, lightness band, contrast) against this app's own
-   surfaces: light #ffffff, dark #16171c. In light mode slots 3–5 sit below 3:1 contrast,
-   so charts always pair colour with a legend / direct labels and the Table tab. */
 .viz {
   --series-1: #2a78d6;
   --series-2: #eb6834;
@@ -30,52 +23,22 @@
   --viz-track: rgba(255, 255, 255, 0.045);
 }
 
-/* Columns grow out of the zero line: upwards, or downwards for a negative value.
-   `backwards` (not `both`) so hover / dim opacity is not overridden once the animation ends. */
-.viz .viz-col {
-  transform-box: fill-box;
-  transform-origin: bottom;
-  animation: vizGrowY 0.5s var(--ease-smooth) backwards;
-  transition: opacity 0.2s ease, filter 0.15s ease;
+
+.viz .recharts-surface:focus {
+  outline: none;
 }
 
-.viz .viz-col.viz-neg {
-  transform-origin: top;
+.viz .recharts-surface:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+  border-radius: 8px;
 }
 
-/* Bars grow out of the zero line sideways. */
-.viz .viz-bar {
-  animation: vizGrowX 0.5s var(--ease-smooth) backwards;
-  transition: opacity 0.2s ease, filter 0.15s ease;
-}
-
-@keyframes vizGrowY {
-  from {
-    transform: scaleY(0);
-  }
-}
-
-@keyframes vizGrowX {
-  from {
-    transform: scaleX(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .viz .viz-col,
-  .viz .viz-bar {
-    animation: none;
-  }
-}
-
-/* Windows high-contrast: colour fills are replaced, so outline every mark. */
+/* Windows high-contrast: colour fills are replaced, so outline every bar and slice. */
 @media (forced-colors: active) {
-  .viz .viz-col {
+  .viz .recharts-rectangle,
+  .viz .recharts-sector {
     stroke: CanvasText;
     stroke-width: 1;
-  }
-
-  .viz .viz-bar {
-    outline: 1px solid CanvasText;
   }
 }

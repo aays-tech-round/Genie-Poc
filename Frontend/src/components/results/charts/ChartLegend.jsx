@@ -1,10 +1,7 @@
 import { cn } from '@/lib/utils';
 
-// Legend that doubles as the show / hide control for each series.
-// Clicking toggles a series; hovering or focusing a visible one calls onHighlight(key) so the
-// chart can dim the others (onHighlight(null) when the pointer or focus leaves).
-//   series: [{ key, name, color }]   hidden: Set of hidden keys
-export default function ChartLegend({ series, hidden, onToggle, onHighlight }) {
+
+export default function ChartLegend({ series, hidden, onToggle }) {
   return (
     <ul className="flex min-w-0 flex-wrap gap-1" aria-label="Metrics">
       {series.map((s) => {
@@ -20,10 +17,6 @@ export default function ChartLegend({ series, hidden, onToggle, onHighlight }) {
                 on ? 'text-primary' : 'text-secondary line-through decoration-secondary/60'
               )}
               onClick={() => onToggle(s.key)}
-              onPointerEnter={() => on && onHighlight(s.key)}
-              onPointerLeave={() => onHighlight(null)}
-              onFocus={() => on && onHighlight(s.key)}
-              onBlur={() => onHighlight(null)}
             >
               <span
                 className={cn('size-2.5 shrink-0 rounded-[3px] border', on ? 'border-transparent' : 'border-secondary')}

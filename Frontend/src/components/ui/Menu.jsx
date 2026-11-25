@@ -3,9 +3,6 @@ import { cn } from '@/lib/utils';
 
 const ITEMS = '[role="menuitem"]:not([disabled])';
 
-// Popover menu panel (chat item options, account menu). className positions it.
-// Opens with focus on the first item; Arrow keys, Home and End move between items.
-// When it closes without focus going anywhere else, focus returns to the button that opened it.
 export function Menu({ className, children }) {
   const menuRef = useRef(null);
   const [opener] = useState(() => document.activeElement);

@@ -1,8 +1,6 @@
 import GenieLogo from '@/components/ui/GenieLogo';
 import Suggestions from './Suggestions';
 
-// Empty-chat landing: greeting, the composer (passed in) and starter questions.
-// Each part rises in a moment after the one above it.
 export default function WelcomeScreen({ firstName, composer, onPickSuggestion, busy }) {
   return (
     <div className="relative flex min-h-0 flex-1 justify-center overflow-y-auto scrollbar-thin px-5">

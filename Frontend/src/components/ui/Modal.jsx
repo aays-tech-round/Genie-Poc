@@ -5,11 +5,7 @@ import { cn } from '@/lib/utils';
 const FOCUSABLE =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
 
-// Dimmed full-screen backdrop with a dialog box on top. Clicking the backdrop or pressing
-// Escape closes it. Focus moves into the dialog, Tab stays inside it, and focus returns to
-// the element that opened it when it closes.
-// label names the dialog for screen readers; overlayClassName positions the box
-// (alignment, padding, blur); className sizes the box.
+
 export default function Modal({ onClose, label, overlayClassName, className, children }) {
   const boxRef = useRef(null);
   // The element focused when the dialog opened, read before any autoFocus inside it runs

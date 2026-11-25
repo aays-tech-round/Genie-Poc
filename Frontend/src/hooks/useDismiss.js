@@ -1,7 +1,5 @@
 import { useEffect, useEffectEvent } from 'react';
 
-// Calls onClose on a click outside `ref` or on Escape, while `active` is true.
-// Used by popover menus (chat item options, account menu).
 export default function useDismiss(ref, active, onClose) {
   const close = useEffectEvent(() => onClose());
 

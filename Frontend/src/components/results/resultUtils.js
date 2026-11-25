@@ -1,5 +1,3 @@
-// Pure helpers for Genie query results (arrays of {column: value} rows):
-// number parsing / formatting, column naming, and deciding how to visualise a result.
 
 export const MAX_BARS = 50;
 
@@ -21,7 +19,7 @@ export const isNumericColumn = (rows, col) => {
 };
 
 export const isYear = (v) => /^(19|20)\d{2}$/.test(String(v ?? '').trim());
-export const isDateLike = (v) => {
+const isDateLike = (v) => {
   const s = String(v ?? '').trim();
   return isYear(s) || (/^\d{4}-\d{2}(-\d{2})?([T ].*)?$/.test(s) && !Number.isNaN(Date.parse(s)));
 };
@@ -75,6 +73,15 @@ export function analyseStats(rows) {
   return { metrics, context };
 }
 
+// "revenue_rank", "RowNumber", "customer_id", "rn" -> true. Matched on whole words, so
+// "order_count" or "identity_score" are not caught.
+const POSITION_OR_ID_WORDS = new Set(['rank', 'ranking', 'rn', 'id', 'position', 'pos', 'seq', 'sequence']);
+const isPositionOrId = (col) => {
+  const words = String(col).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[\s_.-]+/);
+  const joined = words.join(' ');
+  return words.some((w) => POSITION_OR_ID_WORDS.has(w)) || /\brow (num|number|no)\b/.test(joined);
+};
+
 // Decide whether (and how) the rows can be charted.
 export function analyse(rows) {
   if (!Array.isArray(rows) || rows.length < 2) return null;
@@ -87,8 +94,9 @@ export function analyse(rows) {
   if (!label && rows.every((r) => isYear(r[columns[0]]))) label = columns[0];
   if (!label) return null;
 
-  // A column of years is a dimension, not something to plot
-  const metrics = numeric.filter((c) => c !== label && !rows.every((r) => isYear(r[c])));
+  // A column of years is a dimension, and a rank or ID is a position or code, not an amount:
+  // none of them is something to plot (they stay in the table).
+  const metrics = numeric.filter((c) => c !== label && !rows.every((r) => isYear(r[c])) && !isPositionOrId(c));
   if (metrics.length === 0) return null;
 
   // Repeated labels mean the rows need grouping first; one bar/point per row would mislead
@@ -101,20 +109,44 @@ export function analyse(rows) {
 // Pie / donut is offered for part-to-whole only: 3–6 slices (two read better as numbers,
 // more than six are hard to tell apart), every value positive, and a metric whose values
 // add up to a meaningful total. Averages, rates and percentages don't, so they stay bars.
-export const PIE_MAX_SLICES = 6;
+const PIE_MAX_SLICES = 6;
 const NON_ADDITIVE = new Set([
   'avg', 'average', 'mean', 'median', 'rate', 'ratio', 'pct', 'percent', 'percentage',
   'share', 'per', 'min', 'max', 'minimum', 'maximum', 'score', 'index', 'rank',
 ]);
 
+const nameWords = (col) => String(col).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[\s_.-]+/);
+const isAdditive = (metric) => !nameWords(metric).some((w) => NON_ADDITIVE.has(w));
+
 export function canPie(rows, metric) {
   if (!Array.isArray(rows) || rows.length < 3 || rows.length > PIE_MAX_SLICES) return false;
-  const words = String(metric).replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[\s_.-]+/);
-  if (words.some((w) => NON_ADDITIVE.has(w))) return false;
+  if (!isAdditive(metric)) return false;
   return rows.every((r) => {
     const n = toNumber(r[metric]);
     return n !== null && !Number.isNaN(n) && n > 0;
   });
+}
+
+// Stacking columns adds the metrics into one total per category, so it is offered only when
+// that total means something: 2+ metrics that are amounts (not averages, rates, ...), none of
+// them a reference value like a benchmark or target (those are compared against, not added),
+// no negative values, and all on a similar scale (revenue in millions plus a quantity in
+// thousands would be different units).
+const REFERENCE_WORDS = new Set([
+  'benchmark', 'target', 'budget', 'goal', 'forecast', 'plan', 'planned', 'baseline', 'threshold', 'limit', 'quota',
+]);
+const STACK_SCALE_RATIO = 50; // largest metric at most 50× the smallest
+
+export function canStack(rows, metrics) {
+  if (!Array.isArray(rows) || rows.length < 2 || metrics.length < 2) return false;
+  if (!metrics.every((m) => isAdditive(m) && !nameWords(m).some((w) => REFERENCE_WORDS.has(w)))) return false;
+  const peaks = metrics.map((m) => {
+    const vals = rows.map((r) => toNumber(r[m]));
+    if (vals.some((v) => v !== null && v < 0)) return -1;
+    return Math.max(0, ...vals.filter((v) => v !== null));
+  });
+  if (peaks.some((p) => p <= 0)) return false;
+  return Math.max(...peaks) / Math.min(...peaks) <= STACK_SCALE_RATIO;
 }
 
 // Chart colour for a series / category slot (0-based). Values live in charts.css (.viz),
@@ -144,17 +176,3 @@ export function downloadCsv(rows, name) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-export const niceTicks = (min, max, count = 4) => {
-  if (min === max) {
-    const pad = Math.abs(min) || 1;
-    min -= pad; max += pad;
-  }
-  const raw = (max - min) / count;
-  const mag = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw);
-  const lo = Math.floor(min / step) * step;
-  const hi = Math.ceil(max / step) * step;
-  const ticks = [];
-  for (let t = lo; t <= hi + step / 2; t += step) ticks.push(Number(t.toPrecision(12)));
-  return ticks;
-};

@@ -11,20 +11,12 @@ import { makeId, titleFrom } from '@/lib/utils';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Records each status code Genie reports while working, in the order it reports them,
-// for the Thoughts panel. A code can recur (e.g. ASKING_AI before and after the query
-// runs); a status shorter than the poll interval (up to 2s) may not be seen at all.
 const nextSteps = (steps = [], status) =>
   !status || TERMINAL_STATUSES.includes(status) || steps[steps.length - 1] === status
     ? steps
     : [...steps, status];
 
-/**
- * Chat history for one user plus the Genie question/answer flow:
- * POST /ask, then poll /status until the answer reaches a terminal status.
- * The chat list, titles and pins live on the backend; a chat's messages are read from Genie
- * when it is opened. Several chats can be answering at once.
- */
+
 export default function useChats(email) {
   const [chats, setChats] = useState([]);
   const [chatsEmail, setChatsEmail] = useState(email);

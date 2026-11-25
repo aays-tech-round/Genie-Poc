@@ -1,7 +1,7 @@
 // Turns what the backend returns into the chat and message objects the UI works with.
 
 // A chat from the backend list. Its messages are loaded when it is opened (loaded: false until then).
-export const chatFromBackend = (chat) => ({
+const chatFromBackend = (chat) => ({
   id: chat.id,
   title: chat.title,
   conversationId: chat.conversation_id,

@@ -1,5 +1,3 @@
-// Composer dock under an active conversation, with the accuracy disclaimer.
-// The ::before gradient fades the conversation out behind it.
 export default function ChatFooter({ composer }) {
   return (
     <div className="relative flex w-full flex-col items-center px-4 pb-[max(0.6rem,env(safe-area-inset-bottom))] before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-7 before:bg-linear-to-b before:from-transparent before:to-main max-md:px-3">

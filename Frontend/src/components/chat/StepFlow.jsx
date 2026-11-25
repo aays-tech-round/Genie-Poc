@@ -2,10 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
 import { cn, formatCode } from '@/lib/utils';
 
-// Genie's status codes in the order it reported them, as one wrapping row:
-// "Fetching metadata › Asking AI › Executing query". While `live`, the latest step is
-// highlighted with a spinner. A code can recur (Asking AI before and after the query
-// runs), which reads naturally in a left-to-right flow.
+
 export default function StepFlow({ steps, live }) {
   return (
     <ol className="flex flex-wrap items-center gap-y-1.5 text-[0.82rem] leading-6">

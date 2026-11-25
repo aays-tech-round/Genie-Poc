@@ -1,22 +1,15 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { ChartBar, ChartColumn, ChartLine, ChartPie, Download, Gauge, Table2 } from 'lucide-react';
 import { prettyName, analyseStats, analyse, canPie, downloadCsv } from './resultUtils';
 import StatTiles from './StatTiles';
-import ColumnChart from './charts/ColumnChart';
-import BarChart from './charts/BarChart';
-import PieChart from './charts/PieChart';
-import LineChart from './charts/LineChart';
 import ResultTable from './ResultTable';
 import { cn } from '@/lib/utils';
 
-// Renders a Genie query result (array of {column: value} rows) with a tab per useful view:
-//   Summary  one-row answers with a few numbers (headline figures)
-//   Line     time series (opens first for them)
-//   Column   every metric side by side (opens first otherwise)
-//   Pie      part-to-whole results only (see canPie)
-//   Bar      one metric, ranked horizontally
-//   Table    always
-// Download (CSV of the full result) works from every tab.
+const ColumnChart = lazy(() => import('./charts/ColumnChart'));
+const BarChart = lazy(() => import('./charts/BarChart'));
+const PieChart = lazy(() => import('./charts/PieChart'));
+const LineChart = lazy(() => import('./charts/LineChart'));
+
 
 const VIEWS = {
   summary: { label: 'Summary', Icon: Gauge },
@@ -122,10 +115,13 @@ export default function ResultView({ data }) {
           <div className="mb-[0.85rem] text-[0.9rem] font-semibold wrap-anywhere text-primary">
             {title} <span className="font-normal text-secondary">by {prettyName(chart.label)}</span>
           </div>
-          {shown === 'column' && <ColumnChart rows={data} label={chart.label} metrics={chart.metrics} />}
-          {shown === 'pie' && <PieChart rows={data} label={chart.label} metric={activeMetric} />}
-          {shown === 'bar' && <BarChart rows={data} label={chart.label} metric={activeMetric} />}
-          {shown === 'line' && <LineChart rows={data} label={chart.label} metric={activeMetric} />}
+          {/* Holds the chart's height while its code loads, so the card doesn't jump. */}
+          <Suspense fallback={<div className="h-60" aria-busy="true" />}>
+            {shown === 'column' && <ColumnChart rows={data} label={chart.label} metrics={chart.metrics} />}
+            {shown === 'pie' && <PieChart rows={data} label={chart.label} metric={activeMetric} />}
+            {shown === 'bar' && <BarChart rows={data} label={chart.label} metric={activeMetric} />}
+            {shown === 'line' && <LineChart rows={data} label={chart.label} metric={activeMetric} />}
+          </Suspense>
         </div>
       )}
     </div>

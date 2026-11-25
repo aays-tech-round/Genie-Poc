@@ -5,8 +5,6 @@ import Spinner from '@/components/ui/Spinner';
 const button =
   'inline-flex min-w-[88px] items-center justify-center gap-2 rounded-full border px-4 py-[0.45rem] text-sm font-medium transition active:scale-96 disabled:cursor-not-allowed disabled:opacity-60';
 
-// Asks before a chat is deleted for good. onConfirm does the deleting; the dialog closes when it
-// succeeds, and shows the error (staying open, so the user can retry) when it fails.
 export default function DeleteChatDialog({ chat, onConfirm, onClose }) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
