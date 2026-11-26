@@ -12,5 +12,6 @@ export const applySavedTheme = () => {
     }
     document.documentElement.setAttribute('data-theme', t);
   } catch {
+    // Storage blocked (private mode): keep the light default.
   }
 };

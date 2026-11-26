@@ -60,4 +60,3 @@ export default function BarChart({ rows, label, metric }) {
     </div>
   );
 }
-d

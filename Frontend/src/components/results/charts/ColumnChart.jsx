@@ -14,7 +14,10 @@ const MODES = ['grouped', 'stacked'];
 
 const HEIGHT = 300;
 const MIN_GROUP = 36; // narrowest a category gets before the chart scrolls sideways
-const SCALE_RATIO = 0.02;
+// The first metric Genie returned is the main one and is always shown. Another metric starts
+// hidden when it is more than 50x larger or smaller than it: on the shared axis one of the two
+// would be a flat line. The legend can turn it on.
+const SCALE_RATIO = 50;
 
 export default function ColumnChart({ rows, label, metrics }) {
   // Colour belongs to the metric (its slot), so hiding one never repaints the others.
@@ -31,8 +34,9 @@ export default function ColumnChart({ rows, label, metrics }) {
   }));
 
   const [hidden, setHidden] = useState(() => {
-    const top = Math.max(0, ...series.map((s) => s.peak));
-    return new Set(series.filter((s) => s.peak < top * SCALE_RATIO).map((s) => s.key));
+    const main = series[0].peak || 1;
+    const offScale = (s) => s.peak > main * SCALE_RATIO || s.peak * SCALE_RATIO < main;
+    return new Set(series.slice(1).filter(offScale).map((s) => s.key));
   });
   const toggleSeries = (key) =>
     setHidden((prev) => {
