@@ -1,4 +1,4 @@
-from models.chat import Chat
+from models.chat import Chat, GenieChatMessage
 from models.schemas import (
     AskRequest,
     AskResponse,
@@ -17,5 +17,6 @@ __all__ = [
     "ChatSummary",
     "ChatUpdate",
     "FeedbackRequest",
+    "GenieChatMessage",
     "StatusResponse",
 ]

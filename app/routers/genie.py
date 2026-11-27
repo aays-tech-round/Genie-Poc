@@ -1,10 +1,14 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
 from datetime import timezone
 from functools import lru_cache
+from typing import Optional
+import uuid
 from sqlalchemy import delete, func, select, update
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 from models import (
     AskRequest, AskResponse, StatusResponse, FeedbackRequest, Chat, ChatMessage, ChatSummary, ChatUpdate,
+    GenieChatMessage,
 )
 from services.databricks_client import DatabricksGenieClient
 from auth import CurrentUser, get_current_user
@@ -24,8 +28,8 @@ def get_space_id() -> str:
         raise HTTPException(status_code=500, detail="GENIE_SPACE_ID is not configured on the server.")
     return space_id
 
-def require_owner(db: Session, user: CurrentUser, conversation_id: str) -> None:
-    """404 unless this conversation is in the signed-in user's own chat list."""
+def require_owner(db: Session, user: CurrentUser, conversation_id: str) -> uuid.UUID:
+    """404 unless this conversation is in the signed-in user's own chat list. Returns the chat's id."""
     owned = db.scalar(
         select(Chat.id).where(Chat.user_id == user.oid, Chat.genie_conversation_id == conversation_id)
     )
@@ -33,11 +37,49 @@ def require_owner(db: Session, user: CurrentUser, conversation_id: str) -> None:
     db.rollback()
     if owned is None:
         raise HTTPException(status_code=404, detail="Chat not found.")
+    return owned
 
 def title_from(content: str) -> str:
     # Same rule as the frontend used for a new chat's title: the first 40 characters of the question.
     text = " ".join(content.split())
     return text if len(text) <= 40 else text[:40].strip() + "…"
+
+def save_question(db: Session, chat_id: uuid.UUID, user: CurrentUser, genie_message_id: str, question: str) -> None:
+    """
+    Records a question Genie has accepted in ppm.genie_chat_messages, for analytics. Only the question
+    is stored, never Genie's answer. Genie already has the question, so a failure here is logged and
+    swallowed rather than failing /ask (which would make the user ask it again). Saving the same
+    (chat, Genie message) twice is a no-op, so a retry never creates a duplicate row.
+    """
+    if genie_message_id.startswith("fallback_msg_"):
+        # DatabricksGenieClient.ask() made this up because Genie's reply had no message ID; it isn't unique.
+        logger.error(f"Question not saved for analytics: Genie returned no message ID (chat {chat_id}).")
+        return
+    try:
+        exists = db.scalar(
+            select(GenieChatMessage.id).where(
+                GenieChatMessage.chat_id == chat_id, GenieChatMessage.genie_message_id == genie_message_id
+            )
+        )
+        if exists is None:
+            db.add(GenieChatMessage(
+                chat_id=chat_id,
+                user_id=user.oid,
+                email_id=user.email,
+                genie_message_id=genie_message_id,
+                question=question,
+            ))
+        db.commit()
+    except IntegrityError:
+        # A concurrent save of the same question won the race on UQ_genie_chat_messages_chat_genie_message.
+        db.rollback()
+        logger.info(f"Question for Genie message {genie_message_id} (chat {chat_id}) was already saved.")
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(
+            f"Failed to save question for analytics (chat {chat_id}, Genie message {genie_message_id}, "
+            f"user {user.oid}): {e}"
+        )
 
 def chat_summary(chat: Chat) -> ChatSummary:
     return ChatSummary(
@@ -76,8 +118,9 @@ def ask_genie(
     A new conversation is recorded in the user's chat list; a follow-up must be in it already.
     """
     space_id = get_space_id()
+    chat_id: Optional[uuid.UUID] = None
     if request.conversation_id:
-        require_owner(db, user, request.conversation_id)
+        chat_id = require_owner(db, user, request.conversation_id)
 
     try:
         res = AskResponse(**client.ask(
@@ -102,14 +145,19 @@ def ask_genie(
             .values(**values)
         )
     else:
-        db.add(Chat(
+        chat = Chat(
             user_id=user.oid,
             email_id=user.email,
             genie_conversation_id=res.conversation_id,
             space_id=space_id,
             title=title_from(request.content),
-        ))
+        )
+        db.add(chat)
     db.commit()
+    if chat_id is None:
+        chat_id = chat.id
+
+    save_question(db, chat_id, user, res.message_id, request.content)
     return res
 
 @router.get("/chats", response_model=list[ChatSummary])
