@@ -98,6 +98,8 @@ export default function useChats(email) {
     }));
   };
 
+  // Polls one answer until it finishes, fails or times out. The caller clears the chat's busy
+  // state once every answer it is waiting on has settled.
   const pollStatus = async (msgId, currentConvId, chatId) => {
     let delay = POLL_INITIAL_DELAY_MS;
     const startTime = Date.now();
@@ -107,15 +109,11 @@ export default function useChats(email) {
         const data = await getMessageStatus(msgId, currentConvId);
         applyStatus(chatId, msgId, data);
 
-        if (TERMINAL_STATUSES.includes(data.status)) {
-          setChatProcessing(chatId, false);
-          return;
-        }
+        if (TERMINAL_STATUSES.includes(data.status)) return;
       } catch (err) {
         // The backend answered with an error (e.g. 401/403/500): retrying won't help, so stop and show it.
         if (err instanceof ApiError) {
           updateMessage(chatId, msgId, { status: 'FAILED', status_message: err.message, error: err.message });
-          setChatProcessing(chatId, false);
           return;
         }
         console.error('Polling error:', err);
@@ -126,7 +124,6 @@ export default function useChats(email) {
     }
 
     updateMessage(chatId, msgId, { status: 'FAILED', error: 'No answer from Genie after 10 minutes' });
-    setChatProcessing(chatId, false);
   };
 
   // Reads an opened chat's questions and answers from Genie. Answers that were still being
@@ -146,7 +143,10 @@ export default function useChats(email) {
         const unfinished = items.filter((m) => !TERMINAL_STATUSES.includes(m.status));
         if (unfinished.length > 0) {
           setChatProcessing(chat.id, true);
-          unfinished.forEach((m) => pollStatus(m.message_id, chat.conversationId, chat.id));
+          // The chat stays busy until the last unfinished answer settles, not the first
+          Promise.allSettled(
+            unfinished.map((m) => pollStatus(m.message_id, chat.conversationId, chat.id))
+          ).then(() => setChatProcessing(chat.id, false));
         }
       })
       .catch((err) => {
@@ -224,7 +224,7 @@ export default function useChats(email) {
       );
       if (!conversationId) syncNewChat(chatId, newConvId, titleFrom(content));
 
-      pollStatus(newMsgId, newConvId, chatId);
+      pollStatus(newMsgId, newConvId, chatId).finally(() => setChatProcessing(chatId, false));
     } catch (err) {
       appendMessage(chatId, {
         role: 'genie',

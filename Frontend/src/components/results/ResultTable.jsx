@@ -28,8 +28,10 @@ export default function ResultTable({ data }) {
     rows.sort((a, b) => {
       const x = a.row[key];
       const y = b.row[key];
-      if (x == null || x === '') return 1; // blanks always last
-      if (y == null || y === '') return -1;
+      // Blanks always last, in Genie's order among themselves
+      const xBlank = x == null || x === '';
+      const yBlank = y == null || y === '';
+      if (xBlank || yBlank) return xBlank && yBlank ? a.i - b.i : xBlank ? 1 : -1;
       return sign * (isNum ? toNumber(x) - toNumber(y) : collator.compare(String(x), String(y)));
     });
   }
